@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>華語大富翁 - 數位學習遊戲</title>
+    <style>
+        :root {
+            --p1-color: #ff4757;
+            --p2-color: #2e86de;
+            --bg-color: #f1f2f6;
+            --tile-border: #ced4da;
+        }
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        /* 啟動畫面與 UI */
+        #start-screen, #game-container, #result-screen {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            transition: transform 0.5s;
+        }
+        .hidden { display: none !important; }
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 50px;
+            border: none;
+            background: #ff9f43;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+        .btn:hover { transform: scale(1.1); background: #ee5253; }
+        
+        /* 棋盤佈局 */
+        #board-wrapper {
+            position: relative;
+            width: 90vmin;
+            height: 90vmin;
+            background: white;
+            border: 10px solid #576574;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+        }
+        .tile {
+            border: 1px solid var(--tile-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            position: relative;
+            padding: 2px;
+        }
+        .tile.start { background: #1dd1a1; font-weight: bold; color: white; }
+        .tile.question { background: #feca57; }
+        .tile.special { background: #ff9ff3; }
+        .tile.owned-p1 { border: 4px inset var(--p1-color); }
+        .tile.owned-p2 { border: 4px inset var(--p2-color); }
+        .level-badge { position: absolute; top: 0; right: 0; background: red; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 10px; }
+
+        /* 棋子 */
+        .pawn {
+            width: 4vmin;
+            height: 4vmin;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 100;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+        #p1-pawn { background: var(--p1-color); }
+        #p2-pawn { background: var(--p2-color); }
+
+        /* 問答視窗 */
+        #quiz-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 500px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            z-index: 200;
+            text-align: center;
+        }
+        .option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .option:hover { background: #e9ecef; }
+        
+        /* 狀態欄 */
+        #status-bar {
+            width: 90vmin;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .player-info { padding: 10px; border-radius: 10px; background: white; width: 45%; }
+        .p1-box { border-left: 8px solid var(--p1-color); }
+        .p2-box { border-left: 8px solid var(--p2-color); }
+        .active-turn { background: #ffffcc !important; transform: scale(1.05); }
+
+        #dice-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px; height: 80px;
+            font-size: 2rem;
+            z-index: 150;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 style="font-size: 3rem; color: #2c3e50;">🏮 華語大富翁 🏮</h1>
+        <p>先達到 2000 學習金幣者獲勝！</p>
+        <div>
+            <button class="btn" onclick="setDifficulty('easy')">簡單 (字謎)</button>
+            <button class="btn" onclick="setDifficulty('normal')">普通 (文化/成語)</button>
+            <button class="btn" onclick="setDifficulty('hard')">困難 (綜合題)</button>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn" style="background: #48dbfb;" onclick="setMode('pvp')">玩家 vs 玩家</button>
+            <button class="btn" style="background: #54a0ff;" onclick="setMode('pve')">玩家 vs AI</button>
+        </div>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="status-bar">
+            <div id="p1-info" class="player-info p1-box active-turn">
+                玩家1: <span id="p1-cash">1000</span>💰
+            </div>
+            <div id="p2-info" class="player-info p2-box">
+                玩家2 (電腦): <span id="p2-cash">1000</span>💰
+            </div>
+        </div>
+        
+        <div id="board-wrapper">
+            <button id="dice-btn" class="btn" onclick="rollDice()">🎲</button>
+            <div id="p1-pawn" class="pawn"></div>
+            <div id="p2-pawn" class="pawn"></div>
+            </div>
+    </div>
+
+    <div id="quiz-modal" class="hidden">
+        <div id="timer" style="color: red; font-weight: bold; float: right;">60s</div>
+        <h3 id="quiz-question">題目載入中...</h3>
+        <div id="quiz-options"></div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h1 id="winner-text">🏆 恭喜獲勝！</h1>
+        <button class="btn" onclick="location.reload()">重新開始</button>
+    </div>
+
+    <script>
+        /** 題庫資料 (從來源文件中精選) **/
+        const questions = {
+            easy: [
+                { q: "一人一張口 [cite: 50]", a: "合" },
+                { q: "兩人在內 [cite: 51]", a: "肉" },
+                { q: "一心向上 [cite: 53]", a: "必" },
+                { q: "一隻狗有四張口 [cite: 54]", a: "器" },
+                { q: "一隻黑狗，不叫不吼 [cite: 55]", a: "默" },
+                { q: "太陽的兒子 [cite: 56]", a: "星" },
+                { q: "手提包 [cite: 57]", a: "抱" },
+                { q: "半真半假 [cite: 58]", a: "值" },
+                { q: "七十二小時 [cite: 59]", a: "晶" },
+                { q: "大雨落在橫山上 [cite: 60]", a: "雪" },
+                { q: "夫人何處去 [cite: 61]", a: "二" },
+                { q: "山下之風 [cite: 62]", a: "嵐" },
+                { q: "守門員 [cite: 63]", a: "閃" },
+                { q: "自大加一點 [cite: 64]", a: "臭" },
+                { q: "自有一人在口中 [cite: 65]", a: "囚" },
+                { q: "皇帝的新衣 [cite: 68]", a: "襲" },
+                { q: "太陽打西邊出來 [cite: 69]", a: "晒" },
+                { q: "竹下有寺 [cite: 70]", a: "等" },
+                { q: "雷而無雨 [cite: 73]", a: "田" },
+                { q: "說話聲太大 [cite: 75]", a: "誇" },
+                { q: "多一半 [cite: 78]", a: "夕" },
+                { q: "山上還有山 [cite: 83]", a: "出" },
+                { q: "半部春秋 [cite: 84]", a: "秦" },
+                { q: "真心相伴 [cite: 86]", a: "慎" },
+                { q: "一月七日 [cite: 88]", a: "脂" },
+                { q: "人不在其位 [cite: 90]", a: "立" },
+                { q: "人在草木間 [cite: 91]", a: "茶" },
+                { q: "一大二小 [cite: 95]", a: "奈" },
+                { q: "太陽出現在地平線上 [cite: 96]", a: "旦" },
+                { q: "十一個人 [cite: 98]", a: "仕" }
+            ],
+            normal: [
+                { q: "下列何者是宋代以後主要的私學機構？ [cite: 2]", options: ["(A)書院", "(B)精舍", "(C)國子監", "(D)太學"], a: 0 },
+                { q: "關於著名的「清明上河圖」，下列敘述何者正確？ [cite: 4]", options: ["(A)完成於明朝", "(B)以北京為題材", "(C)顯示城市的物質進步", "(D)文人清談"], a: 2 },
+                { q: "「破釜沉舟」與哪位歷史人物有關？ [cite: 104]", options: ["(A)劉邦", "(B)項羽", "(C)韓信", "(D)諸葛亮"], a: 1 },
+                { q: "「班門弄斧」裡的「班」是指： [cite: 109]", options: ["(A)班固", "(B)班超", "(C)魯班", "(D)班捷明"], a: 2 },
+                { q: "台北淡水「紅毛城」中的「紅毛」是指： [cite: 26]", options: ["(A)西班牙人", "(B)荷蘭人", "(C)英國人", "(D)葡萄牙人"], a: 1 },
+                { q: "「胸有成竹」現在常用來比喻什麼？ [cite: 101]", options: ["(A)為人正直", "(B)很有把握", "(C)孤芳自賞", "(D)內心空虛"], a: 1 },
+                { q: "下列何者為新大陸引進的作物？ [cite: 176]", options: ["(A)番薯", "(B)胡椒", "(C)西瓜", "(D)洋蔥"], a: 0 },
+                { q: "「世外桃源」出自哪位作家之手？ [cite: 120]", options: ["(A)蘇軾", "(B)陶淵明", "(C)王維", "(D)李白"], a: 1 },
+                { q: "「罄竹難書」形容： [cite: 111]", options: ["(A)功勳卓著", "(B)罪惡極多", "(C)歷史悠久", "(D)才華洋溢"], a: 1 },
+                { q: "台灣手搖飲問世前，哪種冷飲由特有植物製作？ [cite: 230]", options: ["(A)杏仁茶", "(B)蓮藕茶", "(C)愛玉凍", "(D)烏梅汁"], a: 2 }
+            ],
+            hard: [
+                { q: "「我會說華語」與「我能說華語」的區別在於： [cite: 164]", options: ["(A)語氣", "(B)情感", "(C)時間", "(D)能力或條件"], a: 3 },
+                { q: "「氣死我了」中的「我」是： [cite: 258]", options: ["(A)主語", "(B)賓語", "(C)狀語", "(D)補語"], a: 1 },
+                { q: "外籍生說「我吃飯在餐廳」未掌握何種漢語原則？ [cite: 200]", options: ["(A)時間順序", "(B)從大到小", "(C)從舊到新", "(D)從輕到重"], a: 0 },
+                { q: "「網紅」一詞屬於何種詞彙變化？ [cite: 161]", options: ["(A)詞彙縮略", "(B)詞素重組", "(C)詞義擴大", "(D)語義轉移"], a: 0 },
+                { q: "母親問「你作業寫了沒有？」違反了何種合作原則？ [cite: 215]", options: ["(A)量", "(B)質", "(C)關係", "(D)方式"], a: 2 },
+                { q: "「三姑六婆」中的「三姑」是指： [cite: 222]", options: ["(A)尼、道、紫", "(B)尼、道、卦", "(C)道、紫、仙", "(D)道、卦、仙"], a: 1 },
+                { q: "下列何者為「絕對反義詞」？ [cite: 293]", options: ["(A)大/小", "(B)冷/熱", "(C)死/活", "(D)黑/白"], a: 2 },
+                { q: "「紅不讓」源自哪種語言？ [cite: 238]", options: ["(A)英語", "(B)韓語", "(C)日語", "(D)台語"], a: 2 },
+                { q: "「上船」唸成「上床」是哪裡出了問題？ [cite: 279]", options: ["(A)聲調", "(B)聲母", "(C)介音", "(D)韻尾"], a: 3 },
+                { q: "「隔壁老王」題目中，哪項不在預設範圍？ [cite: 255]", options: ["(A)有兒子", "(B)結過婚", "(C)住附近", "(D)年紀不小"], a: 3 }
+            ]
+        };
+
+        /** 遊戲變數 **/
+        let currentPlayer = 0;
+        let players = [
+            { pos: 0, cash: 1000, id: 'p1', element: null, isAI: false },
+            { pos: 0, cash: 1000, id: 'p2', element: null, isAI: false }
+        ];
+        let tiles = [];
+        let difficulty = 'easy';
+        let mode = 'pvp';
+        let timer = 60;
+        let timerInterval;
+
+        /** Web Audio 合成器 **/
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freqs, type = 'sine', duration = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            freqs.forEach((f, i) => {
+                osc.frequency.setValueAtTime(f, now + i * duration);
+            });
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + freqs.length * duration);
+            osc.start();
+            osc.stop(now + freqs.length * duration);
+        }
+
+        /** 初始化棋盤 **/
+        function initBoard() {
+            const wrapper = document.getElementById('board-wrapper');
+            const map = [
+                {x:1, y:11}, {x:1, y:10}, {x:1, y:9}, {x:1, y:8}, {x:1, y:7}, {x:1, y:6}, {x:1, y:5}, {x:1, y:4}, {x:1, y:3}, {x:1, y:2},
+                {x:1, y:1}, {x:2, y:1}, {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:6, y:1}, {x:7, y:1}, {x:8, y:1}, {x:9, y:1}, {x:10, y:1},
+                {x:11, y:1}, {x:11, y:2}, {x:11, y:3}, {x:11, y:4}, {x:11, y:5}, {x:11, y:6}, {x:11, y:7}, {x:11, y:8}, {x:11, y:9}, {x:11, y:10},
+                {x:11, y:11}, {x:10, y:11}, {x:9, y:11}, {x:8, y:11}, {x:7, y:11}, {x:6, y:11}, {x:5, y:11}, {x:4, y:11}, {x:3, y:11}, {x:2, y:11}
+            ];
+
+            map.forEach((pos, i) => {
+                const div = document.createElement('div');
+                div.className = 'tile';
+                div.style.gridColumn = pos.x;
+                div.style.gridRow = pos.y;
+                
+                let type = 'question';
+                let label = '題目';
+                if (i === 0) { type = 'start'; label = '起點'; }
+                else if (i % 7 === 0) { type = 'special'; label = '機會'; }
+                
+                div.classList.add(type);
+                div.innerHTML = `<span>${label}</span>`;
+                wrapper.appendChild(div);
+                tiles.push({ element: div, type, owner: null, level: 0 });
+            });
+            updatePawnPositions();
+        }
+
+        /** 遊戲流程 **/
+        function setDifficulty(d) { difficulty = d; }
+        function setMode(m) { 
+            mode = m; 
+            players[1].isAI = (m === 'pve');
+            document.getElementById('p2-info').innerHTML = players[1].isAI ? '電腦: <span id="p2-cash">1000</span>💰' : '玩家2: <span id="p2-cash">1000</span>💰';
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
+            initBoard();
+        }
+
+        function rollDice() {
+            document.getElementById('dice-btn').disabled = true;
+            playSound([440, 880, 440], 'square', 0.05);
+            let steps = Math.floor(Math.random() * 6) + 1;
+            movePlayer(steps);
+        }
+
+        async function movePlayer(steps) {
+            for (let i = 0; i < steps; i++) {
+                players[currentPlayer].pos = (players[currentPlayer].pos + 1) % tiles.length;
+                if (players[currentPlayer].pos === 0) {
+                    players[currentPlayer].cash += 200; // 經過起點 [cite: 283]
+                    playSound([523, 659, 783], 'sine');
+                }
+                updatePawnPositions();
+                await new Promise(r => setTimeout(r, 200));
+            }
+            handleTileAction();
+        }
+
+        function updatePawnPositions() {
+            const t1 = tiles[players[0].pos].element.getBoundingClientRect();
+            const t2 = tiles[players[1].pos].element.getBoundingClientRect();
+            const b = document.getElementById('board-wrapper').getBoundingClientRect();
+            
+            const p1 = document.getElementById('p1-pawn');
+            p1.style.left = (t1.left - b.left + 5) + 'px';
+            p1.style.top = (t1.top - b.top + 5) + 'px';
+            
+            const p2 = document.getElementById('p2-pawn');
+            p2.style.left = (t2.left - b.left + 25) + 'px';
+            p2.style.top = (t2.top - b.top + 25) + 'px';
+            
+            document.getElementById('p1-cash').innerText = players[0].cash;
+            document.getElementById('p2-cash').innerText = players[1].cash;
+        }
+
+        function handleTileAction() {
+            const tile = tiles[players[currentPlayer].pos];
+            if (tile.type === 'start') {
+                endTurn();
+            } else if (tile.type === 'special') {
+                const rand = Math.random();
+                if (rand < 0.3) { 
+                    alert("幸運！前進 2 格"); 
+                    movePlayer(2); 
+                } else if (rand < 0.6) { 
+                    alert("糟糕！後退 2 格"); 
+                    movePlayer(-2); 
+                } else { 
+                    alert("獲得獎金 100！"); 
+                    players[currentPlayer].cash += 100;
+                    endTurn();
+                }
+            } else if (tile.type === 'question') {
+                if (tile.owner !== null && tile.owner !== currentPlayer) {
+                    // 付租金
+                    const rent = 100 * (tile.level + 1);
+                    players[currentPlayer].cash -= rent;
+                    players[tile.owner].cash += rent;
+                    alert(`停在對手領地，支付租金 ${rent}💰`);
+                    endTurn();
+                } else {
+                    showQuiz();
+                }
+            }
+        }
+
+        /** 問答系統 **/
+        function showQuiz() {
+            const pool = questions[difficulty];
+            const qData = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('quiz-modal').classList.remove('hidden');
+            document.getElementById('quiz-question').innerText = qData.q;
+            
+            const optionsDiv = document.getElementById('quiz-options');
+            optionsDiv.innerHTML = '';
+            
+            let opts = qData.options ? [...qData.options] : generateFakeOptions(qData.a);
+            let correctIdx = qData.options ? qData.a : opts.indexOf(qData.a);
+
+            // AI 自動答題
+            if (players[currentPlayer].isAI) {
+                setTimeout(() => {
+                    const threshold = difficulty === 'easy' ? 0.3 : (difficulty === 'normal' ? 0.6 : 0.9);
+                    const isCorrect = Math.random() < threshold;
+                    answerQuiz(isCorrect ? correctIdx : (correctIdx + 1) % 4, correctIdx);
+                }, 2000);
+            }
+
+            opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.innerText = opt;
+                btn.onclick = () => answerQuiz(i, correctIdx);
+                optionsDiv.appendChild(btn);
+            });
+
+            startTimer(correctIdx);
+        }
+
+        function generateFakeOptions(correctAnswer) {
+            let fake = [correctAnswer];
+            const allAnswers = questions.easy.map(i => i.a);
+            while (fake.length < 4) {
+                let r = allAnswers[Math.floor(Math.random() * allAnswers.length)];
+                if (!fake.includes(r)) fake.push(r);
+            }
+            return fake.sort(() => Math.random() - 0.5);
+        }
+
+        function startTimer(cIdx) {
+            timer = 60;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').innerText = timer + 's';
+                if (timer <= 0) answerQuiz(-1, cIdx);
+            }, 1000);
+        }
+
+        function answerQuiz(selected, correct) {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-modal').classList.add('hidden');
+            
+            if (selected === correct) {
+                playSound([523, 659, 783, 1046]);
+                players[currentPlayer].cash += 200;
+                const tile = tiles[players[currentPlayer].pos];
+                if (tile.owner === currentPlayer) {
+                    tile.level++;
+                    alert("答對了！領地升級！");
+                } else {
+                    tile.owner = currentPlayer;
+                    tile.element.classList.add(currentPlayer === 0 ? 'owned-p1' : 'owned-p2');
+                    alert("答對了！獲得 200💰 並佔領此地！");
+                }
+                tile.element.innerHTML = `<span>題目</span><div class="level-badge">${tile.level}</div>`;
+            } else {
+                playSound([300, 200, 100], 'sawtooth');
+                alert("答錯了，下次再加油！");
+            }
+            endTurn();
+        }
+
+        function endTurn() {
+            updatePawnPositions();
+            if (players[currentPlayer].cash >= 2000) {
+                document.getElementById('game-container').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                document.getElementById('winner-text').innerText = `🏆 恭喜 ${players[currentPlayer].isAI ? '電腦' : '玩家'+(currentPlayer+1)} 獲勝！`;
+                return;
+            }
+            
+            currentPlayer = (currentPlayer + 1) % 2;
+            document.getElementById('p1-info').classList.toggle('active-turn');
+            document.getElementById('p2-info').classList.toggle('active-turn');
+            document.getElementById('dice-btn').disabled = false;
+
+            if (players[currentPlayer].isAI) {
+                setTimeout(rollDice, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
