@@ -31,7 +31,7 @@
     .screen {
       position: absolute; width: 100%; height: 100%;
       display: none; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; text-align: center;
+      padding: 10px; text-align: center;
     }
     .screen.active { display: flex; animation: fadeIn 0.5s ease; }
 
@@ -47,23 +47,36 @@
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
-    /* Board Layout */
-    #board-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    /* Board Layout - 修改比例確保不被切掉 */
+    #board-container { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 5px; 
+      max-height: 100vh; 
+      justify-content: space-evenly;
+    }
     #board {
-      display: grid; background: rgba(255, 255, 255, 0.1);
-      padding: 5px; border-radius: 8px; position: relative;
+      display: grid; 
+      background: rgba(255, 255, 255, 0.1);
+      padding: 5px; 
+      border-radius: 8px; 
+      position: relative;
       border: 4px solid #333;
+      /* 改用 vmin 單位確保自適應，不超出螢幕 */
+      width: 72vmin; 
+      height: 72vmin;
     }
     .cell {
       position: relative; border: 1px solid rgba(255,255,255,0.1);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: bold; cursor: default; transition: 0.2s;
+      font-size: 9px; font-weight: bold; cursor: default; transition: 0.2s;
     }
-    .cell-ico { font-size: 1.6rem; margin-bottom: 2px; }
-    .cell-lbl { transform: scale(0.9); opacity: 0.8; }
-    .cell-num { position: absolute; top: 2px; left: 2px; font-size: 8px; opacity: 0.3; }
+    .cell-ico { font-size: 1.4rem; margin-bottom: 2px; }
+    .cell-lbl { transform: scale(0.85); opacity: 0.8; }
+    .cell-num { position: absolute; top: 2px; left: 2px; font-size: 7px; opacity: 0.3; }
     .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 8px; color: var(--gold); }
-    .cell-level { position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: 900; }
+    .cell-level { position: absolute; top: 2px; right: 2px; font-size: 9px; font-weight: 900; }
     .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
 
     /* Cell Types Colors */
@@ -80,24 +93,24 @@
     .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
 
     /* Game Info Bar */
-    .game-hud { display: flex; gap: 20px; width: 100%; max-width: 700px; justify-content: space-between; margin-bottom: 10px; }
+    .game-hud { display: flex; gap: 10px; width: 100%; max-width: 72vmin; justify-content: space-between; margin-bottom: 5px; }
     .player-panel {
-      flex: 1; background: var(--card-bg); padding: 10px; border-radius: 12px;
+      flex: 1; background: var(--card-bg); padding: 8px; border-radius: 12px;
       border-bottom: 4px solid transparent; transition: 0.3s;
     }
-    .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-5px); background: rgba(255,255,255,0.1); }
-    .p-coins { font-size: 1.4rem; font-weight: bold; color: var(--gold); }
+    .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-3px); background: rgba(255,255,255,0.1); }
+    .p-coins { font-size: 1.2rem; font-weight: bold; color: var(--gold); }
     .p-progress { height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden; }
     .p-bar { height: 100%; transition: 0.5s; }
 
     /* Dice UI */
-    #dice-area { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-    .die { width: 50px; height: 50px; background: white; color: black; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    #dice-area { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+    .die { width: 45px; height: 45px; background: white; color: black; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .die.rolling { animation: dieShake 0.1s infinite; }
 
     /* Logs */
-    #log-container { position: fixed; right: 10px; top: 10px; width: 220px; height: 300px; overflow: hidden; pointer-events: none; }
-    #glog { list-style: none; padding: 0; margin: 0; font-size: 11px; display: flex; flex-direction: column; gap: 5px; }
+    #log-container { position: fixed; right: 10px; top: 10px; width: 180px; height: 250px; overflow: hidden; pointer-events: none; }
+    #glog { list-style: none; padding: 0; margin: 0; font-size: 10px; display: flex; flex-direction: column; gap: 5px; }
     #glog li { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; border-left: 3px solid var(--gold); animation: slideIn 0.3s ease; }
 
     /* Modals */
@@ -180,28 +193,26 @@
     <div class="game-hud">
       <div class="player-panel" id="pp0">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="pav0" style="font-size: 1.5rem;">🦊</span>
-          <span id="pnm0" style="font-weight: bold;">玩家一</span>
+          <span id="pav0" style="font-size: 1.2rem;">🦊</span>
+          <span id="pnm0" style="font-weight: bold; font-size: 0.9rem;">玩家一</span>
           <span id="pskip0" style="visibility: hidden;">⏸</span>
         </div>
         <div class="p-coins"><span id="pcn0">1000</span>💰</div>
-        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;" id="ptag0">🟥 人類玩家</div>
         <div class="p-progress"><div id="pb0" class="p-bar" style="background: var(--p1); width: 33%;"></div></div>
-        <div id="po0" style="font-size: 9px; margin-top: 4px;">佔領：0格</div>
+        <div id="po0" style="font-size: 8px; margin-top: 4px;">佔領：0格</div>
       </div>
 
-      <div id="g-badge" class="g-badge">🎓 普通</div>
+      <div id="g-badge" style="font-size: 0.8rem; padding: 5px 10px; border-radius: 10px; background: rgba(255,255,255,0.1);">普通</div>
 
       <div class="player-panel" id="pp1">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: row-reverse;">
-          <span id="pav1" style="font-size: 1.5rem;">🤖</span>
-          <span id="pnm1" style="font-weight: bold;">電腦</span>
+          <span id="pav1" style="font-size: 1.2rem;">🤖</span>
+          <span id="pnm1" style="font-weight: bold; font-size: 0.9rem;">電腦</span>
           <span id="pskip1" style="visibility: hidden;">⏸</span>
         </div>
         <div class="p-coins" style="text-align: right;"><span id="pcn1">1000</span>💰</div>
-        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6; text-align: right;" id="ptag1">🤖 AI電腦</div>
         <div class="p-progress"><div id="pb1" class="p-bar" style="background: var(--p2); width: 33%;"></div></div>
-        <div id="po1" style="font-size: 9px; margin-top: 4px; text-align: right;">佔領：0格</div>
+        <div id="po1" style="font-size: 8px; margin-top: 4px; text-align: right;">佔領：0格</div>
       </div>
     </div>
 
@@ -212,15 +223,15 @@
         <div id="die0" class="die">⚀</div>
         <div id="die1" class="die">⚀</div>
         <div style="display: flex; flex-direction: column;">
-          <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
-          <span id="dice-total" style="font-size: 0.8rem; text-align: center; color: var(--gold);">點擊擲骰</span>
+          <button class="btn" id="btnroll" onclick="rollDice()" style="padding: 10px 30px; font-size: 1rem;">擲骰子</button>
+          <span id="dice-total" style="font-size: 0.7rem; text-align: center; color: var(--gold);">點擊擲骰</span>
         </div>
       </div>
     </div>
 
-    <div style="margin-top: 15px; font-weight: bold; color: var(--gold);" id="g-turn">🦊 玩家一 的回合</div>
+    <div style="margin-top: 10px; font-weight: bold; color: var(--gold); font-size: 0.9rem;" id="g-turn">🦊 玩家一 的回合</div>
     <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 12px;">放棄遊戲</button>
+    <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 11px;">放棄遊戲</button>
   </div>
 
   <div id="qmodal" class="modal">
@@ -329,7 +340,7 @@ const QB = {
     {q:"下列何者不是孔學的影響？",a:"B",opts:["(A)百家相繼興起","(B)官學從此消失","(C)促進階級流動","(D)開創師生共學團體"]},
     {q:"職業戲班俗稱？",a:"D",opts:["(A)崑園","(B)京園","(C)旗園","(D)梨園"]},
     {q:"唐宋以後「家家觀世音，戶戶阿彌陀」主要原因？",a:"A",opts:["(A)教義思想的中國化","(B)僧侶積極布施","(C)士大夫的崇信","(D)寺院財產龐大"]},
-    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
+    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配合宜","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
     {q:"「穿針乞巧」與哪個節日有關？",a:"D",opts:["(A)上元節","(B)元宵節","(C)端午節","(D)七夕節"]},
     {q:"過年時吃水餃，象徵什麼？",a:"C",opts:["(A)健康","(B)團圓","(C)財富","(D)平安"]},
     {q:"「菩提本無樹，明鏡亦非台」是哪個宗派？",a:"A",opts:["(A)禪宗","(B)密宗","(C)天台宗","(D)華嚴宗"]},
@@ -343,7 +354,7 @@ const QB = {
     {q:"下列哪一種非佛教特有建築？",a:"D",opts:["(A)寺院","(B)寶塔","(C)經幢","(D)華表"]},
     {q:"台灣著名的「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
     {q:"下列何者為新大陸引進的作物？",a:"A",opts:["(A)番薯","(B)胡椒","(C)西瓜","(D)洋蔥"]},
-    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
+    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、豬肉","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
     {q:"日語與台語稱麵包為「PANG」，淵源哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
     {q:"西周封建宗法制度依何種關係建立準則？",a:"C",opts:["(A)行業職能","(B)才識表現","(C)血緣尊卑","(D)社經地位"]},
     {q:"記錄家族世系及成員關係的文書稱為？",a:"B",opts:["(A)家法","(B)家譜","(C)家學","(D)家風"]},
@@ -376,7 +387,7 @@ const QB = {
     {q:"「變本加____」正確填入？",a:"A",opts:["(A)厲","(B)利","(C)力","(D)勵"]},
     {q:"「走投____路」正確填入？",a:"C",opts:["(A)謀","(B)沒","(C)無","(D)埋"]},
     {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
-    {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)茅","(C)毛","(D)錨"]},
+    {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)矛","(C)毛","(D)錨"]},
     {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
     {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
     {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
@@ -396,13 +407,13 @@ const QB = {
     {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受驚後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
     {q:"「水落石出」現在多比喻？",a:"B",opts:["(A)風景優美","(B)事情真相大白","(C)潮汐規律","(D)資源匱乏"]},
     {q:"「差之毫釐，失之____」？",a:"B",opts:["(A)萬丈","(B)千里","(C)百里","(D)須臾"]},
-    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
+    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
     {q:"「罄竹難書」通常形容？",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
     {q:"下列成語，褒貶色彩與其他三個不同的是？",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
     {q:"「揚湯止沸」與哪個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
-    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境優越","(B)歷經磨難","(C)心情輕鬆","(D)衣食無虞"]},
+    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境極優越","(B)歷經磨難","(C)心情極輕鬆","(D)衣食無虞"]},
     {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
-    {q:"成語「一鳴驚人」主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
+    {q:"成語「一鳴驚人」的主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
     {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
     {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
   ],
@@ -636,8 +647,10 @@ function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title')
 // ============================================================
 function buildBoard() {
   const board = document.getElementById('board'); board.innerHTML='';
-  const S=BOARD_SIZE; const CELL_PX = Math.min(Math.floor((Math.min(window.innerWidth,700)-40)/(S)),66);
-  board.style.gridTemplateColumns=`repeat(${S},${CELL_PX}px)`; board.style.gridTemplateRows=`repeat(${S},${CELL_PX}px)`;
+  const S=BOARD_SIZE; 
+  /* 改為分配比例，讓棋盤內容隨容器縮放 */
+  board.style.gridTemplateColumns=`repeat(${S}, 1fr)`; 
+  board.style.gridTemplateRows=`repeat(${S}, 1fr)`;
   const cells = {}; for(let r=0;r<S;r++) for(let c=0;c<S;c++) {
     const div=document.createElement('div'); div.style.gridRow=r+1; div.style.gridColumn=c+1;
     if(r===0||r===S-1||c===0||c===S-1) { cells[`${r},${c}`]=div; board.appendChild(div); }
