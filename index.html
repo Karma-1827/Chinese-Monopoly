@@ -102,8 +102,13 @@
       margin-bottom: 5px; 
     }
     .player-panel {
-      flex: 1; background: var(--card-bg); padding: 8px; border-radius: 12px;
-      border-bottom: 4px solid transparent; transition: 0.3s;
+      flex: 0 1 42%; /* 稍微縮小比例讓兩者更靠近 */
+      background: var(--card-bg); 
+      padding: 8px 12px; 
+      border-radius: 12px;
+      border-bottom: 4px solid transparent; 
+      transition: 0.3s;
+      overflow: hidden; /* 確保內容不溢出 */
     }
     .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-3px); background: rgba(255,255,255,0.1); }
     .p-coins { font-size: 1.2rem; font-weight: bold; color: var(--gold); }
@@ -199,25 +204,27 @@
   <div id="s-game" class="screen">
     <div class="game-hud">
       <div class="player-panel" id="pp0">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
           <span id="pav0" style="font-size: 1.2rem;">🦊</span>
           <span id="pnm0" style="font-weight: bold; font-size: 0.9rem;">玩家一</span>
+          <span id="pcn0" style="font-weight: bold; color: var(--gold); margin-left: auto;">1000💰</span>
           <span id="pskip0" style="visibility: hidden;">⏸</span>
         </div>
-        <div class="p-coins"><span id="pcn0">1000</span>💰</div>
         <div class="p-progress"><div id="pb0" class="p-bar" style="background: var(--p1); width: 33%;"></div></div>
         <div id="po0" style="font-size: 8px; margin-top: 4px;">佔領：0格</div>
       </div>
 
-      <div id="g-badge" style="font-size: 0.8rem; padding: 5px 10px; border-radius: 10px; background: rgba(255,255,255,0.1);">普通</div>
+      <div id="g-badge" style="font-size: 0.9rem; color: rgba(255,255,255,0.7); font-weight: 500;">
+        遊戲載入中...
+      </div>
 
       <div class="player-panel" id="pp1">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: row-reverse;">
+        <div style="display: flex; align-items: center; gap: 8px; width: 100%; flex-direction: row-reverse;">
           <span id="pav1" style="font-size: 1.2rem;">🤖</span>
           <span id="pnm1" style="font-weight: bold; font-size: 0.9rem;">電腦</span>
+          <span id="pcn1" style="font-weight: bold; color: var(--gold); margin-right: auto;">1000💰</span>
           <span id="pskip1" style="visibility: hidden;">⏸</span>
         </div>
-        <div class="p-coins" style="text-align: right;"><span id="pcn1">1000</span>💰</div>
         <div class="p-progress"><div id="pb1" class="p-bar" style="background: var(--p2); width: 33%;"></div></div>
         <div id="po1" style="font-size: 8px; margin-top: 4px; text-align: right;">佔領：0格</div>
       </div>
@@ -645,7 +652,23 @@ function startGame() {
   G.players[0].name=n1; G.players[1].name=n2; G.players[0].coins=1000; G.players[1].coins=1000;
   G.players[0].pos=0; G.players[1].pos=0; G.turn=0; G.round=0; G.gameOver=false;
   G.cellOwner=Array(40).fill(-1); G.cellLevel=Array(40).fill(0);
-  buildBoard(); updateUI(); goTo('s-game'); setTimeout(()=>startBGM(),300); setTimeout(()=>beginTurn(),600);
+
+  // --- 新增：動態更新模式文字邏輯 ---
+  const badge = document.getElementById('g-badge');
+  const labels = {
+    easy: '🌱 簡單模式',
+    normal: '🎓 普通模式',
+    hard: '🔥 困難模式'
+  };
+  // 根據 G.diff 取得對應的文字，若無匹配則預設顯示普通模式
+  badge.innerText = labels[G.diff] || '🎓 普通模式';
+  // ------------------------------
+
+  buildBoard(); 
+  updateUI(); 
+  goTo('s-game'); 
+  setTimeout(()=>startBGM(),300); 
+  setTimeout(()=>beginTurn(),600);
 }
 function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title'); }
 
