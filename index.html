@@ -74,9 +74,12 @@
       font-size: 9px; font-weight: bold; cursor: default; transition: 0.2s;
     }
     .cell-ico { font-size: 1.4rem; margin-bottom: 2px; }
-    .cell-lbl { transform: scale(0.85); opacity: 0.8; }
-    .cell-num { position: absolute; top: 2px; left: 2px; font-size: 7px; opacity: 0.3; }
-    .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 8px; color: var(--gold); }
+    .cell-num, .cell-lbl {
+      display: none !important;
+    }
+    .cell-ico {
+      font-size: 2rem;
+    }    
     .cell-level { position: absolute; top: 2px; right: 2px; font-size: 9px; font-weight: 900; }
     .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
 
@@ -712,17 +715,51 @@ function buildBoard() {
   placeTokens();
 }
 
-function renderCell(div,i) {
-  const def=CELL_DEFS[i]; const owner=G.cellOwner[i]; const level=G.cellLevel[i];
-  let typeClass='';
-  if(def.type==='start') typeClass='ct-start'; else if(def.type==='question') typeClass=`ct-q-${def.qtype}`;
-  else if(def.type==='lucky') typeClass='ct-lucky'; else if(def.type==='forward') typeClass='ct-forward';
-  else if(def.type==='backward') typeClass='ct-backward'; else if(def.type==='skip') typeClass='ct-skip';
-  else if(def.type==='teleport') typeClass='ct-teleport';
-  div.className=`cell ${typeClass} ${owner===0?'own-0':(owner===1?'own-1':'')}`;
-  let rentHtml= (def.type==='question'&&owner>=0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
-  let levelHtml= (owner>=0&&level>0) ? `<div class="cell-level" style="color:${owner===0?'var(--p1)':'var(--p2)'}">${['','★','★★','★★★'][level]}</div>` : '';
-  div.innerHTML=`<div class="cell-num">${i}</div><div class="cell-ico">${def.ico}</div><div class="cell-lbl">${def.label}</div>${rentHtml}${levelHtml}<div id="tok-${i}" style="position:absolute;bottom:1px;left:0;right:0;display:flex;justify-content:center;gap:2px;z-index:20"></div>`;
+function renderCell(div, i) {
+  const def = CELL_DEFS[i];
+  const owner = G.cellOwner[i];
+  const level = G.cellLevel[i];
+  let typeClass = '';
+
+  // --- 修改邏輯：根據 G.diff 決定顯示的 Emoji ---
+  let displayIco = def.ico;
+  let displayLabel = def.label;
+
+  if (def.type === 'question') {
+    if (G.diff === 'easy') {
+      displayIco = '🔮';  // 簡單模式全部強制顯示字謎圖示
+      displayLabel = '字謎';
+    } else if (G.diff === 'hard') {
+      displayIco = '🌟';  // 困難模式全部強制顯示綜合圖示
+      displayLabel = '綜合';
+    } else {
+      // 普通模式：維持原本 CELL_DEFS 的分配 (文化+成語)
+      // 但我們確保不出現簡單或困難的圖示
+      if (def.qtype === 'riddle' || def.qtype === 'general') {
+         // 如果格子本來是字謎或綜合，在普通模式下隨機轉為文化或成語
+         const isIdiom = i % 2 === 0;
+         displayIco = isIdiom ? '📚' : '🏛️';
+         displayLabel = isIdiom ? '成語' : '文化';
+      }
+    }
+  }
+  // ------------------------------------------
+
+  if (def.type === 'start') typeClass = 'ct-start';
+  else if (def.type === 'question') typeClass = `ct-q-${def.qtype}`;
+  else if (def.type === 'lucky') typeClass = 'ct-lucky';
+  else if (def.type === 'forward') typeClass = 'ct-forward';
+  else if (def.type === 'backward') typeClass = 'ct-backward';
+  else if (def.type === 'skip') typeClass = 'ct-skip';
+  else if (def.type === 'teleport') typeClass = 'ct-teleport';
+
+  div.className = `cell ${typeClass} ${owner === 0 ? 'own-0' : (owner === 1 ? 'own-1' : '')}`;
+  
+  let rentHtml = (def.type === 'question' && owner >= 0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
+  let levelHtml = (owner >= 0 && level > 0) ? `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>` : '';
+
+  // 使用我們動態判斷後的 displayIco 和 displayLabel
+  div.innerHTML = `<div class="cell-num">${i}</div><div class="cell-ico">${displayIco}</div><div class="cell-lbl">${displayLabel}</div>${rentHtml}${levelHtml}<div id="tok-${i}" style="position:absolute;bottom:1px;left:0;right:0;display:flex;justify-content:center;gap:2px;z-index:20"></div>`;
 }
 
 function refreshCell(i) { const div=document.getElementById(`cell-${i}`); if(div) renderCell(div,i); }
