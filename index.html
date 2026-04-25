@@ -162,6 +162,12 @@
     .q-result { padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
     .q-result.ok { background: rgba(46, 204, 113, 0.2); color: var(--green); }
     .q-result.ng { background: rgba(231, 76, 60, 0.2); color: var(--red); }
+
+    #turn-p0, #turn-p1 {
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      border: 2px solid white;
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
@@ -243,7 +249,14 @@
       </div>
     </div>
 
-    <div style="margin-top: 10px; font-weight: bold; color: var(--gold); font-size: 0.9rem;" id="g-turn">🦊 玩家一 的回合</div>
+    <div id="turn-indicator-container" style="position: absolute; width: 72vmin; display: flex; justify-content: space-between; top: 12%; pointer-events: none;">
+      <div id="turn-p0" style="background: var(--p1); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; animation: fadeIn 0.3s ease;">
+        ⬅️ 玩家回合
+      </div>
+      <div id="turn-p1" style="background: var(--p2); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; animation: fadeIn 0.3s ease;">
+        電腦回合 ➡️
+      </div>
+    </div>
     <div id="log-container"><ul id="glog"></ul></div>
     <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 11px;">放棄遊戲</button>
   </div>
@@ -721,17 +734,50 @@ function placeTokens() {
 // UI UPDATE
 // ============================================================
 function updateUI() {
-  G.players.forEach((p,i)=>{
-    document.getElementById(`pcn${i}`).textContent=p.coins;
-    const pct=Math.min(100,Math.max(0,(p.coins/WINNING_COINS)*100));
-    document.getElementById(`pb${i}`).style.width=pct+'%';
-    document.getElementById(`po${i}`).textContent=`佔領：${Object.keys(p.props).length}格`;
-    const skipEl=document.getElementById(`pskip${i}`); if(p.skipTurn){skipEl.classList.add('visible');}else{skipEl.classList.remove('visible');}
+  G.players.forEach((p, i) => {
+    // 更新金錢 (對應新的同一行 HTML 結構)
+    const coinEl = document.getElementById(`pcn${i}`);
+    if (coinEl) coinEl.textContent = p.coins + "💰";
+
+    // 更新進度條
+    const barEl = document.getElementById(`pb${i}`);
+    if (barEl) {
+      const pct = Math.min(100, Math.max(0, (p.coins / WINNING_COINS) * 100));
+      barEl.style.width = pct + '%';
+    }
+
+    // 更新佔領格數
+    const ownedEl = document.getElementById(`po${i}`);
+    if (ownedEl) ownedEl.textContent = `佔領：${Object.keys(p.props).length}格`;
+
+    // 更新暫停狀態
+    const skipEl = document.getElementById(`pskip${i}`);
+    if (skipEl) {
+      if (p.skipTurn) { skipEl.classList.add('visible'); } 
+      else { skipEl.classList.remove('visible'); }
+    }
   });
-  document.getElementById('pp0').classList.toggle('my-turn',G.turn===0&&!G.gameOver);
-  document.getElementById('pp1').classList.toggle('my-turn',G.turn===1&&!G.gameOver);
-  const p=G.players[G.turn]; document.getElementById('g-turn').textContent=`${G.turn===0?'🦊':'🤖'} ${p.name} 的回合`;
-  document.getElementById('btnroll').disabled=G.rolling||G.waitAns||(G.mode==='ai'&&G.turn===1)||G.gameOver;
+
+  // --- 核心改動：左右回合指示燈控制 ---
+  const t0 = document.getElementById('turn-p0');
+  const t1 = document.getElementById('turn-p1');
+  
+  // 移除舊的 g-turn 邏輯，改為控制 visibility
+  if (!G.gameOver) {
+    t0.style.visibility = (G.turn === 0) ? 'visible' : 'hidden';
+    t1.style.visibility = (G.turn === 1) ? 'visible' : 'hidden';
+  } else {
+    t0.style.visibility = 'hidden';
+    t1.style.visibility = 'hidden';
+  }
+
+  // 高亮當前玩家框框
+  document.getElementById('pp0').classList.toggle('my-turn', G.turn === 0 && !G.gameOver);
+  document.getElementById('pp1').classList.toggle('my-turn', G.turn === 1 && !G.gameOver);
+
+  // 擲骰子按鈕禁用邏輯
+  const isAI = G.mode === 'ai' && G.turn === 1;
+  document.getElementById('btnroll').disabled = G.rolling || G.waitAns || isAI || G.gameOver;
 }
 
 // ============================================================
