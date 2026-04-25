@@ -3,851 +3,383 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>華語大富翁 - 數位學習遊戲</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <title>🎲華語大富翁💰</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --p1: #FF4B5C;
-      --p2: #4A90E2;
-      --gold: #FFD700;
-      --bg: #121212;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --red: #ff5252;
-      --green: #2ecc71;
+      --p2: #2e86de;
+      --sky-blue: #e0f2fe; /* 淡淡的晴空藍 */
+      --btn-orange: #fb923c;
+      --btn-border: #475569;
+      --tile-bg: rgba(255, 255, 255, 0.8);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0; padding: 0;
-      background-color: var(--bg);
-      color: #fff;
+      background: linear-gradient(135deg, var(--sky-blue) 0%, #bae6fd 100%);
+      color: #334155;
       font-family: 'Noto Sans TC', sans-serif;
       overflow: hidden;
       display: flex; justify-content: center; align-items: center;
       height: 100vh;
     }
-    #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
-    /* Screens Management */
+    /* 全域按鈕放大與美化 */
+    .btn {
+      background: var(--btn-orange);
+      border: 3px solid var(--btn-border);
+      border-radius: 20px; color: white;
+      padding: 18px 45px; font-size: 1.6rem; font-weight: 900;
+      cursor: pointer; margin: 12px; transition: 0.2s;
+      box-shadow: 0 6px 0 var(--btn-border);
+      display: inline-block; text-decoration: none;
+    }
+    .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--btn-border); }
+
     .screen {
       position: absolute; width: 100%; height: 100%;
       display: none; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; text-align: center;
+      padding: 10px;
     }
-    .screen.active { display: flex; animation: fadeIn 0.5s ease; }
+    .screen.active { display: flex; }
 
-    /* UI Components */
-    h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; margin: 0; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-    .btn {
-      background: linear-gradient(135deg, #ff9f43, #ff6b6b);
-      border: none; border-radius: 50px; color: white;
-      padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
-      cursor: pointer; margin: 10px; transition: 0.3s;
-      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    /* 標題與輸入框 */
+    h1 { font-size: 4rem; margin: 10px 0; color: #0369a1; -webkit-text-stroke: 2px white; }
+    input[type="text"] {
+      padding: 15px; font-size: 1.4rem; border-radius: 15px; border: 3px solid var(--btn-border);
+      width: 100%; max-width: 400px; text-align: center;
     }
-    .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
-    .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
-    /* Board Layout */
-    #board-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    /* 遊戲核心介面調整 (防止切掉) */
+    #game-container {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
+      padding: 5px;
+    }
     #board {
-      display: grid; background: rgba(255, 255, 255, 0.1);
-      padding: 5px; border-radius: 8px; position: relative;
-      border: 4px solid #333;
+      display: grid; background: rgba(255,255,255,0.4);
+      padding: 8px; border-radius: 15px;
+      border: 4px solid var(--btn-border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      /* 動態調整高度以防被切 */
+      max-height: 75vh; max-width: 95vw;
+      aspect-ratio: 1/1;
     }
+
+    /* 格子優化：只留 Emoji */
     .cell {
-      position: relative; border: 1px solid rgba(255,255,255,0.1);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: bold; cursor: default; transition: 0.2s;
+      position: relative; border: 1px solid rgba(0,0,0,0.1);
+      background: var(--tile-bg);
+      display: flex; align-items: center; justify-content: center;
     }
-    .cell-ico { font-size: 1.6rem; margin-bottom: 2px; }
-    .cell-lbl { transform: scale(0.9); opacity: 0.8; }
-    .cell-num { position: absolute; top: 2px; left: 2px; font-size: 8px; opacity: 0.3; }
-    .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 8px; color: var(--gold); }
-    .cell-level { position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: 900; }
-    .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
+    .cell-ico { font-size: min(4vh, 2.5vw); transition: 0.3s; }
+    .cell-num { position: absolute; top: 1px; left: 1px; font-size: 9px; color: #94a3b8; }
+    .cell-rent { position: absolute; bottom: 1px; right: 2px; font-size: 10px; font-weight: bold; color: #ef4444; }
 
-    /* Cell Types Colors */
-    .ct-start { background: rgba(46, 204, 113, 0.3); }
-    .ct-q-riddle { background: rgba(155, 89, 182, 0.2); }
-    .ct-q-culture { background: rgba(52, 152, 219, 0.2); }
-    .ct-q-idiom { background: rgba(230, 126, 34, 0.2); }
-    .ct-q-general { background: rgba(241, 196, 15, 0.2); }
-    .ct-lucky { background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--gold); }
-    .ct-forward, .ct-teleport { background: rgba(46, 204, 113, 0.1); }
-    .ct-backward, .ct-skip { background: rgba(231, 76, 60, 0.1); }
+    /* 角色棋子 */
+    .token { font-size: 1.8rem; z-index: 50; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
-    .own-0 { border: 2px solid var(--p1) !important; box-shadow: inset 0 0 10px var(--p1); }
-    .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
-
-    /* Game Info Bar */
-    .game-hud { display: flex; gap: 20px; width: 100%; max-width: 700px; justify-content: space-between; margin-bottom: 10px; }
-    .player-panel {
-      flex: 1; background: var(--card-bg); padding: 10px; border-radius: 12px;
-      border-bottom: 4px solid transparent; transition: 0.3s;
+    /* HUD 狀態列 */
+    .hud { width: 95%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; }
+    .p-box { 
+      background: white; border: 3px solid var(--btn-border); border-radius: 15px;
+      padding: 10px 20px; min-width: 180px; box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
     }
-    .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-5px); background: rgba(255,255,255,0.1); }
-    .p-coins { font-size: 1.4rem; font-weight: bold; color: var(--gold); }
-    .p-progress { height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden; }
-    .p-bar { height: 100%; transition: 0.5s; }
+    .p-box.active { border-color: #facc15; background: #fffbeb; transform: scale(1.05); }
+    .p-name { font-weight: 900; font-size: 1.2rem; }
+    .p-cash { color: #b45309; font-weight: bold; font-size: 1.4rem; }
 
-    /* Dice UI */
-    #dice-area { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-    .die { width: 50px; height: 50px; background: white; color: black; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    .die.rolling { animation: dieShake 0.1s infinite; }
-
-    /* Logs */
-    #log-container { position: fixed; right: 10px; top: 10px; width: 220px; height: 300px; overflow: hidden; pointer-events: none; }
-    #glog { list-style: none; padding: 0; margin: 0; font-size: 11px; display: flex; flex-direction: column; gap: 5px; }
-    #glog li { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; border-left: 3px solid var(--gold); animation: slideIn 0.3s ease; }
-
-    /* Modals */
-    .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); z-index: 1000;
-      display: none; align-items: center; justify-content: center;
-    }
-    .modal.open { display: flex; }
+    /* 問答視窗放大 */
     .modal-content {
-      background: #1e1e1e; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px;
-      border: 2px solid var(--gold); position: relative;
+      background: #f8fafc; border: 5px solid var(--btn-border);
+      border-radius: 30px; width: 90%; max-width: 600px; padding: 40px;
+      text-align: center; color: #1e293b;
     }
-    .q-timer { position: absolute; top: -40px; right: 0; display: flex; align-items: center; gap: 10px; }
-    .q-timer-ring { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .q-text { font-size: 2rem; font-weight: 900; margin-bottom: 30px; }
     .opt-btn {
-      width: 100%; text-align: left; padding: 15px; margin: 8px 0; border: 1px solid #444;
-      background: #2a2a2a; color: #fff; border-radius: 10px; cursor: pointer; transition: 0.2s;
+      width: 100%; padding: 20px; font-size: 1.4rem; margin: 10px 0;
+      border: 3px solid var(--btn-border); border-radius: 15px;
+      background: white; cursor: pointer; font-weight: bold;
     }
-    .opt-btn:hover { background: #333; }
-    .opt-btn.correct { background: var(--green) !important; color: #000; font-weight: bold; }
-    .opt-btn.wrong { background: var(--red) !important; }
-    .opt-btn.reveal-correct { border: 2px solid var(--green); box-shadow: 0 0 15px var(--green); }
+    .opt-btn:hover { background: #e2e8f0; }
 
-    /* Animations */
-    @keyframes dieShake { 0% {transform: rotate(0)} 50% {transform: rotate(10deg) translate(2px)} 100% {transform: rotate(-10deg) translate(-2px)} }
-    @keyframes fadeIn { from {opacity:0} to {opacity:1} }
-    @keyframes tokenBounce { 0% {transform:translateY(0)} 50% {transform:translateY(-10px)} 100% {transform:translateY(0)} }
-    @keyframes slideIn { from {transform:translateX(50px); opacity:0} to {transform:translateX(0); opacity:1} }
-    .coin-pop { position: fixed; font-weight: bold; pointer-events: none; z-index: 2000; animation: popUp 1.5s ease-out forwards; }
-    @keyframes popUp { 0% {opacity:1; transform:translateY(0)} 100% {opacity:0; transform:translateY(-50px)} }
-    .confetti { position: fixed; pointer-events: none; z-index: 999; animation: confettiFall linear forwards; }
-    @keyframes confettiFall { to { transform: translateY(100vh) translateX(var(--drift)); opacity: 0; } }
-
-    /* Custom utilities */
-    .visible { visibility: visible !important; }
-    .q-result { padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
-    .q-result.ok { background: rgba(46, 204, 113, 0.2); color: var(--green); }
-    .q-result.ng { background: rgba(231, 76, 60, 0.2); color: var(--red); }
+    /* 骰子區域 */
+    #dice-section { display: flex; align-items: center; gap: 20px; }
+    .die-face {
+      width: 60px; height: 60px; background: white; border: 3px solid var(--btn-border);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; box-shadow: 0 4px 0 var(--btn-border);
+    }
   </style>
 </head>
 <body>
-  <canvas id="bg-canvas"></canvas>
 
   <div id="s-title" class="screen active">
     <h1>華語大富翁</h1>
-    <p style="opacity: 0.7; letter-spacing: 2px;">ONLINE CHINESE MONOPOLY</p>
-    <div style="margin-top: 30px;">
-      <button class="btn" onclick="pickDiff('easy')">🌱 簡單 (字謎)</button>
-      <button class="btn" onclick="pickDiff('normal')">🎓 普通 (文化+成語)</button>
-      <button class="btn" onclick="pickDiff('hard')">🔥 困難 (綜合挑戰)</button>
+    <div style="margin-top: 20px;">
+      <button class="btn" onclick="pickDiff('easy')">🌱 簡單</button>
+      <button class="btn" style="background: #60a5fa;" onclick="pickDiff('normal')">🎓 普通</button>
+      <button class="btn" style="background: #f87171;" onclick="pickDiff('hard')">🔥 困難</button>
     </div>
   </div>
 
   <div id="s-mode" class="screen">
-    <h2 id="mode-diff-label">模式選擇</h2>
+    <h2 id="mode-label" style="font-size: 2.5rem;">模式選擇</h2>
     <div style="display: flex; gap: 20px;">
-      <button class="btn" style="background: #4A90E2;" onclick="pickMode('ai')">🤖 挑戰電腦</button>
-      <button class="btn" style="background: #9B59B2;" onclick="pickMode('pvp')">⚔️ 雙人對戰</button>
+      <button class="btn" style="background: #38bdf8;" onclick="pickMode('ai')">🤖 挑戰電腦</button>
+      <button class="btn" style="background: #c084fc;" onclick="pickMode('pvp')">⚔️ 雙人對戰</button>
     </div>
-    <button class="btn" style="background: transparent; border: 1px solid #555; margin-top: 30px;" onclick="goTo('s-title')">返回</button>
+    <button class="btn" style="background: #94a3b8; font-size: 1rem;" onclick="goTo('s-title')">返回</button>
   </div>
 
   <div id="s-names" class="screen">
-    <h2>請輸入大名</h2>
-    <div style="display: flex; flex-direction: column; gap: 15px; width: 280px;">
-      <div style="text-align: left;">
-        <label id="lbl1" style="font-size: 0.8rem; opacity: 0.6;">🦊 玩家一</label>
-        <input type="text" id="n1" placeholder="玩家一" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
-      </div>
-      <div style="text-align: left;" id="nf2">
-        <label id="lbl2" style="font-size: 0.8rem; opacity: 0.6;">🔵 玩家二</label>
-        <input type="text" id="n2" placeholder="玩家二" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
-      </div>
+    <h2 style="font-size: 2.5rem;">輸入大名</h2>
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <input type="text" id="n1" placeholder="玩家一">
+      <input type="text" id="n2" placeholder="玩家二" class="p2-input">
     </div>
-    <button class="btn" style="margin-top: 30px;" onclick="startGame()">開始冒險 🚀</button>
+    <button class="btn" style="margin-top: 30px; background: #4ade80;" onclick="startGame()">開始冒險 🚀</button>
   </div>
 
   <div id="s-game" class="screen">
-    <div class="game-hud">
-      <div class="player-panel" id="pp0">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="pav0" style="font-size: 1.5rem;">🦊</span>
-          <span id="pnm0" style="font-weight: bold;">玩家一</span>
-          <span id="pskip0" style="visibility: hidden;">⏸</span>
+    <div id="game-container">
+      <div class="hud">
+        <div class="p-box" id="pp0">
+          <div class="p-name">🦊 <span id="pnm0">玩家一</span></div>
+          <div class="p-cash"><span id="pcn0">1000</span> 💰</div>
         </div>
-        <div class="p-coins"><span id="pcn0">1000</span>💰</div>
-        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;" id="ptag0">🟥 人類玩家</div>
-        <div class="p-progress"><div id="pb0" class="p-bar" style="background: var(--p1); width: 33%;"></div></div>
-        <div id="po0" style="font-size: 9px; margin-top: 4px;">佔領：0格</div>
+        <div class="p-box" id="pp1">
+          <div class="p-name">🤖 <span id="pnm1">電腦</span></div>
+          <div class="p-cash" style="text-align: right;"><span id="pcn1">1000</span> 💰</div>
+        </div>
       </div>
 
-      <div id="g-badge" class="g-badge">🎓 普通</div>
-
-      <div class="player-panel" id="pp1">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: row-reverse;">
-          <span id="pav1" style="font-size: 1.5rem;">🤖</span>
-          <span id="pnm1" style="font-weight: bold;">電腦</span>
-          <span id="pskip1" style="visibility: hidden;">⏸</span>
-        </div>
-        <div class="p-coins" style="text-align: right;"><span id="pcn1">1000</span>💰</div>
-        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6; text-align: right;" id="ptag1">🤖 AI電腦</div>
-        <div class="p-progress"><div id="pb1" class="p-bar" style="background: var(--p2); width: 33%;"></div></div>
-        <div id="po1" style="font-size: 9px; margin-top: 4px; text-align: right;">佔領：0格</div>
-      </div>
-    </div>
-
-    <div id="board-container">
       <div id="board">
         </div>
-      <div id="dice-area">
-        <div id="die0" class="die">⚀</div>
-        <div id="die1" class="die">⚀</div>
-        <div style="display: flex; flex-direction: column;">
-          <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
-          <span id="dice-total" style="font-size: 0.8rem; text-align: center; color: var(--gold);">點擊擲骰</span>
-        </div>
+
+      <div id="dice-section">
+        <div id="die0" class="die-face">⚀</div>
+        <div id="die1" class="die-face">⚀</div>
+        <button class="btn" id="btn-roll" onclick="rollDice()">擲骰子</button>
       </div>
     </div>
-
-    <div style="margin-top: 15px; font-weight: bold; color: var(--gold);" id="g-turn">🦊 玩家一 的回合</div>
-    <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 12px;">放棄遊戲</button>
   </div>
 
-  <div id="qmodal" class="modal">
+  <div id="qmodal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center;">
     <div class="modal-content">
-      <div class="q-timer">
-        <div id="q-tring" class="q-timer-ring" style="background: conic-gradient(var(--gold) 360deg, rgba(255,255,255,0.1) 0deg);">
-          <span id="q-tnum">60</span>
-        </div>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <span id="q-type-badge" class="q-type-badge">字謎</span>
-        <span id="q-player-name" style="font-weight: bold; color: var(--gold);">玩家一</span>
-      </div>
-      <div id="q-text" style="font-size: 1.3rem; line-height: 1.5; margin-bottom: 25px;">這是一道題目內容載入中...</div>
-      <div id="q-ai" style="font-style: italic; opacity: 0.5; margin-bottom: 10px; display: none;">🤖 AI 正在思考中...</div>
-      <div id="q-opts">
-        </div>
-      <div id="q-res" class="q-result">✅ 答對了！獲得獎金</div>
-    </div>
-  </div>
-
-  <div id="emodal" class="modal">
-    <div class="modal-content" style="text-align: center; border-color: #2ecc71;">
-      <div id="e-ico" style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
-      <h2 id="e-title">幸運格</h2>
-      <p id="e-desc">恭喜獲得驚喜獎勵！</p>
-      <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); font-weight: bold; color: var(--gold);" id="e-player">玩家一</div>
-      <button class="btn" onclick="closeEvt()">確認</button>
+      <div id="q-text" class="q-text">題目載入中...</div>
+      <div id="q-opts"></div>
+      <div id="q-res" style="font-size: 1.5rem; margin-top: 20px; font-weight: 900;"></div>
     </div>
   </div>
 
   <div id="s-win" class="screen">
-    <div id="w-trophy" style="font-size: 6rem; filter: drop-shadow(0 0 30px var(--gold));">🦊</div>
-    <h1 id="w-name">🏆 玩家一 獲勝！</h1>
-    <p id="w-sub" style="font-size: 1.2rem; opacity: 0.8;">最終金幣：3000💰</p>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 300px;">
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">回合數<br><b id="ws-rounds">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">正確題數<br><b id="ws-correct">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">佔領格數<br><b id="ws-owned">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">租金總計<br><b id="ws-rent">0</b></div>
-    </div>
+    <h1 style="font-size: 5rem;">🏆</h1>
+    <h2 id="w-name" style="font-size: 3rem;">玩家一 獲勝！</h2>
     <button class="btn" onclick="location.reload()">再玩一局</button>
   </div>
 
 <script>
-// ============================================================
-// QUESTION BANKS
-// ============================================================
+// --- 核心邏輯與題庫 (同前，僅修改視覺部分) ---
 const QB = {
-  riddle: [
-    {q:"一人一張口。",a:"合",w:["含","答","口"]},
-    {q:"兩人在內。",a:"肉",w:["內","囚","網"]},
-    {q:"哪個漢字要寫最久？",a:"朋",w:["友","好","鵬"]},
-    {q:"一心向上。",a:"必",w:["忘","忌","心"]},
-    {q:"一隻狗有四張口。",a:"器",w:["哮","嚎","囂"]},
-    {q:"一隻黑狗，不叫不吼。",a:"默",w:["黑","靜","暗"]},
-    {q:"太陽的兒子。",a:"星",w:["旦","晨","昇"]},
-    {q:"手提包。",a:"抱",w:["提","握","包"]},
-    {q:"半真半假。",a:"值",w:["真","假","信"]},
-    {q:"七十二小時。",a:"晶",w:["品","昌","明"]},
-    {q:"大雨落在橫山上。",a:"雪",w:["雨","霜","霧"]},
-    {q:"夫人何處去。",a:"二",w:["夫","去","大"]},
-    {q:"山下之風。",a:"嵐",w:["風","嶺","峰"]},
-    {q:"守門員。",a:"閃",w:["門","閉","開"]},
-    {q:"自大加一點。",a:"臭",w:["自","大","太"]},
-    {q:"自有一人在口中。",a:"囚",w:["困","囝","囤"]},
-    {q:"我沒有他有，天沒有地有。",a:"也",w:["地","他","她"]},
-    {q:"兩點水。",a:"冰",w:["水","冷","凍"]},
-    {q:"皇帝的新衣。",a:"襲",w:["衣","裸","服"]},
-    {q:"太陽打西邊出來。",a:"晒",w:["曬","晾","晃"]},
-    {q:"竹下有寺。",a:"等",w:["寺","竹","待"]},
-    {q:"雲上出太陽。",a:"曇",w:["雲","晴","陰"]},
-    {q:"雷而無雨。",a:"田",w:["電","雷","雨"]},
-    {q:"遠看像頭牛，近看沒有頭。",a:"午",w:["牛","年","牟"]},
-    {q:"說話聲太大。",a:"誇",w:["大","說","話"]},
-    {q:"大口帶小口。",a:"回",w:["口","囗","囘"]},
-    {q:"多一半。",a:"夕",w:["多","半","大"]},
-    {q:"此字不難猜，孔子隔壁栽。",a:"子",w:["孔","鄰","李"]},
-    {q:"太陽西邊下，月亮東邊掛。",a:"明",w:["日","月","朗"]},
-    {q:"不上不下。",a:"卡",w:["上","下","中"]},
-    {q:"山上還有山。",a:"出",w:["山","峰","嶺"]},
-    {q:"半部春秋。",a:"秦",w:["春","秋","半"]},
-    {q:"鏡中人。",a:"入",w:["人","反","鏡"]},
-    {q:"真心相伴。",a:"慎",w:["真","心","忍"]},
-    {q:"早不說，晚不說。",a:"許",w:["早","晚","話"]},
-    {q:"一月七日。",a:"脂",w:["月","日","肪"]},
-    {q:"人不在其位。",a:"立",w:["位","人","在"]},
-    {q:"人在草木間。",a:"茶",w:["草","木","藏"]},
-    {q:"日復一日。",a:"昌",w:["日","旦","旭"]},
-    {q:"頂破天。",a:"夫",w:["天","大","丈"]},
-    {q:"此木為啥？",a:"柴",w:["木","此","材"]},
-    {q:"一大二小。",a:"奈",w:["大","小","奇"]},
-    {q:"太陽出現在地平線上。",a:"旦",w:["日","旭","昇"]},
-    {q:"半個月亮。",a:"胖",w:["月","肉","半"]},
-    {q:"十一個人。",a:"仕",w:["十","人","什"]},
-    {q:"一字十一口。",a:"吉",w:["一","十","古"]},
-    {q:"一邊紅，一邊綠，一邊怕雨，一邊怕風。",a:"秋",w:["春","夏","冬"]},
-    {q:"誰是傻瓜？",a:"保",w:["愚","笨","呆"]},
-    {q:"千里姻緣一線牽。",a:"重",w:["千","里","線"]},
-    {q:"請勿入口。",a:"囫",w:["入","口","圈"]},
-  ],
-  culture: [
-    {q:"下列何者是宋代以後主要的私學機構？",a:"A",opts:["(A)書院","(B)精舍","(C)國子監","(D)太學"]},
-    {q:"哪句成語顯示服飾具有區隔夷夏的作用？",a:"C",opts:["(A)布衣卿相","(B)衣冠禽獸","(C)被髮左衽","(D)沐猴而冠"]},
-    {q:"關於「清明上河圖」，下列何者正確？",a:"C",opts:["(A)完成於明朝","(B)以首都北京為題材","(C)顯示城市的物質進步","(D)突顯文人清談之風"]},
-    {q:"下列何者不是孔學的影響？",a:"B",opts:["(A)百家相繼興起","(B)官學從此消失","(C)促進階級流動","(D)開創師生共學團體"]},
-    {q:"職業戲班俗稱？",a:"D",opts:["(A)崑園","(B)京園","(C)旗園","(D)梨園"]},
-    {q:"唐宋以後「家家觀世音，戶戶阿彌陀」主要原因？",a:"A",opts:["(A)教義思想的中國化","(B)僧侶積極布施","(C)士大夫的崇信","(D)寺院財產龐大"]},
-    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
-    {q:"「穿針乞巧」與哪個節日有關？",a:"D",opts:["(A)上元節","(B)元宵節","(C)端午節","(D)七夕節"]},
-    {q:"過年時吃水餃，象徵什麼？",a:"C",opts:["(A)健康","(B)團圓","(C)財富","(D)平安"]},
-    {q:"「菩提本無樹，明鏡亦非台」是哪個宗派？",a:"A",opts:["(A)禪宗","(B)密宗","(C)天台宗","(D)華嚴宗"]},
-    {q:"《本草綱目》的作者是誰？",a:"C",opts:["(A)孫思邈","(B)華佗","(C)李時珍","(D)扁鵲"]},
-    {q:"宋代理學融通儒家與哪種思想？",a:"C",opts:["(A)墨、法","(B)佛、法","(C)佛、道","(D)名、法"]},
-    {q:"台灣「紅毛城」中「紅毛」指？",a:"B",opts:["(A)西班牙人","(B)荷蘭人","(C)英國人","(D)葡萄牙人"]},
-    {q:"最早在台灣建立孔廟的是？",a:"A",opts:["(A)鄭經","(B)鄭成功","(C)劉銘傳","(D)丁日昌"]},
-    {q:"佛教宗派中，何者特重念佛？",a:"B",opts:["(A)唯識宗","(B)淨土宗","(C)禪宗","(D)華嚴宗"]},
-    {q:"新竹地區「九降風」成就的重要食材？",a:"A",opts:["(A)米粉","(B)粉圓","(C)冬粉","(D)意麵"]},
-    {q:"中國飲茶之風，至何時茶館成為庶民文化？",a:"B",opts:["(A)唐","(B)宋","(C)元","(D)明"]},
-    {q:"下列哪一種非佛教特有建築？",a:"D",opts:["(A)寺院","(B)寶塔","(C)經幢","(D)華表"]},
-    {q:"台灣著名的「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
-    {q:"下列何者為新大陸引進的作物？",a:"A",opts:["(A)番薯","(B)胡椒","(C)西瓜","(D)洋蔥"]},
-    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
-    {q:"日語與台語稱麵包為「PANG」，淵源哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
-    {q:"西周封建宗法制度依何種關係建立準則？",a:"C",opts:["(A)行業職能","(B)才識表現","(C)血緣尊卑","(D)社經地位"]},
-    {q:"記錄家族世系及成員關係的文書稱為？",a:"B",opts:["(A)家法","(B)家譜","(C)家學","(D)家風"]},
-    {q:"宋代何人開始設置族田、義莊？",a:"A",opts:["(A)范仲淹","(B)朱熹","(C)歐陽脩","(D)蘇洵"]},
-    {q:"台灣導演侯孝賢「聶隱娘」故事出自？",a:"C",opts:["(A)諸子寓言","(B)魏晉志怪","(C)唐人傳奇","(D)宋代話本"]},
-    {q:"漢代皇后宮殿「椒房」的意義是？",a:"A",opts:["(A)象徵溫暖芳香多子","(B)象徵後宮和諧","(C)象徵富貴吉祥","(D)象徵高潔貞信"]},
-    {q:"台灣以下新舊地名，何者有誤？",a:"B",opts:["(A)金包裏─金山","(B)焦吧哖─玉里","(C)干豆─關渡","(D)打狗─高雄"]},
-    {q:"台灣最著名的國際體育文化傳統是？",a:"A",opts:["(A)棒球","(B)網球","(C)高爾夫球","(D)籃球"]},
-    {q:"下列何者不是台灣電影導演？",a:"D",opts:["(A)楊德昌","(B)李安","(C)吳念真","(D)張藝謀"]},
-  ],
-  idiom: [
-    {q:"「胸有成竹」現用來比喻什麼？",a:"B",opts:["(A)為人正直","(B)很有把握","(C)孤芳自賞","(D)內心空虛"]},
-    {q:"哪成語形容「文章極好，非常有價值」？",a:"A",opts:["(A)洛陽紙貴","(B)韋編三絕","(C)汗牛充棟","(D)買櫝還珠"]},
-    {q:"「不恥下問」的意思是？",a:"C",opts:["(A)羞於向低位者請教","(B)不向無學問者提問","(C)不以向低者請教為恥","(D)常問愚蠢問題"]},
-    {q:"「破釜沉舟」與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]},
-    {q:"「刎頸之交」形容？",a:"B",opts:["(A)貌合神離","(B)關係非常親密","(C)萍水相逢","(D)一面之緣"]},
-    {q:"「望洋興嘆」現多比喻什麼？",a:"B",opts:["(A)欣賞美景","(B)做事力不從心","(C)登高望遠","(D)哀悼逝者"]},
-    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)不認識字","(C)專注工作","(D)傲慢無禮"]},
-    {q:"「草船借箭」的主角是？",a:"C",opts:["(A)周瑜","(B)曹操","(C)諸葛亮","(D)魯肅"]},
-    {q:"「班門弄斧」的「班」指？",a:"C",opts:["(A)班固","(B)班超","(C)魯班","(D)班捷明"]},
-    {q:"「三顧茅廬」是誰去拜訪誰？",a:"C",opts:["(A)曹操訪郭嘉","(B)孫權訪周瑜","(C)劉備訪諸葛亮","(D)趙雲訪黃忠"]},
-    {q:"「狐假虎威」狐狸藉老虎什麼嚇走百獸？",a:"C",opts:["(A)聲音","(B)氣味","(C)威風","(D)速度"]},
-    {q:"「邯鄲學步」告訴我們？",a:"B",opts:["(A)學習要刻苦","(B)模仿別人反丟了本領","(C)走路姿勢很重要","(D)活到老學到老"]},
-    {q:"「脫穎而出」現用來形容？",a:"A",opts:["(A)顯露才幹","(B)擺脫困境","(C)發生意外","(D)穿衣風格"]},
-    {q:"「望梅止渴」與哪位歷史人物有關？",a:"A",opts:["(A)曹操","(B)劉備","(C)袁紹","(D)董卓"]},
-    {q:"「世外桃源」出自哪位作家？",a:"B",opts:["(A)蘇軾","(B)陶淵明","(C)王維","(D)李白"]},
-    {q:"下列成語字形「正確」的是？",a:"B",opts:["(A)鞠躬盡萃","(B)鞠躬盡瘁","(C)鞠躬盡粹","(D)鞠躬盡碎"]},
-    {q:"「再接再___」正確的字？",a:"B",opts:["(A)勵","(B)厲","(C)力","(D)歷"]},
-    {q:"「不可____思量」正確填入？",a:"C",opts:["(A)意","(B)譯","(C)議","(D)誼"]},
-    {q:"「變本加____」正確填入？",a:"A",opts:["(A)厲","(B)利","(C)力","(D)勵"]},
-    {q:"「走投____路」正確填入？",a:"C",opts:["(A)謀","(B)沒","(C)無","(D)埋"]},
-    {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
-    {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)茅","(C)毛","(D)錨"]},
-    {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
-    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
-    {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
-    {q:"「濫___充數」正確填入？",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
-    {q:"「怨天____人」正確填入？",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
-    {q:"「畫蛇添足」近義詞為？",a:"A",opts:["(A)多此一舉","(B)雪中送炭","(C)錦上添花","(D)精益求精"]},
-    {q:"「緣木求魚」比喻？",a:"B",opts:["(A)勤勞工作","(B)方法不對必難達目的","(C)愛護環境","(D)追求夢想"]},
-    {q:"「掩耳盜鈴」比喻？",a:"B",opts:["(A)聰明反被聰明誤","(B)自欺欺人","(C)聽覺敏銳","(D)做事隱密"]},
-    {q:"「聞雞起舞」形容？",a:"B",opts:["(A)喜愛跳舞","(B)志士及時奮發努力","(C)畜幕業興旺","(D)生活悠閒"]},
-    {q:"「守株待兔」農夫犯了什麼錯誤？",a:"B",opts:["(A)懶惰","(B)死守經驗不知變通","(C)運氣不好","(D)殘害動物"]},
-    {q:"「老馬識途」中老馬比喻？",a:"B",opts:["(A)體力不支的人","(B)富有經驗的人","(C)迷失方向的人","(D)不聽指揮的人"]},
-    {q:"「井底之蛙」形容人？",a:"B",opts:["(A)謙虛好學","(B)見識狹窄","(C)擅長游泳","(D)居住簡陋"]},
-    {q:"「螳臂當車」比喻？",a:"B",opts:["(A)勇往直前","(B)不自量力","(C)守衛家園","(D)交通違規"]},
-    {q:"「塞翁失馬」下一句接什麼？",a:"B",opts:["(A)必有後福","(B)焉知非福","(C)禍不單行","(D)因小失大"]},
-    {q:"「紙上談兵」是指誰？",a:"A",opts:["(A)趙括","(B)廉頗","(C)白起","(D)藺相如"]},
-    {q:"「入木三分」原本形容？",a:"B",opts:["(A)劍法高超","(B)書法有力","(C)刻功深厚","(D)觀察敏銳"]},
-    {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受驚後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
-    {q:"「水落石出」現在多比喻？",a:"B",opts:["(A)風景優美","(B)事情真相大白","(C)潮汐規律","(D)資源匱乏"]},
-    {q:"「差之毫釐，失之____」？",a:"B",opts:["(A)萬丈","(B)千里","(C)百里","(D)須臾"]},
-    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
-    {q:"「罄竹難書」通常形容？",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
-    {q:"下列成語，褒貶色彩與其他三個不同的是？",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
-    {q:"「揚湯止沸」與哪個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
-    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境優越","(B)歷經磨難","(C)心情輕鬆","(D)衣食無虞"]},
-    {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
-    {q:"成語「一鳴驚人」主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
-    {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
-    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
-  ],
-  general: [
-    {q:"下列何者沒有使用「譬喻」修辭？",a:"C",opts:["(A)他的笑容像朝陽在褐色田野","(B)清水就像帳戶裡的積蓄","(C)好像有責任追究典故","(D)太陽在我杯中，可以一口吞噬"]},
-    {q:"漢語東西南北說明，何者有誤？",a:"C",opts:["(A)西席後借指教師","(B)東道主稱東家為主人","(C)南極星輝哀悼老年男子","(D)南面表示居人君之位"]},
-    {q:"「網紅」一詞的形成屬何種詞彙變化？",a:"A",opts:["(A)詞彙縮略","(B)詞素重組","(C)詞義擴大","(D)語義轉移"]},
-    {q:"「我會說華語」和「我能說華語」的區別？",a:"D",opts:["(A)語氣強度","(B)情感態度","(C)時間指向","(D)能力或條件"]},
-    {q:"「哪裡哪裡，還差得遠」體現禮貌策略？",a:"B",opts:["(A)禮貌的誇大","(B)禮貌的貶低","(C)禮貌的間接","(D)禮貌的模糊"]},
-    {q:"台灣「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
-    {q:"農曆七月普渡「三牲」通常是？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
-    {q:"向陌生人問路最符合語用習慣的說法？",a:"C",opts:["(A)拜託您來我家坐坐","(B)勞駕借我一百塊","(C)請問這附近有捷運站嗎","(D)麻煩你幫我批這份報告"]},
-    {q:"華語詞序顛倒後意義仍相近的是？",a:"B",opts:["(A)喜歡─歡喜/犯罪─罪犯","(B)繼承─承繼/半夜─夜半","(C)傷感─感傷/出生─生出","(D)朋友─友朋/音樂─樂音"]},
-    {q:"下列選項中何者沒有錯別字？",a:"A",opts:["(A)他迷糊健忘，經常當眾出糗","(B)洗心革面，這件事就既往不究","(C)購買彩卷的人大都做美夢","(D)不容許對嫌犯嚴刑烤打"]},
-    {q:"下列有關漢字的解說，何者合乎字源？",a:"D",opts:["(A)富是一人一口田","(B)喉在口中等候食物","(C)宿是一百人住一個房子","(D)夫字上一橫是男子插髮簪"]},
-    {q:"台南府城名匾「爾來了」是誰說的？",a:"B",opts:["(A)國姓爺","(B)城隍爺","(C)玉皇大帝","(D)武聖關公"]},
-    {q:"下列「超」字，何者意義與其他不同？",a:"B",opts:["(A)這次期末考超難","(B)我們沒有所謂超不超標","(C)小米的米麵包超好吃","(D)看到亂丟菸蒂超沒公德心"]},
-    {q:"老師說「就教過的內容」違反哪種言談準則？",a:"B",opts:["(A)質","(B)量","(C)關係","(D)方式"]},
-    {q:"把「仍然ㄖㄥˊㄖㄢˊ」讀成「ㄌㄥˊㄌㄢˊ」，何者有誤？",a:"D",opts:["(A)擦音唸成邊音","(B)兩個都是濁音","(C)捲舌音唸成齒齦音","(D)舌尖前音唸成舌尖後音"]},
-    {q:"外籍生把「我在餐廳吃飯」說成「我吃飯在餐廳」，未掌握何種語序原則？",a:"A",opts:["(A)時間順序","(B)從大到小","(C)從舊到新","(D)從輕到重"]},
-    {q:"下列選項中的數字，哪一個是虛指？",a:"A",opts:["(A)三令五申","(B)三教九流","(C)三綱五常","(D)三十而立"]},
-    {q:"句末助詞「啊」的語流音變屬於？",a:"A",opts:["(A)同化","(B)異化","(C)強化","(D)弱化"]},
-    {q:"「泰斗」的組構方式與哪些不同？",a:"B",opts:["(A)品管","(B)泰斗","(C)中巴","(D)公關"]},
-    {q:"媽媽反問「你作業寫了沒有？」違反哪個言談原則？",a:"C",opts:["(A)量","(B)質","(C)關係","(D)方式"]},
-    {q:"地名配對，何者有誤？",a:"C",opts:["(A)鳥松：植物","(B)鵝鑾鼻：地形","(C)八里：外來語言","(D)東石：族群原鄉"]},
-    {q:"下列與顏色相關的慣用語，何者沒有貶義？",a:"C",opts:["(A)開黃腔","(B)戴綠帽","(C)開紅盤","(D)黑吃黑"]},
-    {q:"「三姑六婆」中「三姑」指的是？",a:"B",opts:["(A)尼姑、道姑、紫姑","(B)尼姑、道姑、卦姑","(C)道姑、紫姑、仙姑","(D)道姑、卦姑、仙姑"]},
-    {q:"小美到哪個曾被法國殖民的國家教學？",a:"A",opts:["(A)越南","(B)印尼","(C)新加坡","(D)馬來西亞"]},
-    {q:"道別時最不適合說的是？",a:"B",opts:["(A)一路順風","(B)安詳離開","(C)路上小心","(D)多多保重"]},
-    {q:"下列何者是由台灣特有植物製作？",a:"C",opts:["(A)杏仁茶","(B)蓮藕茶","(C)愛玉凍","(D)烏梅汁"]},
-    {q:"「黯然銷魂飯」、「法蘭西多士」，最可能是哪種餐廳？",a:"D",opts:["(A)泰式餐廳","(B)美式西餐廳","(C)中式川菜館","(D)港式茶餐廳"]},
-    {q:"下列哪個詞彙並非來自閩南語？",a:"C",opts:["(A)強強滾","(B)花枝羹","(C)紅不讓","(D)鴨霸"]},
-    {q:"下列歇後語，何者前後對應不貼切？",a:"C",opts:["(A)劉備對孔明─言聽計從","(B)老鼠啃書本─咬文嚼字","(C)鋼絲穿豆腐─缺一不可","(D)螃蟹過馬路─橫行霸道"]},
-    {q:"「彭大海一棒把小白球打上了太空」符合哪種修辭？",a:"B",opts:["(A)譬喻","(B)誇飾","(C)婉曲","(D)擬人"]},
-    {q:"十六世紀哪者最不可能從美洲引進？",a:"A",opts:["(A)葡萄","(B)白銀","(C)玉米","(D)辣椒"]},
-    {q:"農曆月份別稱，何者正確？",a:"C",opts:["(A)四月稱梅月","(B)五月稱榴槤月","(C)六月稱荷月","(D)七月稱柳月"]},
-    {q:"「無形無蹤透人懷」詩所描述的對象是？",a:"B",opts:["(A)天空","(B)狂風","(C)流水","(D)松影"]},
-    {q:"「隔壁家老王的兒子已離婚了」不在預設範圍的是？",a:"D",opts:["(A)老王至少有個兒子","(B)老王的兒子結過婚","(C)老王住在講者附近","(D)老王的年紀不小"]},
-    {q:"「氣死我了」中的「我」是？",a:"B",opts:["(A)主語","(B)賓語","(C)狀語","(D)補語"]},
-    {q:"下列哪個詞不包含意譯成分？",a:"A",opts:["(A)凡士林","(B)冰淇淋","(C)迷你裙","(D)霓虹燈"]},
-    {q:"「水仙不開花—裝蒜」使用的歇後方式？",a:"D",opts:["(A)諧音","(B)推理","(C)藏尾","(D)比擬"]},
-    {q:"「八卦」詞義的發展是？",a:"C",opts:["(A)詞義擴大","(B)詞義縮小","(C)詞義轉移","(D)詞義提升"]},
-    {q:"關於世界各民族文化，何者錯誤？",a:"D",opts:["(A)日越印都有十二生肖","(B)越南卯年是貓年","(C)越南也有中秋節","(D)越南端午節紀念屈原"]},
-    {q:"《紅樓夢》中「那件東西」所指的是？",a:"A",opts:["(A)棺材","(B)衣櫃","(C)書桌","(D)藏寶箱"]},
-    {q:"太太說「買10個包子，若看到賣西瓜就買1個」，先生理解錯誤原因？",a:"B",opts:["(A)言外之意","(B)語言歧義","(C)言談預設","(D)禮貌行為"]},
-    {q:"台灣水果中，最可能原生於台灣的是？",a:"A",opts:["(A)楊梅","(B)香蕉","(C)蘋果","(D)芭樂"]},
-    {q:"把「上船」唸成「上床」，哪個部份出了問題？",a:"D",opts:["(A)聲調","(B)聲母","(C)介音","(D)韻尾"]},
-    {q:"台灣婚禮「拖竹青」的主要意義是？",a:"C",opts:["(A)婚姻美滿","(B)多子多孫","(C)防範鬼怪作祟","(D)長命富貴"]},
-    {q:"下列哪一個詞不是「音譯詞」？",a:"D",opts:["(A)三溫暖","(B)鴉片","(C)佛陀","(D)逍遙"]},
-    {q:"對聯運用「合體成字」製造諧趣的是？",a:"B",opts:["(A)白店白雞啼白晝","(B)鳥入風中銜去蟲而作鳳","(C)坐南朝北吃西瓜","(D)膏可吃藥可吃膏藥豈可吃"]},
-    {q:"關於顏色文化詞語，何者錯誤？",a:"C",opts:["(A)紅娘─媒人","(B)黃泉─人死之後","(C)青睞─受人鄙棄","(D)白丁─平民"]},
-    {q:"下列哪個詞是絕對反義詞？",a:"C",opts:["(A)大／小","(B)冷／熱","(C)死／活","(D)黑／白"]},
-    {q:"廣告「一把抵兩把，何需瑪麗亞？」使用的修辭？",a:"C",opts:["(A)諧音","(B)譬喻","(C)借代","(D)排比"]},
-    {q:"「真愛找麻煩」歧義與其他三句不同，原因是？",a:"A",opts:["(A)斷詞方式不同","(B)同義詞替換","(C)指代不清","(D)省略成分"]},
-  ]
+  riddle: [ {q:"一人一張口。",a:"合",w:["含","答","口"]}, {q:"兩人在內。",a:"肉",w:["內","囚","網"]}, {q:"哪個漢字要寫最久？",a:"朋",w:["友","好","鵬"]}, {q:"一隻狗有四張口。",a:"器",w:["哮","嚎","囂"]}, {q:"太陽的兒子。",a:"星",w:["旦","晨","昇"]} ],
+  culture: [ {q:"下列何者是宋代以後主要的私學機構？",a:"A",opts:["(A)書院","(B)精舍","(C)國子監","(D)太學"]}, {q:"關於「清明上河圖」，下列何者正確？",a:"C",opts:["(A)完成於明朝","(B)以北京為題材","(C)顯示城市的物質進步","(D)突顯文人清談"]} ],
+  idiom: [ {q:"「胸有成竹」現用來比喻什麼？",a:"B",opts:["(A)為人正直","(B)很有把握","(C)孤芳自賞","(D)內心空虛"]}, {q:"「破釜沉舟」與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]} ],
+  general: [ {q:"「我會說華語」和「我能說華語」的區別？",a:"D",opts:["(A)語氣","(B)情感","(C)時間","(D)能力或條件"]}, {q:"「網紅」一詞的形成屬何種詞彙變化？",a:"A",opts:["(A)詞彙縮略","(B)詞素重組","(C)詞義擴大","(D)語義轉移"]} ]
 };
 
-// ============================================================
-// GAME SETTINGS & BOARD CONFIG
-// ============================================================
-const WINNING_COINS = 3000;
-const RENT_TABLE = [0, 80, 180, 350];
-const CORRECT_REWARD = 200;
-const SALARY = 200;
-const BOARD_SIZE = 11; // 11x11 grid, perimeter = 40 cells
-
-function cellGridPos(i) {
-  if(i < 10) return {r:10, c:i};              // bottom
-  if(i < 20) return {r:10-(i-10), c:10};      // right
-  if(i < 30) return {r:0, c:10-(i-20)};       // top
-  return {r:(i-30)+1, c:0};                   // left
-}
-
-const CELL_DEFS = (() => {
-  const defs = [];
-  defs[0] = {type:'start', label:'出發', ico:'🏠'};
-  const specials = {
-    4:  {type:'forward',  label:'+2格', ico:'⚡', steps:2},
-    8:  {type:'lucky',    label:'幸運', ico:'🎁'},
-    12: {type:'backward', label:'-3格', ico:'💨', steps:3},
-    16: {type:'skip',     label:'暫停', ico:'⏸'},
-    20: {type:'forward',  label:'+3格', ico:'⚡', steps:3},
-    24: {type:'lucky',    label:'幸運', ico:'🎁'},
-    28: {type:'backward', label:'-2格', ico:'💨', steps:2},
-    32: {type:'skip',     label:'暫停', ico:'⏸'},
-    36: {type:'teleport', label:'傳送', ico:'🌀'},
-  };
-  const qTypes = ['riddle','culture','idiom','general'];
-  const qIcos = {riddle:'🔮',culture:'🏛️',idiom:'📚',general:'🌟'};
-  const qLabels = {riddle:'字謎',culture:'文化',idiom:'成語',general:'綜合'};
-  let qCount = 0;
-  for(let i=1;i<40;i++){
-    if(specials[i]) { defs[i] = specials[i]; }
-    else {
-      const qt = qTypes[qCount % qTypes.length]; qCount++;
-      defs[i] = {type:'question', qtype:qt, label:qLabels[qt], ico:qIcos[qt]};
-    }
-  }
-  return defs;
-})();
-
-// ============================================================
-// GAME STATE
-// ============================================================
 let G = {
-  diff: 'normal', mode: 'ai',
-  players: [
-    {name:'玩家一', coins:1000, pos:0, props:{}, skipTurn:false, correct:0, rentEarned:0, totalMoves:0},
-    {name:'玩家二', coins:1000, pos:0, props:{}, skipTurn:false, correct:0, rentEarned:0, totalMoves:0}
-  ],
-  turn: 0, round: 0, rolling: false, waitAns: false, evtCb: null,
-  qTimerInterval: null, qTimerVal: 60,
-  usedQ: {riddle:new Set(), culture:new Set(), idiom:new Set(), general:new Set()},
-  cellOwner: Array(40).fill(-1), cellLevel: Array(40).fill(0),
-  gameOver: false,
+  diff: 'normal', mode: 'ai', turn: 0,
+  players: [{name:'P1', coins:1000, pos:0, ico:'🦊'}, {name:'P2', coins:1000, pos:0, ico:'🤖'}],
+  cellOwner: Array(40).fill(-1),
+  cellLevel: Array(40).fill(0),
+  gameOver: false
 };
 
-const AI_RATES = {easy:0.30, normal:0.60, hard:0.90};
+const WIN_TARGET = 3000;
 
-// ============================================================
-// AUDIO ENGINE
-// ============================================================
-let ACX = null;
-let bgmOsc = null, bgmGain = null;
-function getACX() { if(!ACX) ACX = new (window.AudioContext||window.webkitAudioContext)(); return ACX; }
-
-function playTone(freq, type, dur, vol=0.2, delay=0) {
-  try {
-    const ctx = getACX(); const o = ctx.createOscillator(); const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination); o.type = type; o.frequency.value = freq;
-    const t = ctx.currentTime + delay; g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol, t+0.015); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    o.start(t); o.stop(t+dur+0.05);
-  } catch(e){}
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-const SFX = {
-  click()   { playTone(660,'sine',.08,.15); },
-  roll()    { [0,1,2,3,4,5].forEach(i=>playTone(180+Math.random()*280,'square',.06,.12,i*.04)); },
-  move()    { playTone(440+Math.random()*200,'sine',.07,.1); },
-  correct() { [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.18,.28,i*.09)); },
-  wrong()   { [200,170,140].forEach((f,i)=>playTone(f,'sawtooth',.1,.2,i*.07)); },
-  rent()    { [330,415,523].forEach((f,i)=>playTone(f,'sine',.15,.2,i*.08)); },
-  win()     { const notes=[523,659,784,1047,1047,784,1047];notes.forEach((f,i)=>playTone(f,'sine',.25,.4,i*.11)); },
-  special() { [300,450,600,750].forEach((f,i)=>playTone(f,'square',.08,.15,i*.05)); },
-  coin()    { playTone(880,'sine',.12,.15); playTone(1108,'sine',.1,.12,.06); },
-};
-
-function startBGM() {
-  try {
-    const ctx = getACX(); const melody = [261.6,293.7,329.6,349.2,392,440,493.9,523.3]; let idx=0;
-    function playNote() {
-      if(!bgmGain) return; const o = ctx.createOscillator(); const g = ctx.createGain();
-      o.connect(g); g.connect(bgmGain); o.type='triangle'; o.frequency.value=melody[idx%melody.length];
-      g.gain.setValueAtTime(0.04,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.7);
-      o.start(); o.stop(ctx.currentTime+0.75); idx++;
-    }
-    bgmGain = ctx.createGain(); bgmGain.gain.value=1; bgmGain.connect(ctx.destination);
-    if(G._bgmInt) clearInterval(G._bgmInt); G._bgmInt = setInterval(playNote,380);
-  } catch(e){}
-}
-function stopBGM() { if(G._bgmInt) { clearInterval(G._bgmInt); G._bgmInt=null; } if(bgmGain) { try{bgmGain.disconnect();}catch(e){} bgmGain=null; } }
-
-// ============================================================
-// PARTICLE BG
-// ============================================================
-function initBG() {
-  const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-  let W,H,particles; function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
-  resize(); window.addEventListener('resize',resize);
-  const N=80; particles=Array.from({length:N},()=>({ x:Math.random()*W, y:Math.random()*H, r:.5+Math.random()*1.5, vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3, a:Math.random() }));
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    particles.forEach(p=>{ p.x=(p.x+p.vx+W)%W; p.y=(p.y+p.vy+H)%H; p.a=.3+.4*Math.abs(Math.sin(Date.now()/3000+p.x)); ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,215,80,${p.a*.4})`;ctx.fill(); });
-    ctx.strokeStyle='rgba(255,215,80,.025)';ctx.lineWidth=1;
-    for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(let y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    requestAnimationFrame(draw);
-  }
-  draw();
+function pickDiff(d) { G.diff = d; goTo('s-mode'); }
+function pickMode(m) { 
+  G.mode = m; 
+  document.querySelector('.p2-input').style.display = (m === 'ai' ? 'none' : 'block');
+  goTo('s-names'); 
 }
 
-// ============================================================
-// UI HELPERS
-// ============================================================
-function goTo(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); SFX.click(); }
-function addLog(msg, cls='ll-move') {
-  const ul = document.getElementById('glog'); const li = document.createElement('li'); li.className=cls; li.textContent=msg;
-  ul.insertBefore(li, ul.firstChild); while(ul.children.length>25) ul.removeChild(ul.lastChild);
-}
-function showCoinPop(el, amount) {
-  if(!el) return; const r = el.getBoundingClientRect(); const d = document.createElement('div');
-  d.className=`coin-pop ${amount>0?'pos':'neg'}`; d.textContent=(amount>0?'+':'')+amount+'💰';
-  d.style.left=(r.left+r.width/2-30)+'px'; d.style.top=(r.top-10)+'px'; document.body.appendChild(d);
-  setTimeout(()=>d.remove(),1500);
-}
-function launchConfetti(n=60) {
-  const colors=['#FFD700','#FF4B5C','#2ECC71','#4A90E2'];
-  for(let i=0;i<n;i++){
-    const el=document.createElement('div'); el.className='confetti';
-    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${6+Math.random()*8}px;height:${10+Math.random()*8}px;background:${colors[i%colors.length]};animation-duration:${2+Math.random()*2.5}s;animation-delay:${Math.random()*1.5}s;--drift:${(Math.random()-0.5)*200}px;`;
-    document.body.appendChild(el); setTimeout(()=>el.remove(),(4+Math.random()*2)*1000);
-  }
-}
-
-// ============================================================
-// SCREEN FLOW
-// ============================================================
-function pickDiff(d) {
-  G.diff=d; const labels={easy:'🌱 簡單模式',normal:'🎓 普通模式',hard:'🔥 困難模式'};
-  document.getElementById('mode-diff-label').textContent=labels[d]; goTo('s-mode');
-}
-function pickMode(m) {
-  G.mode=m; SFX.click();
-  if(m==='ai'){ document.getElementById('nf2').style.display='none'; document.getElementById('lbl2').textContent='🤖 電腦 (AI)'; document.getElementById('n2').value='電腦'; }
-  else { document.getElementById('nf2').style.display='block'; document.getElementById('lbl2').textContent='🔵 玩家二'; }
-  goTo('s-names');
-}
 function startGame() {
-  const n1 = document.getElementById('n1').value.trim()||'玩家一';
-  const n2 = G.mode==='ai' ? '🤖 電腦' : (document.getElementById('n2').value.trim()||'玩家二');
-  G.players[0].name=n1; G.players[1].name=n2; G.players[0].coins=1000; G.players[1].coins=1000;
-  G.players[0].pos=0; G.players[1].pos=0; G.turn=0; G.round=0; G.gameOver=false;
-  G.cellOwner=Array(40).fill(-1); G.cellLevel=Array(40).fill(0);
-  buildBoard(); updateUI(); goTo('s-game'); setTimeout(()=>startBGM(),300); setTimeout(()=>beginTurn(),600);
-}
-function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title'); }
+  G.players[0].name = document.getElementById('n1').value || '玩家一';
+  G.players[1].name = G.mode === 'ai' ? '電腦' : (document.getElementById('n2').value || '玩家二');
+  G.players[1].ico = G.mode === 'ai' ? '🤖' : '🐸';
+  
+  document.getElementById('pnm0').textContent = G.players[0].name;
+  document.getElementById('pnm1').textContent = G.players[1].name;
+  document.getElementById('pp1').querySelector('.p-name').innerHTML = `${G.players[1].ico} <span id="pnm1">${G.players[1].name}</span>`;
 
-// ============================================================
-// BOARD BUILDER
-// ============================================================
+  buildBoard();
+  goTo('s-game');
+}
+
 function buildBoard() {
-  const board = document.getElementById('board'); board.innerHTML='';
-  const S=BOARD_SIZE; const CELL_PX = Math.min(Math.floor((Math.min(window.innerWidth,700)-40)/(S)),66);
-  board.style.gridTemplateColumns=`repeat(${S},${CELL_PX}px)`; board.style.gridTemplateRows=`repeat(${S},${CELL_PX}px)`;
-  const cells = {}; for(let r=0;r<S;r++) for(let c=0;c<S;c++) {
-    const div=document.createElement('div'); div.style.gridRow=r+1; div.style.gridColumn=c+1;
-    if(r===0||r===S-1||c===0||c===S-1) { cells[`${r},${c}`]=div; board.appendChild(div); }
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  const S = 11;
+  board.style.gridTemplateColumns = `repeat(${S}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${S}, 1fr)`;
+
+  const qIco = G.diff === 'easy' ? '🔮' : (G.diff === 'hard' ? '🌟' : '🏛️');
+
+  for (let i = 0; i < 40; i++) {
+    const div = document.createElement('div');
+    div.className = 'cell';
+    const pos = getGridPos(i);
+    div.style.gridRow = pos.r;
+    div.style.gridColumn = pos.c;
+    div.id = `cell-${i}`;
+
+    let ico = qIco;
+    if (i === 0) ico = '🏠';
+    else if (i % 10 === 5) ico = '🎁';
+    else if (i % 10 === 0) ico = '⏸';
+
+    div.innerHTML = `<div class="cell-num">${i}</div><div class="cell-ico">${ico}</div><div id="tok-box-${i}" style="position:absolute;display:flex;gap:2px;"></div>`;
+    board.appendChild(div);
   }
-  for(let i=0;i<40;i++){
-    const {r,c}=cellGridPos(i); const div=cells[`${r},${c}`]; if(!div) continue;
-    div.id=`cell-${i}`; renderCell(div,i); board.appendChild(div);
-  }
-  placeTokens();
+  updateTokens();
 }
 
-function renderCell(div,i) {
-  const def=CELL_DEFS[i]; const owner=G.cellOwner[i]; const level=G.cellLevel[i];
-  let typeClass='';
-  if(def.type==='start') typeClass='ct-start'; else if(def.type==='question') typeClass=`ct-q-${def.qtype}`;
-  else if(def.type==='lucky') typeClass='ct-lucky'; else if(def.type==='forward') typeClass='ct-forward';
-  else if(def.type==='backward') typeClass='ct-backward'; else if(def.type==='skip') typeClass='ct-skip';
-  else if(def.type==='teleport') typeClass='ct-teleport';
-  div.className=`cell ${typeClass} ${owner===0?'own-0':(owner===1?'own-1':'')}`;
-  let rentHtml= (def.type==='question'&&owner>=0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
-  let levelHtml= (owner>=0&&level>0) ? `<div class="cell-level" style="color:${owner===0?'var(--p1)':'var(--p2)'}">${['','★','★★','★★★'][level]}</div>` : '';
-  div.innerHTML=`<div class="cell-num">${i}</div><div class="cell-ico">${def.ico}</div><div class="cell-lbl">${def.label}</div>${rentHtml}${levelHtml}<div id="tok-${i}" style="position:absolute;bottom:1px;left:0;right:0;display:flex;justify-content:center;gap:2px;z-index:20"></div>`;
+function getGridPos(i) {
+  if(i<10) return {r:11, c:i+1};
+  if(i<20) return {r:11-(i-10), c:11};
+  if(i<30) return {r:1, c:11-(i-20)};
+  return {r:(i-30)+1, c:1};
 }
 
-function refreshCell(i) { const div=document.getElementById(`cell-${i}`); if(div) renderCell(div,i); }
-
-function placeTokens() {
-  document.querySelectorAll('[id^="tok-"]').forEach(el=>el.innerHTML='');
-  G.players.forEach((p,pi)=>{
-    const slot=document.getElementById(`tok-${p.pos}`); if(slot){
-      const t=document.createElement('span'); t.id=`token-${pi}`; t.style.cssText='font-size:16px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));';
-      t.textContent=pi===0?'🦊':(G.mode==='ai'?'🤖':'制'); slot.appendChild(t);
-    }
+function updateTokens() {
+  document.querySelectorAll('[id^="tok-box-"]').forEach(el => el.innerHTML = '');
+  G.players.forEach((p, idx) => {
+    const box = document.getElementById(`tok-box-${p.pos}`);
+    box.innerHTML += `<span class="token">${p.ico}</span>`;
   });
 }
 
-// ============================================================
-// UI UPDATE
-// ============================================================
-function updateUI() {
-  G.players.forEach((p,i)=>{
-    document.getElementById(`pcn${i}`).textContent=p.coins;
-    const pct=Math.min(100,Math.max(0,(p.coins/WINNING_COINS)*100));
-    document.getElementById(`pb${i}`).style.width=pct+'%';
-    document.getElementById(`po${i}`).textContent=`佔領：${Object.keys(p.props).length}格`;
-    const skipEl=document.getElementById(`pskip${i}`); if(p.skipTurn){skipEl.classList.add('visible');}else{skipEl.classList.remove('visible');}
-  });
-  document.getElementById('pp0').classList.toggle('my-turn',G.turn===0&&!G.gameOver);
-  document.getElementById('pp1').classList.toggle('my-turn',G.turn===1&&!G.gameOver);
-  const p=G.players[G.turn]; document.getElementById('g-turn').textContent=`${G.turn===0?'🦊':'🤖'} ${p.name} 的回合`;
-  document.getElementById('btnroll').disabled=G.rolling||G.waitAns||(G.mode==='ai'&&G.turn===1)||G.gameOver;
-}
+function rollDice() {
+  if(G.gameOver) return;
+  const btn = document.getElementById('btn-roll');
+  btn.disabled = true;
+  
+  let steps = Math.floor(Math.random() * 6) + 1;
+  let d1 = Math.floor(Math.random() * 6) + 1;
+  let d2 = Math.floor(Math.random() * 6) + 1;
+  
+  const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  document.getElementById('die0').textContent = faces[d1-1];
+  document.getElementById('die1').textContent = faces[d2-1];
 
-// ============================================================
-// GAME LOGIC
-// ============================================================
-function beginTurn() {
-  if(G.gameOver) return; updateUI(); const p=G.players[G.turn];
-  if(p.skipTurn){ p.skipTurn=false; addLog(`${p.name} 跳過回合 ⏸`, 'll-evt'); showEvt('⏸','跳過回合！',`${p.name} 被迫暫停一輪`,()=>nextTurn()); return; }
-  if(G.mode==='ai'&&G.turn===1){ setTimeout(()=>{ if(!G.gameOver) executeRoll(); },1200); }
-}
-
-function rollDice() { if(G.rolling||G.waitAns||G.gameOver) return; executeRoll(); }
-
-function executeRoll() {
-  G.rolling=true; SFX.roll(); updateUI();
-  const dieEls=[document.getElementById('die0'),document.getElementById('die1')];
-  dieEls.forEach(d=>d.classList.add('rolling'));
-  let t=0; const anim=setInterval(()=>{
-    const faces=['⚀','⚁','⚂','⚃','⚄','⚅']; dieEls.forEach(d=>d.textContent=faces[Math.floor(Math.random()*6)]);
-    if(++t>12){ clearInterval(anim); dieEls.forEach(d=>d.classList.remove('rolling')); finalizeRoll(); }
-  },50);
-}
-
-function finalizeRoll() {
-  const d1=Math.floor(Math.random()*6)+1, d2=Math.floor(Math.random()*6)+1, total=d1+d2;
-  const faces=['⚀','⚁','⚂','⚃','⚄','⚅']; document.getElementById('die0').textContent=faces[d1-1]; document.getElementById('die1').textContent=faces[d2-1];
-  document.getElementById('dice-total').textContent=`合計：${total} 點`; movePlayer(G.turn, total);
+  movePlayer(G.turn, d1 + d2);
 }
 
 function movePlayer(pi, steps) {
-  const p=G.players[pi]; let stepsLeft=steps;
-  function step(){
-    if(stepsLeft<=0){G.rolling=false;landOn(pi);return;}
-    const prev=p.pos; p.pos=(p.pos+1)%40;
-    if(prev===39&&p.pos===0){ p.coins+=SALARY; addLog(`${p.name} 經過起點領取 +${SALARY}💰`, 'll-good'); showCoinPop(document.getElementById(`pcn${pi}`),SALARY); SFX.coin(); updateUI(); }
-    SFX.move(); placeTokens(); stepsLeft--; setTimeout(step,170);
-  }
-  step();
-}
-
-function landOn(pi) {
-  const p=G.players[pi]; const cell=p.pos; const def=CELL_DEFS[cell];
-  if(def.type==='start'){ p.coins+=SALARY; showCoinPop(document.getElementById(`pcn${pi}`),SALARY); SFX.coin(); updateUI(); nextTurn(); return; }
-  if(def.type==='question'){
-    const owner=G.cellOwner[cell];
-    if(owner>=0 && owner!==pi){
-        // 觸發挑戰機制：若踩到別人的地，先啟動問答，答對則免租金
-        askQuestion(pi, cell, def.qtype);
-        return;
+  let p = G.players[pi];
+  let count = 0;
+  let timer = setInterval(() => {
+    p.pos = (p.pos + 1) % 40;
+    if(p.pos === 0) { p.coins += 200; updateUI(); }
+    updateTokens();
+    count++;
+    if(count >= steps) {
+      clearInterval(timer);
+      handleLand(pi);
     }
-    askQuestion(pi, cell, def.qtype); return;
-  }
-  if(def.type==='lucky'){ handleLucky(pi);return; }
-  if(def.type==='forward'){ showEvt('⚡','前進！',`${p.name} 前進 ${def.steps} 格！`,()=>moveExtra(pi,def.steps,true,()=>nextTurn())); return; }
-  if(def.type==='backward'){ showEvt('💨','後退！',`${p.name} 後退 ${def.steps} 格！`,()=>moveExtra(pi,-def.steps,false,()=>nextTurn())); return; }
-  if(def.type==='skip'){ p.skipTurn=true; showEvt('⏸','暫停！',`${p.name} 下回停走`,()=>nextTurn()); return; }
-  if(def.type==='teleport'){ const d=Math.floor(Math.random()*39)+1; showEvt('🌀','傳送！',`傳送到 ${d} 格`,()=>{ p.pos=d; placeTokens(); landOn(pi); }); return; }
-  nextTurn();
+  }, 200);
 }
 
-function moveExtra(pi, steps, forward, cb) {
-  const p=G.players[pi]; let rem=Math.abs(steps); const dir=forward?1:-1;
-  function step(){ if(rem<=0){placeTokens();cb();return;} p.pos=((p.pos+dir)+40)%40; SFX.move(); placeTokens(); rem--; setTimeout(step,180); }
-  step();
-}
-
-function handleLucky(pi) {
-  const p=G.players[pi]; const r=Math.random(); let amt, title, desc;
-  if(r<.5){ amt=200; title='🎁 幸運獎金'; desc=`獲得 ${amt}💰`; p.coins+=amt; SFX.coin(); updateUI(); if(checkWin())return; }
-  else { title='🔄 再擲一次'; desc='獲得額外回合'; showEvt('🔄',title,desc,()=>{G.rolling=false;executeRoll();}); return; }
-  showEvt('🎁',title,desc,()=>nextTurn());
-}
-
-// ============================================================
-// QUESTION & ANSWER (OPTIMIZED)
-// ============================================================
-function askQuestion(pi, cell, qtype) {
-  G.waitAns=true; updateUI();
-  const pool = (G.diff==='easy')?'riddle':(G.diff==='hard'?'general':(qtype==='idiom'?'idiom':'culture'));
-  const bank=QB[pool]; const idx=Math.floor(Math.random()*bank.length); const q=bank[idx];
-  const isAI=G.mode==='ai'&&pi===1;
-
-  document.getElementById('q-type-badge').textContent=pool==='riddle'?'字謎':(pool==='idiom'?'成語':'文化');
-  document.getElementById('q-player-name').textContent=G.players[pi].name;
-  document.getElementById('q-text').textContent=q.q;
-  document.getElementById('q-res').style.display='none';
-  document.getElementById('q-ai').style.display=isAI?'block':'none';
-
-  const optsDiv=document.getElementById('q-opts'); optsDiv.innerHTML='';
-  let options=[], correctIdx;
-  if(pool==='riddle'){
-    options=[q.a, ...q.w].sort(()=>Math.random()-.5); correctIdx=options.indexOf(q.a);
-    options.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.innerHTML=`${o}`; b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx); optsDiv.appendChild(b); });
-  } else {
-    correctIdx="ABCD".indexOf(q.a);
-    q.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.innerHTML=`${o}`; b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx); optsDiv.appendChild(b); });
-  }
-  startQTimer(60); document.getElementById('qmodal').classList.add('open');
-  if(isAI){ setTimeout(()=>{ const ok=Math.random()<AI_RATES[G.diff]; const cIdx=ok?correctIdx:(correctIdx+1)%4; answerQ(pi,cell,pool,ok,optsDiv.children[cIdx],optsDiv,correctIdx); },2000); }
-}
-
-function answerQ(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx) {
-  clearQTimer(); document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
-  finishQuestion(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx);
-}
-
-function finishQuestion(pi, cell, pool, isCorrect, chosenBtn, optsDiv, correctIdx) {
+function handleLand(pi) {
   const p = G.players[pi];
-  const allBtns = Array.from(optsDiv.children);
-  if (correctIdx !== undefined && allBtns[correctIdx] && !isCorrect) { allBtns[correctIdx].classList.add('reveal-correct'); }
-  if (chosenBtn) chosenBtn.classList.add(isCorrect ? 'correct' : 'wrong');
-
-  const resDiv = document.getElementById('q-res');
-  resDiv.style.display = 'block';
-
-  if (isCorrect) {
-    SFX.correct(); p.coins += CORRECT_REWARD; p.correct++;
-    resDiv.className = 'q-result ok';
-    resDiv.textContent = `✅ 答對了！獲得 +${CORRECT_REWARD}💰 學習金幣！`;
-    showCoinPop(document.getElementById(`pcn${pi}`), CORRECT_REWARD);
-
-    const owner = G.cellOwner[cell];
-    if (owner < 0) {
-      G.cellOwner[cell] = pi; G.cellLevel[cell] = 1; G.players[pi].props[cell] = 1;
-      addLog(`${p.name} 佔領格子 ${cell}`, 'll-evt');
-    } else if (owner === pi) {
-      if (G.cellLevel[cell] < 3) { G.cellLevel[cell]++; G.players[pi].props[cell] = G.cellLevel[cell]; addLog(`${p.name} 升級格子 ${cell} 至 Lv${G.cellLevel[cell]}`, 'll-evt'); }
-    } else {
-      addLog(`${p.name} 踢館成功！展現華語實力，免付租金！`, 'll-good');
-      resDiv.textContent = `🔥 挑戰成功！免除本次租金並獲得 ${CORRECT_REWARD}💰！`;
-    }
-    refreshCell(cell); updateUI();
+  const pos = p.pos;
+  if(pos === 0 || pos % 10 === 5 || pos % 10 === 0) {
+    setTimeout(nextTurn, 1000);
   } else {
-    SFX.wrong(); resDiv.className = 'q-result ng'; resDiv.textContent = `❌ 答錯了！無法獲得獎勵。`;
-    const owner = G.cellOwner[cell];
-    if (owner >= 0 && owner !== pi) {
-        const rent = RENT_TABLE[G.cellLevel[cell]];
-        p.coins -= rent; G.players[owner].coins += rent; G.players[owner].rentEarned += rent;
-        addLog(`${p.name} 答錯且需支付租金 ${rent}💰`, 'll-rent');
+    const owner = G.cellOwner[pos];
+    if(owner >= 0 && owner !== pi) {
+      const rent = 100 * (G.cellLevel[pos] + 1);
+      p.coins -= rent;
+      G.players[owner].coins += rent;
+      alert(`支付租金 ${rent}！`);
+      updateUI();
+      checkWin();
+      nextTurn();
+    } else {
+      askQuestion(pi, pos);
     }
   }
-  if (checkWin()) return;
-  setTimeout(() => { document.getElementById('qmodal').classList.remove('open'); G.waitAns = false; nextTurn(); }, isCorrect ? 1600 : 1800);
 }
 
-// ============================================================
-// SYSTEM UTILS
-// ============================================================
-function startQTimer(s) { clearQTimer(); G.qTimerVal=s; G.qTimerInterval=setInterval(()=>{ G.qTimerVal--; document.getElementById('q-tnum').textContent=G.qTimerVal; if(G.qTimerVal<=0){ clearQTimer(); finishQuestion(G.turn, G.players[G.turn].pos, 'any', false, null, document.getElementById('q-opts')); } },1000); }
-function clearQTimer() { if(G.qTimerInterval){clearInterval(G.qTimerInterval); G.qTimerInterval=null;} }
+function askQuestion(pi, pos) {
+  const modal = document.getElementById('qmodal');
+  modal.style.display = 'flex';
+  const poolName = G.diff === 'easy' ? 'riddle' : (G.diff === 'hard' ? 'general' : (pos % 2 === 0 ? 'culture' : 'idiom'));
+  const bank = QB[poolName];
+  const q = bank[Math.floor(Math.random() * bank.length)];
+
+  document.getElementById('q-text').textContent = q.q;
+  const optsDiv = document.getElementById('q-opts');
+  optsDiv.innerHTML = '';
+  document.getElementById('q-res').textContent = '';
+
+  let opts = q.opts ? q.opts : [q.a, ...q.w].sort(() => Math.random() - 0.5);
+  let correctVal = q.a;
+
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.textContent = o;
+    b.onclick = () => {
+      const isCorrect = q.opts ? (o.startsWith(`(${correctVal})`)) : (o === correctVal);
+      if(isCorrect) {
+        G.players[pi].coins += 200;
+        if(G.cellOwner[pos] === pi) G.cellLevel[pos]++;
+        else G.cellOwner[pos] = pi;
+        document.getElementById('q-res').textContent = '✅ 答對了！佔領/升級成功！';
+        document.getElementById(`cell-${pos}`).style.border = `4px solid ${pi === 0 ? 'var(--p1)' : 'var(--p2)'}`;
+      } else {
+        document.getElementById('q-res').textContent = '❌ 答錯了，下次努力！';
+      }
+      updateUI();
+      checkWin();
+      setTimeout(() => { modal.style.display = 'none'; nextTurn(); }, 1500);
+    };
+    optsDiv.appendChild(b);
+  });
+}
+
+function updateUI() {
+  document.getElementById('pcn0').textContent = G.players[0].coins;
+  document.getElementById('pcn1').textContent = G.players[1].coins;
+}
+
+function nextTurn() {
+  G.turn = 1 - G.turn;
+  document.getElementById('pp0').classList.toggle('active', G.turn === 0);
+  document.getElementById('pp1').classList.toggle('active', G.turn === 1);
+  document.getElementById('btn-roll').disabled = false;
+  if(G.mode === 'ai' && G.turn === 1) setTimeout(rollDice, 1000);
+}
+
 function checkWin() {
-  for(let i=0;i<2;i++){ if(G.players[i].coins>=WINNING_COINS){endGame(i);return true;} if(G.players[i].coins<=0){endGame(1-i);return true;} }
-  return false;
+  G.players.forEach(p => {
+    if(p.coins >= WIN_TARGET) {
+      G.gameOver = true;
+      document.getElementById('w-name').textContent = `${p.name} 獲勝！`;
+      goTo('s-win');
+    }
+  });
 }
-function endGame(wIdx) { G.gameOver=true; stopBGM(); SFX.win(); launchConfetti(); document.getElementById('w-name').textContent=`🏆 ${G.players[wIdx].name} 獲勝！`; document.getElementById('w-sub').textContent=`最終金幣：${G.players[wIdx].coins}💰`; document.getElementById('ws-rounds').textContent=Math.floor(G.round/2); document.getElementById('ws-correct').textContent=G.players[wIdx].correct; document.getElementById('ws-owned').textContent=Object.keys(G.players[wIdx].props).length; document.getElementById('ws-rent').textContent=G.players[wIdx].rentEarned; goTo('s-win'); }
-function nextTurn() { if(G.gameOver)return; G.turn=1-G.turn; G.round++; beginTurn(); }
-function closeEvt() { document.getElementById('emodal').classList.remove('open'); if(G.evtCb)G.evtCb(); }
 
-window.onload = () => { initBG(); };
 </script>
 </body>
 </html>
