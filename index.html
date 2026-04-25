@@ -54,7 +54,8 @@
       align-items: center; 
       gap: 5px; 
       max-height: 100vh; 
-      justify-content: space-evenly;
+      justify-content: center;
+      position: relative;
     }
     #board {
       display: grid; 
@@ -237,6 +238,12 @@
     </div>
 
     <div id="board-container">
+      <div id="turn-p0" style="position: absolute; left: -100px; top: 20px; background: var(--p1); color: white; padding: 6px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; white-space: nowrap;">
+        ⬅️ 玩家回合
+      </div>
+      <div id="turn-p1" style="position: absolute; right: -100px; top: 20px; background: var(--p2); color: white; padding: 6px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; white-space: nowrap;">
+        電腦回合 ➡️
+      </div>
       <div id="board">
         </div>
       <div id="dice-area">
@@ -764,7 +771,9 @@ function updateUI() {
   
   // 移除舊的 g-turn 邏輯，改為控制 visibility
   if (!G.gameOver) {
+    // 玩家一回合：顯示左邊標籤，隱藏右邊
     t0.style.visibility = (G.turn === 0) ? 'visible' : 'hidden';
+    // 電腦回合：顯示右邊標籤，隱藏左邊
     t1.style.visibility = (G.turn === 1) ? 'visible' : 'hidden';
   } else {
     t0.style.visibility = 'hidden';
