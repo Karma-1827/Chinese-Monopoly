@@ -53,8 +53,9 @@
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      justify-content: center; /* 讓整體 UI 在螢幕正中央 */
-      padding: 20px 0;
+      justify-content: flex-start; /* 改為從頂部開始排列 */
+      padding-top: 20px; /* 控制最上方與瀏覽器邊界的距離 */
+      position: relative;
     }
     #board {
       display: grid; 
@@ -63,9 +64,9 @@
       border-radius: 8px; 
       position: relative;
       border: 4px solid #333;
-      /* 關鍵修復：將尺寸稍微縮小（由 72vmin 降至 65vmin），為按鈕留出底部空間 */
-      width: 65vmin; 
-      height: 65vmin;
+      margin-top: 10px; /* 縮小棋盤與上方玩家資訊欄的距離 */
+      width: 70vmin; /* 稍微放大一點點回饋空白 */
+      height: 70vmin;
       
       /* 確保地圖不會因為內容物太多而變形 */
       flex-shrink: 0;
@@ -98,14 +99,24 @@
     .own-0 { border: 2px solid var(--p1) !important; box-shadow: inset 0 0 10px var(--p1); }
     .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
 
+    #g-badge {
+      white-space: nowrap; /* 關鍵：強制不換行 */
+      font-size: 1rem;
+      color: rgba(255,255,255,0.8);
+      font-weight: bold;
+      padding: 0 10px;
+      min-width: fit-content; /* 根據文字寬度自動調整 */
+    }
+
     /* Game Info Bar */
-    .game-hud { 
-      display: flex; 
-      gap: 15px; 
-      width: 100%; 
-      max-width: 72vmin; /* 寬度與棋盤對齊，使其縮短 */
-      justify-content: center; 
-      margin-bottom: 5px; 
+    .game-hud {
+      display: flex;
+      align-items: center; /* 垂直置中 */
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      max-width: 1000px;
+      margin-bottom: 5px; /* 縮小與下方的間距 */
     }
     .player-panel {
       flex: 0 1 42%; /* 稍微縮小比例讓兩者更靠近 */
@@ -194,11 +205,23 @@
     .q-result.ok { background: rgba(46, 204, 113, 0.2); color: var(--green); }
     .q-result.ng { background: rgba(231, 76, 60, 0.2); color: var(--red); }
 
+    /* 修改或新增這兩個標籤的樣式 */
     #turn-p0, #turn-p1 {
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      position: absolute;
+      top: 15%; /* 向上移動一點，避開棋盤邊緣 */
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-weight: 900;
+      font-size: 1rem;
+      z-index: 1000; /* 確保在最上層 */
       border: 2px solid white;
-      z-index: 100;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
     }
+    
+    #turn-p0 { left: 20px; }  /* 固定在左側 */
+    #turn-p1 { right: 20px; } /* 固定在右側 */
   </style>
 </head>
 <body>
