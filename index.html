@@ -887,11 +887,20 @@ function closeEvt() {
 // ============================================================
 function askQuestion(pi, cell, qtype) {
   G.waitAns=true; updateUI();
-  const pool = (G.diff==='easy')?'riddle':(G.diff==='hard'?'general':(qtype==='idiom'?'idiom':'culture'));
+  let pool;
+  if (G.diff === 'easy') {
+    pool = 'riddle'; // 簡單模式：只出現字謎
+  } else if (G.diff === 'hard') {
+    pool = 'general'; // 困難模式：只出現綜合題
+  } else {
+    // 普通模式：文化與成語交替（根據格子類型決定）
+    pool = (qtype === 'idiom') ? 'idiom' : 'culture';
+  }
   const bank=QB[pool]; const idx=Math.floor(Math.random()*bank.length); const q=bank[idx];
   const isAI=G.mode==='ai'&&pi===1;
 
-  document.getElementById('q-type-badge').textContent=pool==='riddle'?'字謎':(pool==='idiom'?'成語':'文化');
+  const typeNames = { riddle: '🔮 字謎', culture: '🏛️ 文化', idiom: '📚 成語', general: '🌟 綜合' };
+  document.getElementById('q-type-badge').textContent = typeNames[pool];
   document.getElementById('q-player-name').textContent=G.players[pi].name;
   document.getElementById('q-text').textContent=q.q;
   document.getElementById('q-res').style.display='none';
