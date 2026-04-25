@@ -276,15 +276,6 @@
       </div>
       
       <div id="board">
-        <div id="dice-area">
-          <div id="die0" class="die">⚀</div>
-          <div id="die1" class="die">⚀</div>
-          <div style="display: flex; flex-direction: column; align-items: center;">
-            <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
-            <span id="dice-total">點擊擲骰</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div id="turn-indicator-container" style="position: absolute; width: 72vmin; display: flex; justify-content: space-between; top: 12%; pointer-events: none;">
@@ -727,18 +718,45 @@ function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title')
 // BOARD BUILDER
 // ============================================================
 function buildBoard() {
-  const board = document.getElementById('board'); board.innerHTML='';
-  const S=BOARD_SIZE; 
-  /* 改為分配比例，讓棋盤內容隨容器縮放 */
-  board.style.gridTemplateColumns=`repeat(${S}, 1fr)`; 
-  board.style.gridTemplateRows=`repeat(${S}, 1fr)`;
-  const cells = {}; for(let r=0;r<S;r++) for(let c=0;c<S;c++) {
-    const div=document.createElement('div'); div.style.gridRow=r+1; div.style.gridColumn=c+1;
-    if(r===0||r===S-1||c===0||c===S-1) { cells[`${r},${c}`]=div; board.appendChild(div); }
+  const board = document.getElementById('board');
+  // 1. 先把裡面的內容清空
+  board.innerHTML = '';
+  const S = BOARD_SIZE;
+  board.style.gridTemplateColumns = `repeat(${S}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${S}, 1fr)`;
+
+  // 2. 重新加入骰子區域 (這是關鍵，避免被清掉後 updateUI 找不到按鈕)
+  const diceArea = document.createElement('div');
+  diceArea.id = 'dice-area';
+  diceArea.innerHTML = `
+    <div id="die0" class="die">⚀</div>
+    <div id="die1" class="die">⚀</div>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
+      <span id="dice-total">點擊擲骰</span>
+    </div>
+  `;
+  board.appendChild(diceArea);
+
+  // 3. 生成格子
+  const cells = {};
+  for (let r = 0; r < S; r++) {
+    for (let c = 0; c < S; c++) {
+      const div = document.createElement('div');
+      div.style.gridRow = r + 1;
+      div.style.gridColumn = c + 1;
+      if (r === 0 || r === S - 1 || c === 0 || c === S - 1) {
+        cells[`${r},${c}`] = div;
+        board.appendChild(div);
+      }
+    }
   }
-  for(let i=0;i<40;i++){
-    const {r,c}=cellGridPos(i); const div=cells[`${r},${c}`]; if(!div) continue;
-    div.id=`cell-${i}`; renderCell(div,i); board.appendChild(div);
+  for (let i = 0; i < 40; i++) {
+    const { r, c } = cellGridPos(i);
+    const div = cells[`${r},${c}`];
+    if (!div) continue;
+    div.id = `cell-${i}`;
+    renderCell(div, i);
   }
   placeTokens();
 }
@@ -851,7 +869,10 @@ function updateUI() {
 
   // 擲骰子按鈕禁用邏輯
   const isAI = G.mode === 'ai' && G.turn === 1;
-  document.getElementById('btnroll').disabled = G.rolling || G.waitAns || isAI || G.gameOver;
+  const rollBtn = document.getElementById('btnroll');
+  if (rollBtn) {
+    rollBtn.disabled = G.rolling || G.waitAns || isAI || G.gameOver;
+  }
 }
 
 // ============================================================
