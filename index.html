@@ -36,7 +36,26 @@
     .screen.active { display: flex; animation: fadeIn 0.5s ease; }
 
     /* UI Components */
-    h1 { font-family: 'Fredoka One', cursive; font-size: 5rem; margin: 0; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+    h1 { 
+      font-family: 'Fredoka One', cursive; 
+      font-size: 5rem; /* 從 3rem 大幅提升到 5rem */
+      margin: -30px 0 15px 0; 
+      color: var(--gold); 
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.6); 
+    }
+    /* 修改 h2 標題：模式選擇 / 請輸入大名 */
+    h2 {
+      font-size: 3.5rem; /* 顯著放大標題 */
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 40px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    #s-title p {
+      font-size: 1.5rem; /* 放大副標題文字 */
+      letter-spacing: 4px;
+      margin-bottom: 40px;
+    }
     .btn {
       background: linear-gradient(135deg, #ff9f43, #ff6b6b);
       border: none; border-radius: 50px; color: white;
@@ -46,6 +65,12 @@
     }
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
+    .btn {
+      padding: 22px 55px; /* 加大按鈕厚度與寬度 */
+      font-size: 1.8rem;   /* 字體從 1.2 提升到 1.8 */
+      border-radius: 60px;
+      margin: 15px;
+    }
 
     /* Board Layout - 修改比例確保不被切掉 */
     #board-container { 
@@ -134,6 +159,46 @@
 
     .own-0 { border: 2px solid var(--p1) !important; box-shadow: inset 0 0 10px var(--p1); }
     .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
+
+    /* 專門放大難度選擇容器（確保三個按鈕平分寬度且夠大） */
+    .difficulty-container {
+      width: 95%;
+      max-width: 1000px;
+      gap: 30px;
+    }
+
+    /* 放大輸入框容器寬度 */
+    #s-names .screen > div {
+      width: 450px !important; /* 將原本 280px 放大到 450px */
+    }
+    
+    /* 放大輸入框本人 */
+    #s-names input {
+      padding: 18px;
+      font-size: 1.4rem;
+      border-radius: 12px;
+    }
+    
+    /* 放大輸入框上方的標籤文字 (🦊 玩家一) */
+    #s-names label {
+      font-size: 1.2rem !important;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    /* 放大「開始冒險」按鈕 */
+    #s-names .btn {
+      padding: 25px 80px;
+      font-size: 2.2rem; /* 讓進入遊戲的按鈕最顯眼 */
+      margin-top: 50px;
+    }
+
+    #s-mode button[onclick*="s-title"] {
+      font-size: 1.4rem;
+      padding: 12px 40px;
+      margin-top: 60px;
+      opacity: 0.8;
+    }
 
     #g-badge {
       white-space: nowrap;
