@@ -49,14 +49,12 @@
 
     /* Board Layout - 修改比例確保不被切掉 */
     #board-container { 
+      height: 100vh; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      justify-content: space-between;
-      gap: 5px; 
-      max-height: 100vh; 
-      justify-content: center;
-      position: relative;
+      justify-content: center; /* 讓整體 UI 在螢幕正中央 */
+      padding: 20px 0;
     }
     #board {
       display: grid; 
@@ -125,17 +123,33 @@
 
     /* Dice UI */
     #dice-area { 
+      grid-row: 3 / 10;    /* 佔據第 3 到第 9 列之間 */
+      grid-column: 3 / 10; /* 佔據第 3 到第 9 欄之間 */
       display: flex; 
+      flex-direction: column; /* 改為垂直排列更省空間 */
       align-items: center; 
-      gap: 10px; 
-      margin-top: auto; /* 將骰子區推向最底部 */
-      margin-bottom: 10px;
-      background: rgba(0,0,0,0.5); /* 增加一個半透明底色，讓操作區更明確 */
-      padding: 10px 20px;
-      border-radius: 15px;
+      justify-content: center;
+      gap: 15px; 
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.05); /* 淡淡的底色區隔 */
+      border-radius: 20px;
+      pointer-events: auto; /* 確保按鈕可以點擊 */
     }
-    .die { width: 45px; height: 45px; background: white; color: black; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    
+    /* 微調骰子與字體大小，配合中央空間 */
+    .die { 
+      width: 50px; 
+      height: 50px; 
+      font-size: 2rem; 
+    }
     .die.rolling { animation: dieShake 0.1s infinite; }
+
+    #dice-total {
+      font-size: 0.9rem;
+      color: var(--gold);
+      margin-top: 5px;
+      font-weight: bold;
+    }
 
     /* Logs */
     #log-container { position: fixed; right: 10px; top: 10px; width: 180px; height: 250px; overflow: hidden; pointer-events: none; }
@@ -260,14 +274,15 @@
       <div id="turn-p1" style="position: absolute; right: -100px; top: 20px; background: var(--p2); color: white; padding: 6px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; white-space: nowrap;">
         電腦回合 ➡️
       </div>
+      
       <div id="board">
-        </div>
-      <div id="dice-area">
-        <div id="die0" class="die">⚀</div>
-        <div id="die1" class="die">⚀</div>
-        <div style="display: flex; flex-direction: column;">
-          <button class="btn" id="btnroll" onclick="rollDice()" style="padding: 10px 30px; font-size: 1rem;">擲骰子</button>
-          <span id="dice-total" style="font-size: 0.7rem; text-align: center; color: var(--gold);">點擊擲骰</span>
+        <div id="dice-area">
+          <div id="die0" class="die">⚀</div>
+          <div id="die1" class="die">⚀</div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
+            <span id="dice-total">點擊擲骰</span>
+          </div>
         </div>
       </div>
     </div>
