@@ -3,30 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎲華語大富翁💰</title>
+  <title>華語大富翁 - 數位學習遊戲</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --p1: #FF4B5C;
       --p2: #4A90E2;
-      --gold: #D4AF37;
-      --bg: #E3F2FD; /* 淡淡的晴空藍 */
-      --card-bg: rgba(255, 255, 255, 0.8);
+      --gold: #FFD700;
+      --bg: #121212;
+      --card-bg: rgba(255, 255, 255, 0.05);
       --red: #ff5252;
       --green: #2ecc71;
-      --text: #2C3E50;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0; padding: 0;
       background-color: var(--bg);
-      color: var(--text);
+      color: #fff;
       font-family: 'Noto Sans TC', sans-serif;
       overflow: hidden;
       display: flex; justify-content: center; align-items: center;
       height: 100vh;
     }
-    #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.5; }
+    #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
     /* Screens Management */
     .screen {
@@ -36,101 +35,108 @@
     }
     .screen.active { display: flex; animation: fadeIn 0.5s ease; }
 
-    /* UI Components - 按鈕放大 */
-    h1 { font-family: 'Fredoka One', cursive; font-size: 4rem; margin: 0; color: #1976D2; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+    /* UI Components */
+    h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; margin: 0; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
     .btn {
-      background: linear-gradient(135deg, #42A5F5, #1E88E5);
+      background: linear-gradient(135deg, #ff9f43, #ff6b6b);
       border: none; border-radius: 50px; color: white;
-      padding: 20px 50px; font-size: 1.5rem; font-weight: bold; /* 按鈕放大 */
-      cursor: pointer; margin: 15px; transition: 0.3s;
-      box-shadow: 0 6px 20px rgba(30, 136, 229, 0.3);
+      padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
+      cursor: pointer; margin: 10px; transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
     }
-    .btn:hover { transform: scale(1.08); filter: brightness(1.1); }
-    .btn:disabled { background: #BDBDBD; cursor: not-allowed; box-shadow: none; }
+    .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+    .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
-    /* Board Layout - 地圖完整性修復與極簡化 */
-    #board-container { 
-      display: flex; flex-direction: column; align-items: center; gap: 10px; 
-      height: 95vh; justify-content: center; /* 修復上下切掉的問題 */
-    }
+    /* Board Layout */
+    #board-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     #board {
-      display: grid; background: rgba(255, 255, 255, 0.9);
-      padding: 5px; border-radius: 12px; position: relative;
-      border: 4px solid #BBDEFB;
-      max-height: 75vh; width: auto; aspect-ratio: 1/1; /* 確保正方形且不超出螢幕 */
+      display: grid; background: rgba(255, 255, 255, 0.1);
+      padding: 5px; border-radius: 8px; position: relative;
+      border: 4px solid #333;
     }
     .cell {
-      position: relative; border: 1px solid #E3F2FD;
+      position: relative; border: 1px solid rgba(255,255,255,0.1);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: bold; cursor: default; transition: 0.2s;
+      font-size: 10px; font-weight: bold; cursor: default; transition: 0.2s;
     }
-    .cell-ico { font-size: 2rem; } /* 放大 Emoji */
-    .cell-lbl, .cell-num { display: none; } /* 極簡化：隱藏文字與編號 */
-    .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 10px; color: #E64A19; font-weight: 900; }
-    .cell-level { position: absolute; top: 2px; right: 2px; font-size: 12px; font-weight: 900; }
-    .cell-owner-dot { position: absolute; top: 2px; left: 2px; width: 8px; height: 8px; border-radius: 50%; }
+    .cell-ico { font-size: 1.6rem; margin-bottom: 2px; }
+    .cell-lbl { transform: scale(0.9); opacity: 0.8; }
+    .cell-num { position: absolute; top: 2px; left: 2px; font-size: 8px; opacity: 0.3; }
+    .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 8px; color: var(--gold); }
+    .cell-level { position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: 900; }
+    .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
 
     /* Cell Types Colors */
-    .ct-start { background: #C8E6C9; }
-    .ct-q-riddle { background: #F3E5F5; }
-    .ct-q-culture { background: #E1F5FE; }
-    .ct-q-idiom { background: #FFF3E0; }
-    .ct-q-general { background: #FFFDE7; }
-    .ct-lucky { background: #FCE4EC; border: 2px dashed #F06292; }
+    .ct-start { background: rgba(46, 204, 113, 0.3); }
+    .ct-q-riddle { background: rgba(155, 89, 182, 0.2); }
+    .ct-q-culture { background: rgba(52, 152, 219, 0.2); }
+    .ct-q-idiom { background: rgba(230, 126, 34, 0.2); }
+    .ct-q-general { background: rgba(241, 196, 15, 0.2); }
+    .ct-lucky { background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--gold); }
+    .ct-forward, .ct-teleport { background: rgba(46, 204, 113, 0.1); }
+    .ct-backward, .ct-skip { background: rgba(231, 76, 60, 0.1); }
 
-    .own-0 { border: 3px solid var(--p1) !important; background-color: rgba(255, 75, 92, 0.1) !important; }
-    .own-1 { border: 3px solid var(--p2) !important; background-color: rgba(74, 144, 226, 0.1) !important; }
+    .own-0 { border: 2px solid var(--p1) !important; box-shadow: inset 0 0 10px var(--p1); }
+    .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
 
     /* Game Info Bar */
-    .game-hud { display: flex; gap: 20px; width: 100%; max-width: 800px; justify-content: space-between; margin-bottom: 10px; }
+    .game-hud { display: flex; gap: 20px; width: 100%; max-width: 700px; justify-content: space-between; margin-bottom: 10px; }
     .player-panel {
-      flex: 1; background: white; padding: 15px; border-radius: 15px;
-      border-bottom: 6px solid transparent; transition: 0.3s;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      color: var(--text);
+      flex: 1; background: var(--card-bg); padding: 10px; border-radius: 12px;
+      border-bottom: 4px solid transparent; transition: 0.3s;
     }
-    .player-panel.my-turn { border-bottom-color: #1E88E5; transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-    .p-coins { font-size: 1.8rem; font-weight: bold; color: #E64A19; }
-    .p-progress { height: 6px; background: #E0E0E0; margin-top: 8px; border-radius: 3px; overflow: hidden; }
+    .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-5px); background: rgba(255,255,255,0.1); }
+    .p-coins { font-size: 1.4rem; font-weight: bold; color: var(--gold); }
+    .p-progress { height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden; }
     .p-bar { height: 100%; transition: 0.5s; }
 
     /* Dice UI */
-    #dice-area { display: flex; align-items: center; gap: 20px; margin-top: 10px; }
-    .die { width: 60px; height: 60px; background: white; color: #1E88E5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid #BBDEFB; }
+    #dice-area { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+    .die { width: 50px; height: 50px; background: white; color: black; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .die.rolling { animation: dieShake 0.1s infinite; }
 
     /* Logs */
-    #log-container { position: fixed; right: 20px; top: 20px; width: 250px; height: 350px; overflow: hidden; pointer-events: none; }
-    #glog { list-style: none; padding: 0; margin: 0; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
-    #glog li { background: rgba(255,255,255,0.9); color: var(--text); padding: 8px 12px; border-radius: 8px; border-left: 5px solid #42A5F5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    #log-container { position: fixed; right: 10px; top: 10px; width: 220px; height: 300px; overflow: hidden; pointer-events: none; }
+    #glog { list-style: none; padding: 0; margin: 0; font-size: 11px; display: flex; flex-direction: column; gap: 5px; }
+    #glog li { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; border-left: 3px solid var(--gold); animation: slideIn 0.3s ease; }
 
-    /* Modals - 文字放大 */
+    /* Modals */
     .modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(25, 118, 210, 0.4); z-index: 1000;
-      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.85); z-index: 1000;
+      display: none; align-items: center; justify-content: center;
     }
     .modal.open { display: flex; }
     .modal-content {
-      background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: 25px;
-      border: 4px solid #1E88E5; position: relative; color: var(--text);
+      background: #1e1e1e; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px;
+      border: 2px solid var(--gold); position: relative;
     }
+    .q-timer { position: absolute; top: -40px; right: 0; display: flex; align-items: center; gap: 10px; }
+    .q-timer-ring { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .opt-btn {
-      width: 100%; text-align: left; padding: 20px; margin: 12px 0; border: 2px solid #BBDEFB;
-      background: #F1F8E9; color: var(--text); border-radius: 15px; cursor: pointer; transition: 0.2s;
-      font-size: 1.4rem; font-weight: bold;
+      width: 100%; text-align: left; padding: 15px; margin: 8px 0; border: 1px solid #444;
+      background: #2a2a2a; color: #fff; border-radius: 10px; cursor: pointer; transition: 0.2s;
     }
-    .opt-btn:hover { background: #E8F5E9; transform: translateX(5px); }
-    .opt-btn.correct { background: var(--green) !important; color: white; }
-    .opt-btn.wrong { background: var(--red) !important; color: white; }
+    .opt-btn:hover { background: #333; }
+    .opt-btn.correct { background: var(--green) !important; color: #000; font-weight: bold; }
+    .opt-btn.wrong { background: var(--red) !important; }
+    .opt-btn.reveal-correct { border: 2px solid var(--green); box-shadow: 0 0 15px var(--green); }
 
-    /* Inputs - 文字放大 */
-    input[type="text"] { font-size: 1.5rem !important; padding: 15px !important; }
-    label { font-size: 1.2rem !important; margin-bottom: 5px; display: block; }
-
+    /* Animations */
     @keyframes dieShake { 0% {transform: rotate(0)} 50% {transform: rotate(10deg) translate(2px)} 100% {transform: rotate(-10deg) translate(-2px)} }
     @keyframes fadeIn { from {opacity:0} to {opacity:1} }
-    .coin-pop { position: fixed; font-weight: bold; font-size: 2rem; pointer-events: none; z-index: 2000; animation: popUp 1.5s ease-out forwards; }
+    @keyframes tokenBounce { 0% {transform:translateY(0)} 50% {transform:translateY(-10px)} 100% {transform:translateY(0)} }
+    @keyframes slideIn { from {transform:translateX(50px); opacity:0} to {transform:translateX(0); opacity:1} }
+    .coin-pop { position: fixed; font-weight: bold; pointer-events: none; z-index: 2000; animation: popUp 1.5s ease-out forwards; }
+    @keyframes popUp { 0% {opacity:1; transform:translateY(0)} 100% {opacity:0; transform:translateY(-50px)} }
+    .confetti { position: fixed; pointer-events: none; z-index: 999; animation: confettiFall linear forwards; }
+    @keyframes confettiFall { to { transform: translateY(100vh) translateX(var(--drift)); opacity: 0; } }
+
+    /* Custom utilities */
+    .visible { visibility: visible !important; }
+    .q-result { padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
+    .q-result.ok { background: rgba(46, 204, 113, 0.2); color: var(--green); }
+    .q-result.ng { background: rgba(231, 76, 60, 0.2); color: var(--red); }
   </style>
 </head>
 <body>
@@ -138,8 +144,8 @@
 
   <div id="s-title" class="screen active">
     <h1>華語大富翁</h1>
-    <p style="opacity: 0.8; font-weight: bold; color: #1976D2;">ONLINE CHINESE MONOPOLY</p>
-    <div style="margin-top: 40px;">
+    <p style="opacity: 0.7; letter-spacing: 2px;">ONLINE CHINESE MONOPOLY</p>
+    <div style="margin-top: 30px;">
       <button class="btn" onclick="pickDiff('easy')">🌱 簡單 (字謎)</button>
       <button class="btn" onclick="pickDiff('normal')">🎓 普通 (文化+成語)</button>
       <button class="btn" onclick="pickDiff('hard')">🔥 困難 (綜合挑戰)</button>
@@ -147,103 +153,122 @@
   </div>
 
   <div id="s-mode" class="screen">
-    <h2 id="mode-diff-label" style="font-size: 2.5rem; color: #1976D2;">模式選擇</h2>
-    <div style="display: flex; gap: 30px;">
+    <h2 id="mode-diff-label">模式選擇</h2>
+    <div style="display: flex; gap: 20px;">
       <button class="btn" style="background: #4A90E2;" onclick="pickMode('ai')">🤖 挑戰電腦</button>
       <button class="btn" style="background: #9B59B2;" onclick="pickMode('pvp')">⚔️ 雙人對戰</button>
     </div>
-    <button class="btn" style="background: #90A4AE; margin-top: 40px;" onclick="goTo('s-title')">返回</button>
+    <button class="btn" style="background: transparent; border: 1px solid #555; margin-top: 30px;" onclick="goTo('s-title')">返回</button>
   </div>
 
   <div id="s-names" class="screen">
-    <h2 style="font-size: 2.5rem; color: #1976D2;">請輸入大名</h2>
-    <div style="display: flex; flex-direction: column; gap: 20px; width: 400px;">
+    <h2>請輸入大名</h2>
+    <div style="display: flex; flex-direction: column; gap: 15px; width: 280px;">
       <div style="text-align: left;">
-        <label id="lbl1">🦊 玩家一</label>
-        <input type="text" id="n1" placeholder="請輸入名字" style="width: 100%; border-radius: 12px; border: 2px solid #BBDEFB; outline: none;">
+        <label id="lbl1" style="font-size: 0.8rem; opacity: 0.6;">🦊 玩家一</label>
+        <input type="text" id="n1" placeholder="玩家一" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
       </div>
       <div style="text-align: left;" id="nf2">
-        <label id="lbl2">🔵 玩家二</label>
-        <input type="text" id="n2" placeholder="請輸入名字" style="width: 100%; border-radius: 12px; border: 2px solid #BBDEFB; outline: none;">
+        <label id="lbl2" style="font-size: 0.8rem; opacity: 0.6;">🔵 玩家二</label>
+        <input type="text" id="n2" placeholder="玩家二" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
       </div>
     </div>
-    <button class="btn" style="margin-top: 40px;" onclick="startGame()">開始冒險 🚀</button>
+    <button class="btn" style="margin-top: 30px;" onclick="startGame()">開始冒險 🚀</button>
   </div>
 
   <div id="s-game" class="screen">
     <div class="game-hud">
       <div class="player-panel" id="pp0">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="pav0" style="font-size: 2rem;">🦊</span>
-          <span id="pnm0" style="font-size: 1.4rem; font-weight: 900;">玩家一</span>
+          <span id="pav0" style="font-size: 1.5rem;">🦊</span>
+          <span id="pnm0" style="font-weight: bold;">玩家一</span>
           <span id="pskip0" style="visibility: hidden;">⏸</span>
         </div>
         <div class="p-coins"><span id="pcn0">1000</span>💰</div>
+        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;" id="ptag0">🟥 人類玩家</div>
         <div class="p-progress"><div id="pb0" class="p-bar" style="background: var(--p1); width: 33%;"></div></div>
-        <div id="po0" style="font-size: 12px; margin-top: 5px; font-weight: bold;">佔領：0格</div>
+        <div id="po0" style="font-size: 9px; margin-top: 4px;">佔領：0格</div>
       </div>
 
-      <div id="g-badge" style="background: #1976D2; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 900;">🎓 普通</div>
+      <div id="g-badge" class="g-badge">🎓 普通</div>
 
       <div class="player-panel" id="pp1">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: row-reverse;">
-          <span id="pav1" style="font-size: 2rem;">🤖</span>
-          <span id="pnm1" style="font-size: 1.4rem; font-weight: 900;">電腦</span>
+          <span id="pav1" style="font-size: 1.5rem;">🤖</span>
+          <span id="pnm1" style="font-weight: bold;">電腦</span>
           <span id="pskip1" style="visibility: hidden;">⏸</span>
         </div>
         <div class="p-coins" style="text-align: right;"><span id="pcn1">1000</span>💰</div>
+        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6; text-align: right;" id="ptag1">🤖 AI電腦</div>
         <div class="p-progress"><div id="pb1" class="p-bar" style="background: var(--p2); width: 33%;"></div></div>
-        <div id="po1" style="font-size: 12px; margin-top: 5px; text-align: right; font-weight: bold;">佔領：0格</div>
+        <div id="po1" style="font-size: 9px; margin-top: 4px; text-align: right;">佔領：0格</div>
       </div>
     </div>
 
     <div id="board-container">
-      <div id="board"></div>
+      <div id="board">
+        </div>
       <div id="dice-area">
         <div id="die0" class="die">⚀</div>
         <div id="die1" class="die">⚀</div>
         <div style="display: flex; flex-direction: column;">
           <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
-          <span id="dice-total" style="font-size: 1.2rem; text-align: center; color: #1976D2; font-weight: bold;">點擊擲骰</span>
+          <span id="dice-total" style="font-size: 0.8rem; text-align: center; color: var(--gold);">點擊擲骰</span>
         </div>
       </div>
     </div>
 
-    <div style="margin-top: 15px; font-size: 1.5rem; font-weight: 900; color: #1976D2;" id="g-turn">🦊 玩家一 的回合</div>
+    <div style="margin-top: 15px; font-weight: bold; color: var(--gold);" id="g-turn">🦊 玩家一 的回合</div>
     <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position: fixed; bottom: 15px; left: 15px; background: #ECEFF1; border: none; padding: 10px 20px; border-radius: 10px; color: #546E7A; cursor: pointer; font-size: 14px; font-weight: bold;">放棄遊戲</button>
+    <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 12px;">放棄遊戲</button>
   </div>
 
   <div id="qmodal" class="modal">
     <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-        <span id="q-type-badge" style="background: #1976D2; color: white; padding: 5px 15px; border-radius: 10px; font-weight: bold;">字謎</span>
-        <span id="q-tnum" style="font-size: 1.5rem; font-weight: 900; color: #E64A19;">60s</span>
+      <div class="q-timer">
+        <div id="q-tring" class="q-timer-ring" style="background: conic-gradient(var(--gold) 360deg, rgba(255,255,255,0.1) 0deg);">
+          <span id="q-tnum">60</span>
+        </div>
       </div>
-      <div id="q-text" style="font-size: 1.8rem; line-height: 1.4; margin-bottom: 30px; font-weight: bold;">這是一道題目內容載入中...</div>
-      <div id="q-ai" style="font-style: italic; color: #546E7A; margin-bottom: 15px; display: none; font-size: 1.2rem;">🤖 電腦正在思考中...</div>
-      <div id="q-opts"></div>
-      <div id="q-res" class="q-result" style="font-size: 1.5rem;">✅ 答對了！獲得獎金</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <span id="q-type-badge" class="q-type-badge">字謎</span>
+        <span id="q-player-name" style="font-weight: bold; color: var(--gold);">玩家一</span>
+      </div>
+      <div id="q-text" style="font-size: 1.3rem; line-height: 1.5; margin-bottom: 25px;">這是一道題目內容載入中...</div>
+      <div id="q-ai" style="font-style: italic; opacity: 0.5; margin-bottom: 10px; display: none;">🤖 AI 正在思考中...</div>
+      <div id="q-opts">
+        </div>
+      <div id="q-res" class="q-result">✅ 答對了！獲得獎金</div>
     </div>
   </div>
 
   <div id="emodal" class="modal">
-    <div class="modal-content" style="text-align: center;">
-      <div id="e-ico" style="font-size: 5rem; margin-bottom: 15px;">🎁</div>
-      <h2 id="e-title" style="font-size: 2.5rem; color: #1976D2;">幸運格</h2>
-      <p id="e-desc" style="font-size: 1.5rem;">恭喜獲得驚喜獎勵！</p>
-      <button class="btn" onclick="closeEvt()">太棒了！</button>
+    <div class="modal-content" style="text-align: center; border-color: #2ecc71;">
+      <div id="e-ico" style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
+      <h2 id="e-title">幸運格</h2>
+      <p id="e-desc">恭喜獲得驚喜獎勵！</p>
+      <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); font-weight: bold; color: var(--gold);" id="e-player">玩家一</div>
+      <button class="btn" onclick="closeEvt()">確認</button>
     </div>
   </div>
 
   <div id="s-win" class="screen">
-    <div id="w-trophy" style="font-size: 8rem; margin-bottom: 20px;">🏆</div>
-    <h1 id="w-name">玩家一 獲勝！</h1>
-    <p id="w-sub" style="font-size: 2rem; color: #E64A19; font-weight: 900;">最終金幣：3000💰</p>
+    <div id="w-trophy" style="font-size: 6rem; filter: drop-shadow(0 0 30px var(--gold));">🦊</div>
+    <h1 id="w-name">🏆 玩家一 獲勝！</h1>
+    <p id="w-sub" style="font-size: 1.2rem; opacity: 0.8;">最終金幣：3000💰</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 300px;">
+      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">回合數<br><b id="ws-rounds">0</b></div>
+      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">正確題數<br><b id="ws-correct">0</b></div>
+      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">佔領格數<br><b id="ws-owned">0</b></div>
+      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">租金總計<br><b id="ws-rent">0</b></div>
+    </div>
     <button class="btn" onclick="location.reload()">再玩一局</button>
   </div>
 
 <script>
+// ============================================================
+// QUESTION BANKS
+// ============================================================
 const QB = {
   riddle: [
     {q:"一人一張口。",a:"合",w:["含","答","口"]},
@@ -300,17 +325,17 @@ const QB = {
   culture: [
     {q:"下列何者是宋代以後主要的私學機構？",a:"A",opts:["(A)書院","(B)精舍","(C)國子監","(D)太學"]},
     {q:"哪句成語顯示服飾具有區隔夷夏的作用？",a:"C",opts:["(A)布衣卿相","(B)衣冠禽獸","(C)被髮左衽","(D)沐猴而冠"]},
-    {q:"關於「清明上河圖」，下列何者正確？",a:"C",opts:["(A)完成於明朝時期","(B)以當時首都北京生活為題材","(C)顯示城市的物質進步","(D)突顯文人雅士的清談之風"]},
+    {q:"關於「清明上河圖」，下列何者正確？",a:"C",opts:["(A)完成於明朝","(B)以首都北京為題材","(C)顯示城市的物質進步","(D)突顯文人清談之風"]},
     {q:"下列何者不是孔學的影響？",a:"B",opts:["(A)百家相繼興起","(B)官學從此消失","(C)促進階級流動","(D)開創師生共學團體"]},
-    {q:"戲劇是庶民文化的重要一環，職業戲班俗稱：",a:"D",opts:["(A)崑園","(B)京園","(C)旗園","(D)梨園"]},
-    {q:"唐宋以後「家家觀世音，戶戶阿彌陀」主要原因？",a:"A",opts:["(A)教義思想的中國化","(B)僧侶積極布施","(C)士大夫的崇信與提倡","(D)寺院財產非常龐大"]},
-    {q:"北京故宮「紫禁城」其名稱由來？",a:"C",opts:["(A)紫色比朱紅色更重大","(B)紫色與黃袍搭配合宜","(C)紫微星正處中天","(D)萬紫千紅的喜氣"]},
+    {q:"職業戲班俗稱？",a:"D",opts:["(A)崑園","(B)京園","(C)旗園","(D)梨園"]},
+    {q:"唐宋以後「家家觀世音，戶戶阿彌陀」主要原因？",a:"A",opts:["(A)教義思想的中國化","(B)僧侶積極布施","(C)士大夫的崇信","(D)寺院財產龐大"]},
+    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
     {q:"「穿針乞巧」與哪個節日有關？",a:"D",opts:["(A)上元節","(B)元宵節","(C)端午節","(D)七夕節"]},
     {q:"過年時吃水餃，象徵什麼？",a:"C",opts:["(A)健康","(B)團圓","(C)財富","(D)平安"]},
-    {q:"「菩提本無樹，明鏡亦非台」是哪個宗派對佛理的釋義？",a:"A",opts:["(A)禪宗","(B)密宗","(C)天台宗","(D)華嚴宗"]},
+    {q:"「菩提本無樹，明鏡亦非台」是哪個宗派？",a:"A",opts:["(A)禪宗","(B)密宗","(C)天台宗","(D)華嚴宗"]},
     {q:"《本草綱目》的作者是誰？",a:"C",opts:["(A)孫思邈","(B)華佗","(C)李時珍","(D)扁鵲"]},
-    {q:"宋代理學是儒家與哪種思想融通？",a:"C",opts:["(A)墨、法","(B)佛、法","(C)佛、道","(D)名、法"]},
-    {q:"台灣古蹟「紅毛城」中「紅毛」指？",a:"B",opts:["(A)西班牙人","(B)荷蘭人","(C)英國人","(D)葡萄牙人"]},
+    {q:"宋代理學融通儒家與哪種思想？",a:"C",opts:["(A)墨、法","(B)佛、法","(C)佛、道","(D)名、法"]},
+    {q:"台灣「紅毛城」中「紅毛」指？",a:"B",opts:["(A)西班牙人","(B)荷蘭人","(C)英國人","(D)葡萄牙人"]},
     {q:"最早在台灣建立孔廟的是？",a:"A",opts:["(A)鄭經","(B)鄭成功","(C)劉銘傳","(D)丁日昌"]},
     {q:"佛教宗派中，何者特重念佛？",a:"B",opts:["(A)唯識宗","(B)淨土宗","(C)禪宗","(D)華嚴宗"]},
     {q:"新竹地區「九降風」成就的重要食材？",a:"A",opts:["(A)米粉","(B)粉圓","(C)冬粉","(D)意麵"]},
@@ -319,119 +344,119 @@ const QB = {
     {q:"台灣著名的「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
     {q:"下列何者為新大陸引進的作物？",a:"A",opts:["(A)番薯","(B)胡椒","(C)西瓜","(D)洋蔥"]},
     {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
-    {q:"日語與台語稱麵包為「PANG」，淵源於哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
+    {q:"日語與台語稱麵包為「PANG」，淵源哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
     {q:"西周封建宗法制度依何種關係建立準則？",a:"C",opts:["(A)行業職能","(B)才識表現","(C)血緣尊卑","(D)社經地位"]},
     {q:"記錄家族世系及成員關係的文書稱為？",a:"B",opts:["(A)家法","(B)家譜","(C)家學","(D)家風"]},
     {q:"宋代何人開始設置族田、義莊？",a:"A",opts:["(A)范仲淹","(B)朱熹","(C)歐陽脩","(D)蘇洵"]},
-    {q:"台灣導演侯孝賢「聶隱娘」故事出處？",a:"C",opts:["(A)諸子寓言","(B)魏晉志怪","(C)唐人傳奇","(D)宋代話本"]},
-    {q:"漢代皇后宮殿「椒房」其意義是？",a:"A",opts:["(A)象徵溫暖、芳香、多子之意","(B)象徵後宮和諧","(C)象徵富貴吉祥","(D)象徵高潔貞信"]},
-    {q:"台灣以下新舊地名對照，何者有誤？",a:"B",opts:["(A)金包裏─金山","(B)焦吧哖─玉里","(C)干豆─關渡","(D)打狗─高雄"]},
-    {q:"台灣運動選手在國際體壇上獲得成就，指的是？",a:"A",opts:["(A)棒球","(B)網球","(C)高爾夫球","(D)籃球"]},
+    {q:"台灣導演侯孝賢「聶隱娘」故事出自？",a:"C",opts:["(A)諸子寓言","(B)魏晉志怪","(C)唐人傳奇","(D)宋代話本"]},
+    {q:"漢代皇后宮殿「椒房」的意義是？",a:"A",opts:["(A)象徵溫暖芳香多子","(B)象徵後宮和諧","(C)象徵富貴吉祥","(D)象徵高潔貞信"]},
+    {q:"台灣以下新舊地名，何者有誤？",a:"B",opts:["(A)金包裏─金山","(B)焦吧哖─玉里","(C)干豆─關渡","(D)打狗─高雄"]},
+    {q:"台灣最著名的國際體育文化傳統是？",a:"A",opts:["(A)棒球","(B)網球","(C)高爾夫球","(D)籃球"]},
     {q:"下列何者不是台灣電影導演？",a:"D",opts:["(A)楊德昌","(B)李安","(C)吳念真","(D)張藝謀"]},
   ],
   idiom: [
     {q:"「胸有成竹」現用來比喻什麼？",a:"B",opts:["(A)為人正直","(B)很有把握","(C)孤芳自賞","(D)內心空虛"]},
-    {q:"形容「文章寫得極好，非常有價值」？",a:"A",opts:["(A)洛陽紙貴","(B)韋編三絕","(C)汗牛充棟","(D)買櫝還珠"]},
-    {q:"「不恥下問」的意思是？",a:"C",opts:["(A)羞於向低位者請教","(B)不向無學問者提問","(C)不以向地位低、學問淺的人請教為恥","(D)常問愚蠢問題"]},
-    {q:"「破釜沉舟」比喻下定決心，與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]},
-    {q:"形容「關係非常親密」的是？",a:"B",opts:["(A)貌合神離","(B)刎頸之交","(C)萍水相逢","(D)一面之緣"]},
+    {q:"哪成語形容「文章極好，非常有價值」？",a:"A",opts:["(A)洛陽紙貴","(B)韋編三絕","(C)汗牛充棟","(D)買櫝還珠"]},
+    {q:"「不恥下問」的意思是？",a:"C",opts:["(A)羞於向低位者請教","(B)不向無學問者提問","(C)不以向低者請教為恥","(D)常問愚蠢問題"]},
+    {q:"「破釜沉舟」與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]},
+    {q:"「刎頸之交」形容？",a:"B",opts:["(A)貌合神離","(B)關係非常親密","(C)萍水相逢","(D)一面之緣"]},
     {q:"「望洋興嘆」現多比喻什麼？",a:"B",opts:["(A)欣賞美景","(B)做事力不從心","(C)登高望遠","(D)哀悼逝者"]},
-    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)不認識字","(C)專注工作","(D)亞慢無禮"]},
+    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)不認識字","(C)專注工作","(D)傲慢無禮"]},
     {q:"「草船借箭」的主角是？",a:"C",opts:["(A)周瑜","(B)曹操","(C)諸葛亮","(D)魯肅"]},
-    {q:"「班門弄斧」裡的「班」是指：",a:"C",opts:["(A)班固","(B)班超","(C)魯班","(D)班捷明"]},
+    {q:"「班門弄斧」的「班」指？",a:"C",opts:["(A)班固","(B)班超","(C)魯班","(D)班捷明"]},
     {q:"「三顧茅廬」是誰去拜訪誰？",a:"C",opts:["(A)曹操訪郭嘉","(B)孫權訪周瑜","(C)劉備訪諸葛亮","(D)趙雲訪黃忠"]},
-    {q:"「狐假虎威」中，狐狸藉老虎什麼嚇走百獸？",a:"C",opts:["(A)聲音","(B)氣味","(C)威風","(D)速度"]},
-    {q:"「邯鄲學步」告訴我們？",a:"B",opts:["(A)學習要刻苦","(B)模仿別人不成，反丟了本領","(C)走路姿勢很重要","(D)活到老學到老"]},
+    {q:"「狐假虎威」狐狸藉老虎什麼嚇走百獸？",a:"C",opts:["(A)聲音","(B)氣味","(C)威風","(D)速度"]},
+    {q:"「邯鄲學步」告訴我們？",a:"B",opts:["(A)學習要刻苦","(B)模仿別人反丟了本領","(C)走路姿勢很重要","(D)活到老學到老"]},
     {q:"「脫穎而出」現用來形容？",a:"A",opts:["(A)顯露才幹","(B)擺脫困境","(C)發生意外","(D)穿衣風格"]},
     {q:"「望梅止渴」與哪位歷史人物有關？",a:"A",opts:["(A)曹操","(B)劉備","(C)袁紹","(D)董卓"]},
-    {q:"「世外桃源」出自哪位作家作品？",a:"B",opts:["(A)蘇軾","(B)陶淵明","(C)王維","(D)李白"]},
+    {q:"「世外桃源」出自哪位作家？",a:"B",opts:["(A)蘇軾","(B)陶淵明","(C)王維","(D)李白"]},
     {q:"下列成語字形「正確」的是？",a:"B",opts:["(A)鞠躬盡萃","(B)鞠躬盡瘁","(C)鞠躬盡粹","(D)鞠躬盡碎"]},
-    {q:"「再接再___」正確的字應為：",a:"B",opts:["(A)勵","(B)厲","(C)力","(D)歷"]},
-    {q:"「不可____思量」：",a:"C",opts:["(A)意","(B)譯","(C)議","(D)誼"]},
-    {q:"「變本加____」：",a:"A",opts:["(A)厲","(B)利","(C)力","(D)勵"]},
-    {q:"「走投____路」：",a:"C",opts:["(A)謀","(B)沒","(C)無","(D)埋"]},
-    {q:"「世外桃____」：",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
-    {q:"「名列前____」：",a:"B",opts:["(A)矛","(B)茅","(C)毛","(D)錨"]},
-    {q:"「按____就班」：",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
-    {q:"「一鼓作____」：",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
-    {q:"「自怨自____」：",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
-    {q:"「濫___充數」：",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
-    {q:"「怨天____人」：",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
+    {q:"「再接再___」正確的字？",a:"B",opts:["(A)勵","(B)厲","(C)力","(D)歷"]},
+    {q:"「不可____思量」正確填入？",a:"C",opts:["(A)意","(B)譯","(C)議","(D)誼"]},
+    {q:"「變本加____」正確填入？",a:"A",opts:["(A)厲","(B)利","(C)力","(D)勵"]},
+    {q:"「走投____路」正確填入？",a:"C",opts:["(A)謀","(B)沒","(C)無","(D)埋"]},
+    {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
+    {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)茅","(C)毛","(D)錨"]},
+    {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
+    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
+    {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
+    {q:"「濫___充數」正確填入？",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
+    {q:"「怨天____人」正確填入？",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
     {q:"「畫蛇添足」近義詞為？",a:"A",opts:["(A)多此一舉","(B)雪中送炭","(C)錦上添花","(D)精益求精"]},
-    {q:"「緣木求魚」比喻？",a:"B",opts:["(A)勤勞工作","(B)方法不對，必難達到目的","(C)愛護環境","(D)追求夢想"]},
+    {q:"「緣木求魚」比喻？",a:"B",opts:["(A)勤勞工作","(B)方法不對必難達目的","(C)愛護環境","(D)追求夢想"]},
     {q:"「掩耳盜鈴」比喻？",a:"B",opts:["(A)聰明反被聰明誤","(B)自欺欺人","(C)聽覺敏銳","(D)做事隱密"]},
-    {q:"「聞雞起舞」形容？",a:"B",opts:["(A)喜愛跳舞","(B)志士及時奮發努力","(C)畜牧業興旺","(D)生活悠閒"]},
-    {q:"「守株待兔」農夫犯了什麼錯誤？",a:"B",opts:["(A)懶惰","(B)死守經驗，不知變通","(C)運氣不好","(D)殘害動物"]},
-    {q:"「老馬識途」中的老馬比喻？",a:"B",opts:["(A)體力不支的人","(B)富有經驗的人","(C)迷失方向的人","(D)不聽指揮的人"]},
+    {q:"「聞雞起舞」形容？",a:"B",opts:["(A)喜愛跳舞","(B)志士及時奮發努力","(C)畜幕業興旺","(D)生活悠閒"]},
+    {q:"「守株待兔」農夫犯了什麼錯誤？",a:"B",opts:["(A)懶惰","(B)死守經驗不知變通","(C)運氣不好","(D)殘害動物"]},
+    {q:"「老馬識途」中老馬比喻？",a:"B",opts:["(A)體力不支的人","(B)富有經驗的人","(C)迷失方向的人","(D)不聽指揮的人"]},
     {q:"「井底之蛙」形容人？",a:"B",opts:["(A)謙虛好學","(B)見識狹窄","(C)擅長游泳","(D)居住簡陋"]},
     {q:"「螳臂當車」比喻？",a:"B",opts:["(A)勇往直前","(B)不自量力","(C)守衛家園","(D)交通違規"]},
     {q:"「塞翁失馬」下一句接什麼？",a:"B",opts:["(A)必有後福","(B)焉知非福","(C)禍不單行","(D)因小失大"]},
     {q:"「紙上談兵」是指誰？",a:"A",opts:["(A)趙括","(B)廉頗","(C)白起","(D)藺相如"]},
     {q:"「入木三分」原本形容？",a:"B",opts:["(A)劍法高超","(B)書法有力","(C)刻功深厚","(D)觀察敏銳"]},
-    {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受到驚嚇後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
+    {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受驚後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
     {q:"「水落石出」現在多比喻？",a:"B",opts:["(A)風景優美","(B)事情真相大白","(C)潮汐規律","(D)資源匱乏"]},
     {q:"「差之毫釐，失之____」？",a:"B",opts:["(A)萬丈","(B)千里","(C)百里","(D)須臾"]},
-    {q:"「半途而廢」的反義詞：",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
-    {q:"「罄竹難書」通常形容：",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
-    {q:"成語褒貶色彩與其他三個不同的是：",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
-    {q:"「揚湯止沸」與哪一個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
-    {q:"「飽經風霜」形容：",a:"B",opts:["(A)環境極優越","(B)歷經磨難","(C)心情極輕鬆","(D)衣食無虞"]},
+    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
+    {q:"「罄竹難書」通常形容？",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
+    {q:"下列成語，褒貶色彩與其他三個不同的是？",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
+    {q:"「揚湯止沸」與哪個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
+    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境優越","(B)歷經磨難","(C)心情輕鬆","(D)衣食無虞"]},
     {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
-    {q:"成語「一鳴驚人」的主人公是：",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
-    {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵，孤立無援","(D)重振旗鼓"]},
-    {q:"「完璧歸趙」主要人物是：",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
+    {q:"成語「一鳴驚人」主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
+    {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
+    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
   ],
   general: [
     {q:"下列何者沒有使用「譬喻」修辭？",a:"C",opts:["(A)他的笑容像朝陽在褐色田野","(B)清水就像帳戶裡的積蓄","(C)好像有責任追究典故","(D)太陽在我杯中，可以一口吞噬"]},
     {q:"漢語東西南北說明，何者有誤？",a:"C",opts:["(A)西席後借指教師","(B)東道主稱東家為主人","(C)南極星輝哀悼老年男子","(D)南面表示居人君之位"]},
-    {q:"「網紅」一詞形成屬何種詞彙變化？",a:"A",opts:["(A)詞彙縮略","(B)詞素重組","(C)詞義擴大","(D)語義轉移"]},
+    {q:"「網紅」一詞的形成屬何種詞彙變化？",a:"A",opts:["(A)詞彙縮略","(B)詞素重組","(C)詞義擴大","(D)語義轉移"]},
     {q:"「我會說華語」和「我能說華語」的區別？",a:"D",opts:["(A)語氣強度","(B)情感態度","(C)時間指向","(D)能力或條件"]},
-    {q:"「哪裡哪裡，還差得遠」體現禮貌原則？",a:"B",opts:["(A)禮貌的誇大","(B)禮貌的貶低","(C)禮貌的間接","(D)禮貌的模糊"]},
+    {q:"「哪裡哪裡，還差得遠」體現禮貌策略？",a:"B",opts:["(A)禮貌的誇大","(B)禮貌的貶低","(C)禮貌的間接","(D)禮貌的模糊"]},
     {q:"台灣「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
     {q:"農曆七月普渡「三牲」通常是？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
     {q:"向陌生人問路最符合語用習慣的說法？",a:"C",opts:["(A)拜託您來我家坐坐","(B)勞駕借我一百塊","(C)請問這附近有捷運站嗎","(D)麻煩你幫我批這份報告"]},
     {q:"華語詞序顛倒後意義仍相近的是？",a:"B",opts:["(A)喜歡─歡喜/犯罪─罪犯","(B)繼承─承繼/半夜─夜半","(C)傷感─感傷/出生─生出","(D)朋友─友朋/音樂─樂音"]},
-    {q:"下列選項中何者沒有錯別字？",a:"A",opts:["(A)他迷糊健忘，經常當眾出糗","(B)洗心革面，這件事就既往不究","(C)購買彩卷的人，大都做美夢","(D)不容許對嫌犯嚴刑烤打"]},
-    {q:"下列有關漢字的解說，何者合乎字源？",a:"D",opts:["(A)富是一人一口田","(B)喉在口中，等候食物","(C)宿是一百人住一個房子","(D)夫字上一橫是男子插髮簪"]},
-    {q:"台南府城四大名匾「爾來了」是誰說的？",a:"B",opts:["(A)國姓爺","(B)城隍爺","(C)玉皇大帝","(D)武聖關公"]},
+    {q:"下列選項中何者沒有錯別字？",a:"A",opts:["(A)他迷糊健忘，經常當眾出糗","(B)洗心革面，這件事就既往不究","(C)購買彩卷的人大都做美夢","(D)不容許對嫌犯嚴刑烤打"]},
+    {q:"下列有關漢字的解說，何者合乎字源？",a:"D",opts:["(A)富是一人一口田","(B)喉在口中等候食物","(C)宿是一百人住一個房子","(D)夫字上一橫是男子插髮簪"]},
+    {q:"台南府城名匾「爾來了」是誰說的？",a:"B",opts:["(A)國姓爺","(B)城隍爺","(C)玉皇大帝","(D)武聖關公"]},
     {q:"下列「超」字，何者意義與其他不同？",a:"B",opts:["(A)這次期末考超難","(B)我們沒有所謂超不超標","(C)小米的米麵包超好吃","(D)看到亂丟菸蒂超沒公德心"]},
-    {q:"老師回答「就教過的內容」違反哪種言談準則？",a:"B",opts:["(A)質","(B)量","(C)關係","(D)方式"]},
+    {q:"老師說「就教過的內容」違反哪種言談準則？",a:"B",opts:["(A)質","(B)量","(C)關係","(D)方式"]},
     {q:"把「仍然ㄖㄥˊㄖㄢˊ」讀成「ㄌㄥˊㄌㄢˊ」，何者有誤？",a:"D",opts:["(A)擦音唸成邊音","(B)兩個都是濁音","(C)捲舌音唸成齒齦音","(D)舌尖前音唸成舌尖後音"]},
     {q:"外籍生把「我在餐廳吃飯」說成「我吃飯在餐廳」，未掌握何種語序原則？",a:"A",opts:["(A)時間順序","(B)從大到小","(C)從舊到新","(D)從輕到重"]},
     {q:"下列選項中的數字，哪一個是虛指？",a:"A",opts:["(A)三令五申","(B)三教九流","(C)三綱五常","(D)三十而立"]},
-    {q:"句末助詞「啊」語流音變屬？",a:"A",opts:["(A)同化","(B)異化","(C)強化","(D)弱化"]},
-    {q:"「泰斗」組構方式與其他哪些不同？",a:"B",opts:["(A)品管","(B)泰斗","(C)中巴","(D)公關"]},
-    {q:"媽媽反問「你作業寫了沒有？」違反哪一個原則？",a:"C",opts:["(A)量","(B)質","(C)關係","(D)方式"]},
-    {q:"地名配對何者有誤？",a:"C",opts:["(A)鳥松：植物","(B)鵝鑾鼻：地形","(C)八里：外來語言","(D)東石：族群原鄉"]},
-    {q:"顏色相關慣用語，何者沒有貶義？",a:"C",opts:["(A)開黃腔","(B)戴綠帽","(C)開紅盤","(D)黑吃黑"]},
+    {q:"句末助詞「啊」的語流音變屬於？",a:"A",opts:["(A)同化","(B)異化","(C)強化","(D)弱化"]},
+    {q:"「泰斗」的組構方式與哪些不同？",a:"B",opts:["(A)品管","(B)泰斗","(C)中巴","(D)公關"]},
+    {q:"媽媽反問「你作業寫了沒有？」違反哪個言談原則？",a:"C",opts:["(A)量","(B)質","(C)關係","(D)方式"]},
+    {q:"地名配對，何者有誤？",a:"C",opts:["(A)鳥松：植物","(B)鵝鑾鼻：地形","(C)八里：外來語言","(D)東石：族群原鄉"]},
+    {q:"下列與顏色相關的慣用語，何者沒有貶義？",a:"C",opts:["(A)開黃腔","(B)戴綠帽","(C)開紅盤","(D)黑吃黑"]},
     {q:"「三姑六婆」中「三姑」指的是？",a:"B",opts:["(A)尼姑、道姑、紫姑","(B)尼姑、道姑、卦姑","(C)道姑、紫姑、仙姑","(D)道姑、卦姑、仙姑"]},
-    {q:"小美赴哪個曾被法國殖民國家教學？",a:"A",opts:["(A)越南","(B)印尼","(C)新加坡","(D)馬來西亞"]},
+    {q:"小美到哪個曾被法國殖民的國家教學？",a:"A",opts:["(A)越南","(B)印尼","(C)新加坡","(D)馬來西亞"]},
     {q:"道別時最不適合說的是？",a:"B",opts:["(A)一路順風","(B)安詳離開","(C)路上小心","(D)多多保重"]},
-    {q:"何者由台灣特有植物製作而成？",a:"C",opts:["(A)杏仁茶","(B)蓮藕茶","(C)愛玉凍","(D)烏梅汁"]},
-    {q:"「黯然銷魂飯」、「法蘭西多士」，最可能進了哪種餐廳？",a:"D",opts:["(A)泰式餐廳","(B)美式西餐廳","(C)中式川菜館","(D)港式茶餐廳"]},
-    {q:"何者並非來自閩南語？",a:"C",opts:["(A)強強滾","(B)花枝羹","(C)紅不讓","(D)鴨霸"]},
+    {q:"下列何者是由台灣特有植物製作？",a:"C",opts:["(A)杏仁茶","(B)蓮藕茶","(C)愛玉凍","(D)烏梅汁"]},
+    {q:"「黯然銷魂飯」、「法蘭西多士」，最可能是哪種餐廳？",a:"D",opts:["(A)泰式餐廳","(B)美式西餐廳","(C)中式川菜館","(D)港式茶餐廳"]},
+    {q:"下列哪個詞彙並非來自閩南語？",a:"C",opts:["(A)強強滾","(B)花枝羹","(C)紅不讓","(D)鴨霸"]},
     {q:"下列歇後語，何者前後對應不貼切？",a:"C",opts:["(A)劉備對孔明─言聽計從","(B)老鼠啃書本─咬文嚼字","(C)鋼絲穿豆腐─缺一不可","(D)螃蟹過馬路─橫行霸道"]},
     {q:"「彭大海一棒把小白球打上了太空」符合哪種修辭？",a:"B",opts:["(A)譬喻","(B)誇飾","(C)婉曲","(D)擬人"]},
     {q:"十六世紀哪者最不可能從美洲引進？",a:"A",opts:["(A)葡萄","(B)白銀","(C)玉米","(D)辣椒"]},
     {q:"農曆月份別稱，何者正確？",a:"C",opts:["(A)四月稱梅月","(B)五月稱榴槤月","(C)六月稱荷月","(D)七月稱柳月"]},
-    {q:"「無形無蹤透人懷」詩所描述對象是？",a:"B",opts:["(A)天空","(B)狂風","(C)流水","(D)松影"]},
-    {q:"「隔壁家老王的兒子已離婚了」不在預設範圍？",a:"D",opts:["(A)老王至少有個兒子","(B)老王的兒子結過婚","(C)老王住在講者附近","(D)老王的年紀不小"]},
+    {q:"「無形無蹤透人懷」詩所描述的對象是？",a:"B",opts:["(A)天空","(B)狂風","(C)流水","(D)松影"]},
+    {q:"「隔壁家老王的兒子已離婚了」不在預設範圍的是？",a:"D",opts:["(A)老王至少有個兒子","(B)老王的兒子結過婚","(C)老王住在講者附近","(D)老王的年紀不小"]},
     {q:"「氣死我了」中的「我」是？",a:"B",opts:["(A)主語","(B)賓語","(C)狀語","(D)補語"]},
     {q:"下列哪個詞不包含意譯成分？",a:"A",opts:["(A)凡士林","(B)冰淇淋","(C)迷你裙","(D)霓虹燈"]},
     {q:"「水仙不開花—裝蒜」使用的歇後方式？",a:"D",opts:["(A)諧音","(B)推理","(C)藏尾","(D)比擬"]},
     {q:"「八卦」詞義的發展是？",a:"C",opts:["(A)詞義擴大","(B)詞義縮小","(C)詞義轉移","(D)詞義提升"]},
-    {q:"關於各民族文化，何者錯誤？",a:"D",opts:["(A)日越印都有十二生肖","(B)越南卯年是貓年","(C)越南也有中秋節","(D)越南端午節紀念屈原"]},
-    {q:"《紅樓夢》中「那件東西」所指是？",a:"A",opts:["(A)棺材","(B)衣櫃","(C)書桌","(D)藏寶箱"]},
+    {q:"關於世界各民族文化，何者錯誤？",a:"D",opts:["(A)日越印都有十二生肖","(B)越南卯年是貓年","(C)越南也有中秋節","(D)越南端午節紀念屈原"]},
+    {q:"《紅樓夢》中「那件東西」所指的是？",a:"A",opts:["(A)棺材","(B)衣櫃","(C)書桌","(D)藏寶箱"]},
     {q:"太太說「買10個包子，若看到賣西瓜就買1個」，先生理解錯誤原因？",a:"B",opts:["(A)言外之意","(B)語言歧義","(C)言談預設","(D)禮貌行為"]},
-    {q:"台灣水果中，最可能原生於台灣的是：",a:"A",opts:["(A)楊梅","(B)香蕉","(C)蘋果","(D)芭樂"]},
+    {q:"台灣水果中，最可能原生於台灣的是？",a:"A",opts:["(A)楊梅","(B)香蕉","(C)蘋果","(D)芭樂"]},
     {q:"把「上船」唸成「上床」，哪個部份出了問題？",a:"D",opts:["(A)聲調","(B)聲母","(C)介音","(D)韻尾"]},
-    {q:"台灣婚禮「拖竹青」的主要意義是：",a:"C",opts:["(A)婚姻美滿","(B)多子多孫","(C)防範鬼怪作祟","(D)長命富貴"]},
+    {q:"台灣婚禮「拖竹青」的主要意義是？",a:"C",opts:["(A)婚姻美滿","(B)多子多孫","(C)防範鬼怪作祟","(D)長命富貴"]},
     {q:"下列哪一個詞不是「音譯詞」？",a:"D",opts:["(A)三溫暖","(B)鴉片","(C)佛陀","(D)逍遙"]},
-    {q:"對聯運用「合體成字」製造諧趣的是：",a:"B",opts:["(A)白店白雞啼白晝","(B)鳥入風中銜去蟲而作鳳","(C)坐南朝北吃西瓜","(D)膏可吃藥可吃膏藥豈可吃"]},
-    {q:"顏色文化詞語，何者錯誤？",a:"C",opts:["(A)紅娘─媒人","(B)黃泉─人死之後","(C)青睞─受人鄙棄","(D)白丁─平民"]},
-    {q:"下列哪一個詞是絕對反義詞？",a:"C",opts:["(A)大／小","(B)冷／熱","(C)死／活","(D)黑／白"]},
+    {q:"對聯運用「合體成字」製造諧趣的是？",a:"B",opts:["(A)白店白雞啼白晝","(B)鳥入風中銜去蟲而作鳳","(C)坐南朝北吃西瓜","(D)膏可吃藥可吃膏藥豈可吃"]},
+    {q:"關於顏色文化詞語，何者錯誤？",a:"C",opts:["(A)紅娘─媒人","(B)黃泉─人死之後","(C)青睞─受人鄙棄","(D)白丁─平民"]},
+    {q:"下列哪個詞是絕對反義詞？",a:"C",opts:["(A)大／小","(B)冷／熱","(C)死／活","(D)黑／白"]},
     {q:"廣告「一把抵兩把，何需瑪麗亞？」使用的修辭？",a:"C",opts:["(A)諧音","(B)譬喻","(C)借代","(D)排比"]},
-    {q:"「真愛找麻煩」歧義與其他三句不同原因：",a:"A",opts:["(A)斷詞方式不同","(B)同義詞替換","(C)指代不清","(D)省略成分"]},
+    {q:"「真愛找麻煩」歧義與其他三句不同，原因是？",a:"A",opts:["(A)斷詞方式不同","(B)同義詞替換","(C)指代不清","(D)省略成分"]},
   ]
 };
 
@@ -634,7 +659,7 @@ function renderCell(div,i) {
   div.className=`cell ${typeClass} ${owner===0?'own-0':(owner===1?'own-1':'')}`;
   let rentHtml= (def.type==='question'&&owner>=0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
   let levelHtml= (owner>=0&&level>0) ? `<div class="cell-level" style="color:${owner===0?'var(--p1)':'var(--p2)'}">${['','★','★★','★★★'][level]}</div>` : '';
-  div.innerHTML=`<div class="cell-num">${i}</div><div class="cell-ico">${def.ico}</div><div class="cell-lbl">${def.label}</div>${rentHtml}${levelHtml}<div id="tok-${i}" style="position:absolute;bottom:1px;left:0;right:0;display:flex;justifycontent:center;gap:2px;z-index:20"></div>`;
+  div.innerHTML=`<div class="cell-num">${i}</div><div class="cell-ico">${def.ico}</div><div class="cell-lbl">${def.label}</div>${rentHtml}${levelHtml}<div id="tok-${i}" style="position:absolute;bottom:1px;left:0;right:0;display:flex;justify-content:center;gap:2px;z-index:20"></div>`;
 }
 
 function refreshCell(i) { const div=document.getElementById(`cell-${i}`); if(div) renderCell(div,i); }
