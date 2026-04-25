@@ -10,7 +10,7 @@
       --p1: #FF4B5C;
       --p2: #4A90E2;
       --gold: #FFD700;
-      --bg: #121212;
+      --bg: #AACDDC;
       --card-bg: rgba(255, 255, 255, 0.05);
       --red: #ff5252;
       --green: #2ecc71;
@@ -307,6 +307,7 @@ const QB = {
     {q:"真心相伴。",a:"慎",w:["真","心","忍"]},
     {q:"早不說，晚不說。",a:"許",w:["早","晚","話"]},
     {q:"一月七日。",a:"脂",w:["月","日","肪"]},
+    {q:"一邊紅，一邊綠，一邊怕雨，一邊怕風。",a:"秋",w:["春","夏","冬"]},
     {q:"人不在其位。",a:"立",w:["位","人","在"]},
     {q:"人在草木間。",a:"茶",w:["草","木","藏"]},
     {q:"日復一日。",a:"昌",w:["日","旦","旭"]},
@@ -317,7 +318,6 @@ const QB = {
     {q:"半個月亮。",a:"胖",w:["月","肉","半"]},
     {q:"十一個人。",a:"仕",w:["十","人","什"]},
     {q:"一字十一口。",a:"吉",w:["一","十","古"]},
-    {q:"一邊紅，一邊綠，一邊怕雨，一邊怕風。",a:"秋",w:["春","夏","冬"]},
     {q:"誰是傻瓜？",a:"保",w:["愚","笨","呆"]},
     {q:"千里姻緣一線牽。",a:"重",w:["千","里","線"]},
     {q:"請勿入口。",a:"囫",w:["入","口","圈"]},
@@ -329,7 +329,7 @@ const QB = {
     {q:"下列何者不是孔學的影響？",a:"B",opts:["(A)百家相繼興起","(B)官學從此消失","(C)促進階級流動","(D)開創師生共學團體"]},
     {q:"職業戲班俗稱？",a:"D",opts:["(A)崑園","(B)京園","(C)旗園","(D)梨園"]},
     {q:"唐宋以後「家家觀世音，戶戶阿彌陀」主要原因？",a:"A",opts:["(A)教義思想的中國化","(B)僧侶積極布施","(C)士大夫的崇信","(D)寺院財產龐大"]},
-    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配合宜","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
+    {q:"北京故宮「紫禁城」名稱由來？",a:"C",opts:["(A)紫色比朱紅重大","(B)紫色與黃袍搭配","(C)紫微星正處中天","(D)萬紫千紅喜氣"]},
     {q:"「穿針乞巧」與哪個節日有關？",a:"D",opts:["(A)上元節","(B)元宵節","(C)端午節","(D)七夕節"]},
     {q:"過年時吃水餃，象徵什麼？",a:"C",opts:["(A)健康","(B)團圓","(C)財富","(D)平安"]},
     {q:"「菩提本無樹，明鏡亦非台」是哪個宗派？",a:"A",opts:["(A)禪宗","(B)密宗","(C)天台宗","(D)華嚴宗"]},
@@ -343,7 +343,7 @@ const QB = {
     {q:"下列哪一種非佛教特有建築？",a:"D",opts:["(A)寺院","(B)寶塔","(C)經幢","(D)華表"]},
     {q:"台灣著名的「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
     {q:"下列何者為新大陸引進的作物？",a:"A",opts:["(A)番薯","(B)胡椒","(C)西瓜","(D)洋蔥"]},
-    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、豬肉","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
+    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
     {q:"日語與台語稱麵包為「PANG」，淵源哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
     {q:"西周封建宗法制度依何種關係建立準則？",a:"C",opts:["(A)行業職能","(B)才識表現","(C)血緣尊卑","(D)社經地位"]},
     {q:"記錄家族世系及成員關係的文書稱為？",a:"B",opts:["(A)家法","(B)家譜","(C)家學","(D)家風"]},
@@ -361,7 +361,7 @@ const QB = {
     {q:"「破釜沉舟」與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]},
     {q:"「刎頸之交」形容？",a:"B",opts:["(A)貌合神離","(B)關係非常親密","(C)萍水相逢","(D)一面之緣"]},
     {q:"「望洋興嘆」現多比喻什麼？",a:"B",opts:["(A)欣賞美景","(B)做事力不從心","(C)登高望遠","(D)哀悼逝者"]},
-    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)不認識字","(C)專注工作","(D)傲慢無禮"]},
+    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)認識字","(C)專注工作","(D)傲慢無禮"]},
     {q:"「草船借箭」的主角是？",a:"C",opts:["(A)周瑜","(B)曹操","(C)諸葛亮","(D)魯肅"]},
     {q:"「班門弄斧」的「班」指？",a:"C",opts:["(A)班固","(B)班超","(C)魯班","(D)班捷明"]},
     {q:"「三顧茅廬」是誰去拜訪誰？",a:"C",opts:["(A)曹操訪郭嘉","(B)孫權訪周瑜","(C)劉備訪諸葛亮","(D)趙雲訪黃忠"]},
@@ -378,7 +378,7 @@ const QB = {
     {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
     {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)茅","(C)毛","(D)錨"]},
     {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
-    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)氣","(D)棄"]},
+    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
     {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
     {q:"「濫___充數」正確填入？",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
     {q:"「怨天____人」正確填入？",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
@@ -396,11 +396,11 @@ const QB = {
     {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受驚後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
     {q:"「水落石出」現在多比喻？",a:"B",opts:["(A)風景優美","(B)事情真相大白","(C)潮汐規律","(D)資源匱乏"]},
     {q:"「差之毫釐，失之____」？",a:"B",opts:["(A)萬丈","(B)千里","(C)百里","(D)須臾"]},
-    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
+    {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
     {q:"「罄竹難書」通常形容？",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
     {q:"下列成語，褒貶色彩與其他三個不同的是？",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
     {q:"「揚湯止沸」與哪個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
-    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境極優越","(B)歷經磨難","(C)心情極輕鬆","(D)衣食無虞"]},
+    {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境優越","(B)歷經磨難","(C)心情輕鬆","(D)衣食無虞"]},
     {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
     {q:"成語「一鳴驚人」主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
     {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
@@ -763,6 +763,28 @@ function handleLucky(pi) {
 }
 
 // ============================================================
+// SYSTEM UTILS (補回缺失函數)
+// ============================================================
+function showEvt(ico, title, desc, cb) {
+  G.evtCb = cb;
+  document.getElementById('e-ico').textContent = ico;
+  document.getElementById('e-title').textContent = title;
+  document.getElementById('e-desc').textContent = desc;
+  document.getElementById('e-player').textContent = G.players[G.turn].name;
+  document.getElementById('emodal').classList.add('open');
+  SFX.special();
+}
+
+function closeEvt() { 
+  document.getElementById('emodal').classList.remove('open'); 
+  if(G.evtCb) {
+    const cb = G.evtCb;
+    G.evtCb = null;
+    cb();
+  }
+}
+
+// ============================================================
 // QUESTION & ANSWER (OPTIMIZED)
 // ============================================================
 function askQuestion(pi, cell, qtype) {
@@ -835,22 +857,9 @@ function finishQuestion(pi, cell, pool, isCorrect, chosenBtn, optsDiv, correctId
 }
 
 // ============================================================
-// SYSTEM UTILS & MISSING FUNCTIONS
+// TIMER UTILS
 // ============================================================
-/**
- * 修復缺失的 showEvt 函數
- */
-function showEvt(ico, title, desc, cb) {
-  G.evtCb = cb;
-  document.getElementById('e-ico').textContent = ico;
-  document.getElementById('e-title').textContent = title;
-  document.getElementById('e-desc').textContent = desc;
-  document.getElementById('e-player').textContent = `${G.players[G.turn].name}`;
-  document.getElementById('emodal').classList.add('open');
-  SFX.special();
-}
-
-function startQTimer(s) { clearQTimer(); G.qTimerVal=s; G.qTimerInterval=setInterval(()=>{ G.qTimerVal--; document.getElementById('q-tnum').textContent=G.qTimerVal; if(G.qTimerVal<=0){ clearQTimer(); finishQuestion(G.turn, G.players[G.turn].pos, 'any', false, null, document.getElementById('q-opts')); } },1000); }
+function startQTimer(s) { clearQTimer(); G.qTimerVal=s; G.qTimerInterval=setInterval(()=>{ G.qTimerVal--; document.getElementById('q-tnum').textContent=G.qTimerVal + "s"; if(G.qTimerVal<=0){ clearQTimer(); finishQuestion(G.turn, G.players[G.turn].pos, 'any', false, null, document.getElementById('q-opts')); } },1000); }
 function clearQTimer() { if(G.qTimerInterval){clearInterval(G.qTimerInterval); G.qTimerInterval=null;} }
 function checkWin() {
   for(let i=0;i<2;i++){ if(G.players[i].coins>=WINNING_COINS){endGame(i);return true;} if(G.players[i].coins<=0){endGame(1-i);return true;} }
@@ -858,7 +867,6 @@ function checkWin() {
 }
 function endGame(wIdx) { G.gameOver=true; stopBGM(); SFX.win(); launchConfetti(); document.getElementById('w-name').textContent=`🏆 ${G.players[wIdx].name} 獲勝！`; document.getElementById('w-sub').textContent=`最終金幣：${G.players[wIdx].coins}💰`; document.getElementById('ws-rounds').textContent=Math.floor(G.round/2); document.getElementById('ws-correct').textContent=G.players[wIdx].correct; document.getElementById('ws-owned').textContent=Object.keys(G.players[wIdx].props).length; document.getElementById('ws-rent').textContent=G.players[wIdx].rentEarned; goTo('s-win'); }
 function nextTurn() { if(G.gameOver)return; G.turn=1-G.turn; G.round++; beginTurn(); }
-function closeEvt() { document.getElementById('emodal').classList.remove('open'); if(G.evtCb)G.evtCb(); }
 
 window.onload = () => { initBG(); };
 </script>
