@@ -7,12 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --p1: #FF4B5C; /* 玩家一顏色保留 */
-      --p2: #4A90E2; /* 玩家二顏色保留 */
-      --bg: #AACDDC; /* 使用您提供的淺藍色 */
-      --card-bg: #F3E3D0; /* 使用您提供的米白色作為卡片背景 */
-      --accent: #81A6C6; /* 使用您提供的深藍色作為強調色 */
-      --text: #4A4A4A;
+      --p1: #FF4B5C;
+      --p2: #4A90E2;
+      --gold: #FFD700;
+      --bg: #121212;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --red: #ff5252;
+      --green: #2ecc71;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -35,62 +36,33 @@
     .screen.active { display: flex; animation: fadeIn 0.5s ease; }
 
     /* UI Components */
-    h1 { 
-      font-family: 'Fredoka One', cursive; 
-      font-size: 4rem; 
-      color: #81A6C6; /* 使用深藍色標題 */
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1); 
-    }    
+    h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; margin: 0; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
     .btn {
-      background: linear-gradient(135deg, #81A6C6, #5A82A6); /* 使用深藍色漸層 */
-      padding: 18px 45px; 
-      font-size: 1.4rem; 
-      color: white;
-      border-radius: 50px;
-      box-shadow: 0 4px 10px rgba(129, 166, 198, 0.4);
+      background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+      border: none; border-radius: 50px; color: white;
+      padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
+      cursor: pointer; margin: 10px; transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
     }
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
     /* Board Layout */
-    #board-container { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      gap: 10px; 
-      height: 85vh; /* 從 95vh 調降到 85vh，為上下預留更多緩衝空間 */
-      justify-content: center;
-    }
+    #board-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     #board {
-      display: grid;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 5px;
-      border-radius: 12px;
-      position: relative;
-      border: 4px solid #BBDEFB;
-      
-      /* --- 修改這裡 --- */
-      width: 70vmin;  /* 寬度改為視窗短邊的 70% */
-      height: 70vmin; /* 高度改為視窗短邊的 70% */
-      /* ---------------- */
+      display: grid; background: rgba(255, 255, 255, 0.1);
+      padding: 5px; border-radius: 8px; position: relative;
+      border: 4px solid #333;
     }
     .cell {
       position: relative; border: 1px solid rgba(255,255,255,0.1);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       font-size: 10px; font-weight: bold; cursor: default; transition: 0.2s;
     }
-    .cell-ico { font-size: 2.5rem;}
-    .cell-lbl { display: none !important;}
+    .cell-ico { font-size: 1.6rem; margin-bottom: 2px; }
+    .cell-lbl { transform: scale(0.9); opacity: 0.8; }
     .cell-num { position: absolute; top: 2px; left: 2px; font-size: 8px; opacity: 0.3; }
-    .cell-rent { 
-      position: absolute; 
-      bottom: 4px; 
-      right: 4px; 
-      font-size: 11px; 
-      background: rgba(255,255,255,0.8); 
-      padding: 2px 4px; 
-      border-radius: 4px;
-    }
+    .cell-rent { position: absolute; bottom: 2px; right: 2px; font-size: 8px; color: var(--gold); }
     .cell-level { position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: 900; }
     .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
 
@@ -110,15 +82,10 @@
     /* Game Info Bar */
     .game-hud { display: flex; gap: 20px; width: 100%; max-width: 700px; justify-content: space-between; margin-bottom: 10px; }
     .player-panel {
-      background: #F3E3D0; /* 使用溫暖的米色 */
-      border: 2px solid #D2C4B4;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      flex: 1; background: var(--card-bg); padding: 10px; border-radius: 12px;
+      border-bottom: 4px solid transparent; transition: 0.3s;
     }
-    .player-panel.my-turn {
-      border-color: #81A6C6; /* 當前回合使用深藍色外框 */
-      background: white;
-    }    
+    .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-5px); background: rgba(255,255,255,0.1); }
     .p-coins { font-size: 1.4rem; font-weight: bold; color: var(--gold); }
     .p-progress { height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden; }
     .p-bar { height: 100%; transition: 0.5s; }
@@ -179,9 +146,9 @@
     <h1>華語大富翁</h1>
     <p style="opacity: 0.7; letter-spacing: 2px;">ONLINE CHINESE MONOPOLY</p>
     <div style="margin-top: 30px;">
-      <button class="btn" onclick="pickDiff('easy')">🌱 簡單 </button>
-      <button class="btn" onclick="pickDiff('normal')">🎓 普通 </button>
-      <button class="btn" onclick="pickDiff('hard')">🔥 困難 </button>
+      <button class="btn" onclick="pickDiff('easy')">🌱 簡單 (字謎)</button>
+      <button class="btn" onclick="pickDiff('normal')">🎓 普通 (文化+成語)</button>
+      <button class="btn" onclick="pickDiff('hard')">🔥 困難 (綜合挑戰)</button>
     </div>
   </div>
 
@@ -670,8 +637,7 @@ function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title')
 function buildBoard() {
   const board = document.getElementById('board'); board.innerHTML='';
   const S=BOARD_SIZE; const CELL_PX = Math.min(Math.floor((Math.min(window.innerWidth,700)-40)/(S)),66);
-  board.style.gridTemplateColumns = `repeat(${S}, 1fr)`;
-  board.style.gridTemplateRows = `repeat(${S}, 1fr)`;
+  board.style.gridTemplateColumns=`repeat(${S},${CELL_PX}px)`; board.style.gridTemplateRows=`repeat(${S},${CELL_PX}px)`;
   const cells = {}; for(let r=0;r<S;r++) for(let c=0;c<S;c++) {
     const div=document.createElement('div'); div.style.gridRow=r+1; div.style.gridColumn=c+1;
     if(r===0||r===S-1||c===0||c===S-1) { cells[`${r},${c}`]=div; board.appendChild(div); }
@@ -801,18 +767,11 @@ function handleLucky(pi) {
 // ============================================================
 function showEvt(ico, title, desc, cb) {
   G.evtCb = cb;
-  const eIco = document.getElementById('e-ico');
-  const eTitle = document.getElementById('e-title');
-  const eDesc = document.getElementById('e-desc');
-  const ePlayer = document.getElementById('e-player');
-  
-  if(eIco) eIco.textContent = ico;
-  if(eTitle) eTitle.textContent = title;
-  if(eDesc) eDesc.textContent = desc;
-  if(ePlayer) ePlayer.textContent = G.players[G.turn].name;
-  
-  const modal = document.getElementById('emodal');
-  if(modal) modal.classList.add('open');
+  document.getElementById('e-ico').textContent = ico;
+  document.getElementById('e-title').textContent = title;
+  document.getElementById('e-desc').textContent = desc;
+  document.getElementById('e-player').textContent = G.players[G.turn].name;
+  document.getElementById('emodal').classList.add('open');
   SFX.special();
 }
 
