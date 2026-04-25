@@ -58,23 +58,30 @@
       position: relative;
     }
     #board {
-      display: grid; 
+      display: grid;
       background: rgba(255, 255, 255, 0.1);
-      padding: 5px; 
-      border-radius: 8px; 
+      padding: 0; /* 移除 padding，避免內部格子偏移 */
+      border-radius: 8px;
       position: relative;
       border: 4px solid #333;
-      margin-top: 10px; /* 縮小棋盤與上方玩家資訊欄的距離 */
-      width: 70vmin; /* 稍微放大一點點回饋空白 */
+      width: 70vmin; /* 稍微放大回 70，讓中間空間更充裕 */
       height: 70vmin;
-      
-      /* 確保地圖不會因為內容物太多而變形 */
       flex-shrink: 0;
+      overflow: hidden; /* 確保邊緣整齊 */
     }
+    
     .cell {
-      position: relative; border: 1px solid rgba(255,255,255,0.1);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 9px; font-weight: bold; cursor: default; transition: 0.2s;
+      position: relative;
+      /* 移除邊框改用 box-shadow，這樣不會佔據寬度空間 */
+      border: none;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%; /* 強制填滿 grid 單位 */
+      height: 100%;
+      box-sizing: border-box; /* 確保內距不影響尺寸 */
     }
     .cell-ico { font-size: 1.4rem; margin-bottom: 2px; }
     .cell-num, .cell-lbl {
@@ -749,16 +756,18 @@ function buildBoard() {
   board.style.gridTemplateRows = `repeat(${S}, 1fr)`;
 
   // 2. 重新加入骰子區域 (這是關鍵，避免被清掉後 updateUI 找不到按鈕)
+  // 加入骰子區域 (設定為佔據中間 7x7 的範圍)
   const diceArea = document.createElement('div');
   diceArea.id = 'dice-area';
+  // 關鍵：明確指定佔據第 3 列到第 9 列，避免撐開邊緣格子
+  diceArea.style.gridArea = "3 / 3 / 10 / 10"; 
   diceArea.innerHTML = `
     <div id="die0" class="die">⚀</div>
     <div id="die1" class="die">⚀</div>
     <div style="display: flex; flex-direction: column; align-items: center;">
       <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
       <span id="dice-total">點擊擲骰</span>
-    </div>
-  `;
+    </div>`;
   board.appendChild(diceArea);
 
   // 3. 生成格子
