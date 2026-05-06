@@ -986,27 +986,39 @@ function renderCell(div, i) {
   let displayIco = def.ico;
   let displayLabel = def.label;
 
+  // 1. 根據難度決定圖示與標籤
   if (def.type === 'question') {
     if (G.diff === 'easy') {
-      // 簡單模式：字謎 (riddle) + 漢字結構 (kanji_structure)
       const isRiddle = (def.qtype === 'riddle' || def.qtype === 'general');
       displayIco = isRiddle ? '🔮' : '🧩';
       displayLabel = isRiddle ? '字謎' : '結構';
     } else if (G.diff === 'hard') {
-      // 困難模式：文化知識 (culture)
       displayIco = '🏛️';
       displayLabel = '文化';
     } else {
-      // 普通模式：成語 (idiom) + 漢語拼音 (pinyin)
-      // 我們利用 i % 2 或是 def.qtype 進行視覺上的交替
       const isIdiom = (def.qtype === 'idiom' || def.qtype === 'general');
       displayIco = isIdiom ? '📚' : '🚇';
       displayLabel = isIdiom ? '成語' : '拼音';
     }
   }
 
-  // --- 後續畫格子的代碼保持不變 ---
+  // 2. 定義 CSS 類別
+  if (def.type === 'start') typeClass = 'ct-start';
+  else if (def.type === 'question') typeClass = `ct-q-${def.qtype}`;
+  else if (def.type === 'lucky') typeClass = 'ct-lucky';
+  else if (def.type === 'forward') typeClass = 'ct-forward';
+  else if (def.type === 'backward') typeClass = 'ct-backward';
+  else if (def.type === 'skip') typeClass = 'ct-skip';
+  else if (def.type === 'teleport') typeClass = 'ct-teleport';
+
   div.className = `cell ${typeClass} ${owner === 0 ? 'own-0' : (owner === 1 ? 'own-1' : '')}`;
+
+  // --- 關鍵修復：確保這兩行定義存在 ---
+  let rentHtml = (def.type === 'question' && owner >= 0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
+  let levelHtml = (owner >= 0 && level > 0) ? `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>` : '';
+  // ------------------------------------
+
+  // 3. 組合 HTML
   div.innerHTML = `
     <div class="cell-ico">${displayIco}</div>
     ${levelHtml}
