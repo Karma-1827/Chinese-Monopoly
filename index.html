@@ -489,10 +489,10 @@
 // QUESTION BANKS
 // ============================================================
 const QB = {
+  // --- 字謎與漢字結構 (Riddle) ---
   riddle: [
     {q:"一人一張口。",a:"合",w:["含","答","口"]},
     {q:"兩人在內。",a:"肉",w:["內","囚","網"]},
-    {q:"哪個漢字要寫最久？",a:"朋",w:["友","好","鵬"]},
     {q:"一心向上。",a:"必",w:["忘","忌","心"]},
     {q:"一隻狗有四張口。",a:"器",w:["哮","嚎","囂"]},
     {q:"一隻黑狗，不叫不吼。",a:"默",w:["黑","靜","暗"]},
@@ -504,15 +504,13 @@ const QB = {
     {q:"夫人何處去。",a:"二",w:["夫","去","大"]},
     {q:"山下之風。",a:"嵐",w:["風","嶺","峰"]},
     {q:"守門員。",a:"閃",w:["門","閉","開"]},
-    {q:"自大加一點。",a:"臭",w:["自","大","太"]},
-    {q:"自有一人在口中。",a:"囚",w:["困","囝","囤"]},
     {q:"我沒有他有，天沒有地有。",a:"也",w:["地","他","她"]},
     {q:"兩點水。",a:"冰",w:["水","冷","凍"]},
     {q:"皇帝的新衣。",a:"襲",w:["衣","裸","服"]},
     {q:"太陽打西邊出來。",a:"晒",w:["曬","晾","晃"]},
     {q:"竹下有寺。",a:"等",w:["寺","竹","待"]},
     {q:"雲上出太陽。",a:"曇",w:["雲","晴","陰"]},
-    {q:"雷而無雨。",a:"田",w:["電","雷","雨"]},
+    {q:"雷而無雨。",a:"田",w:["電","雷","護"]},
     {q:"遠看像頭牛，近看沒有頭。",a:"午",w:["牛","年","牟"]},
     {q:"說話聲太大。",a:"誇",w:["大","說","話"]},
     {q:"大口帶小口。",a:"回",w:["口","囗","囘"]},
@@ -525,22 +523,63 @@ const QB = {
     {q:"鏡中人。",a:"入",w:["人","反","鏡"]},
     {q:"真心相伴。",a:"慎",w:["真","心","忍"]},
     {q:"早不說，晚不說。",a:"許",w:["早","晚","話"]},
-    {q:"一月七日。",a:"脂",w:["月","日","肪"]},
-    {q:"一邊紅，一邊綠，一邊怕雨，一邊怕風。",a:"秋",w:["春","夏","冬"]},
     {q:"人不在其位。",a:"立",w:["位","人","在"]},
     {q:"人在草木間。",a:"茶",w:["草","木","藏"]},
     {q:"日復一日。",a:"昌",w:["日","旦","旭"]},
-    {q:"頂破天。",a:"夫",w:["天","大","丈"]},
-    {q:"此木為啥？",a:"柴",w:["木","此","材"]},
     {q:"一大二小。",a:"奈",w:["大","小","奇"]},
-    {q:"太陽出現在地平線上。",a:"旦",w:["日","旭","昇"]},
     {q:"半個月亮。",a:"胖",w:["月","肉","半"]},
     {q:"十一個人。",a:"仕",w:["十","人","什"]},
     {q:"一字十一口。",a:"吉",w:["一","十","古"]},
     {q:"誰是傻瓜？",a:"保",w:["愚","笨","呆"]},
-    {q:"千里姻緣一線牽。",a:"重",w:["千","里","線"]},
     {q:"請勿入口。",a:"囫",w:["入","口","圈"]},
   ],
+
+  kanji_structure: [
+    // 部首測驗
+    { q: "「校」的部首是什麼？", a: "木", w: ["交", "卜", "文"] },
+    { q: "「媽」的部首是什麼？", a: "女", w: ["馬", "口", "一"] },
+    { q: "「跑」的部首是什麼？", a: "足", w: ["包", "止", "口"] },
+    { q: "「甜」的部首是什麼？", a: "甘", w: ["舌", "口", "十"] },
+    { q: "「遠」的部首是什麼？", a: "辶", w: ["袁", "土", "口"] },
+    { q: "「打」的部首是什麼？", a: "扌", w: ["丁", "一", "丨"] },
+    { q: "「雷」的部首是什麼？", a: "雨", w: ["田", "雲", "電"] },
+    { q: "「草」的部首是什麼？", a: "艹", w: ["早", "日", "十"] },
+    { q: "「臉」的部首是什麼？", a: "肉", w: ["僉", "口", "頁"] },
+    { q: "「狗」的部首是什麼？", a: "犭", w: ["句", "口", "勹"] },
+    { q: "「這」的部首是什麼？", a: "辶", w: ["言", "文", "止"] },
+    { q: "「跳」的部首是什麼？", a: "足", w: ["兆", "止", "目"] },
+    { q: "「晨」的部首是什麼？", a: "日", w: ["辰", "止", "廠"] },
+    { q: "「唱」的部首是什麼？", a: "口", w: ["昌", "日", "舌"] },
+    { q: "「睡」的部首是什麼？", a: "目", w: ["垂", "禾", "十"] },
+    { q: "「海」的部首是什麼？", a: "氵", w: ["每", "人", "母"] },
+    { q: "「燈」的部首是什麼？", a: "火", w: ["登", "丁", "皿"] },
+    { q: "「願」的部首是什麼？", a: "頁", w: ["原", "心", "白"] },
+    { q: "「站」的部首是什麼？", a: "立", w: ["占", "口", "卜"] },
+    { q: "「空」的部首是什麼？", a: "穴", w: ["工", "宀", "八"] },
+    // 合體字測驗
+    { q: "亻 ＋ 本 = ？", a: "体", w: ["笨", "體", "推"] },
+    { q: "口 ＋ 牙 = ？", a: "呀", w: ["穿", "鴉", "訝"] },
+    { q: "日 ＋ 月 = ？", a: "明", w: ["旦", "玥", "閒"] },
+    { q: "女 ＋ 子 = ？", a: "好", w: ["如", "媽", "耍"] },
+    { q: "門 ＋ 市 = ？", a: "鬧", w: ["闖", "閃", "問"] },
+    { q: "木 ＋ 木 = ？", a: "林", w: ["森", "相", "札"] },
+    { q: "氵 ＋ 青 = ？", a: "清", w: ["請", "睛", "精"] },
+    { q: "忄 ＋ 曼 = ？", a: "慢", w: ["漫", "饅", "蔓"] },
+    { q: "忄 ＋ 亡 = ？", a: "忙", w: ["忘", "盲", "妄"] },
+    { q: "山 ＋ 夆 = ？", a: "峰", w: ["鋒", "蜂", "烽"] },
+    { q: "口 ＋ 昌 = ？", a: "唱", w: ["倡", "猖", "冒"] },
+    { q: "目 ＋ 青 = ？", a: "睛", w: ["情", "清", "晴"] },
+    { q: "舌 ＋ 甘 = ？", a: "甜", w: ["恬", "亂", "辭"] },
+    { q: "亻 ＋ 呆 = ？", a: "保", w: ["何", "伴", "信"] },
+    { q: "禾 ＋ 火 = ？", a: "秋", w: ["愁", "秒", "炒"] },
+    { q: "竹 ＋ 毛 = ？", a: "筆", w: ["笛", "笨", "筐"] },
+    { q: "口 ＋ 鳥 = ？", a: "鳴", w: ["雞", "鴨", "鵝"] },
+    { q: "言 ＋ 成 = ？", a: "誠", w: ["城", "盛", "減"] },
+    { q: "小 ＋ 大 = ？", a: "尖", w: ["塵", "奈", "夯"] },
+    { q: "牛 ＋ 寺 = ？", a: "特", w: ["持", "等", "詩"] }
+  ],
+
+  // --- 文化知識 (Culture) ---
   culture: [
     {q:"下列何者是宋代以後主要的私學機構？",a:"A",opts:["(A)書院","(B)精舍","(C)國子監","(D)太學"]},
     {q:"哪句成語顯示服飾具有區隔夷夏的作用？",a:"C",opts:["(A)布衣卿相","(B)衣冠禽獸","(C)被髮左衽","(D)沐猴而冠"]},
@@ -570,9 +609,26 @@ const QB = {
     {q:"台灣導演侯孝賢「聶隱娘」故事出自？",a:"C",opts:["(A)諸子寓言","(B)魏晉志怪","(C)唐人傳奇","(D)宋代話本"]},
     {q:"漢代皇后宮殿「椒房」的意義是？",a:"A",opts:["(A)象徵溫暖芳香多子","(B)象徵後宮和諧","(C)象徵富貴吉祥","(D)象徵高潔貞信"]},
     {q:"台灣以下新舊地名，何者有誤？",a:"B",opts:["(A)金包裏─金山","(B)焦吧哖─玉里","(C)干豆─關渡","(D)打狗─高雄"]},
-    {q:"台灣最著名的國際體育文化傳統是？",a:"A",opts:["(A)棒球","(B)網球","(C)高爾夫球","(D)籃球"]},
     {q:"下列何者不是台灣電影導演？",a:"D",opts:["(A)楊德昌","(B)李安","(C)吳念真","(D)張藝謀"]},
+    // 加入台灣文化專題
+    {q:"【三合院格局】傳統三合院建築中，中間最高、供奉祖先的大廳稱為？",a:"B",opts:["(A)廂房","(B)正身（正廳）","(C)護龍","(D)庭院"]},
+    {q:"【廟宇裝飾】屋脊上彩色碎瓷片拼貼而成的工法稱為？",a:"C",opts:["(A)泥塑","(B)木雕","(C)剪黏","(D)彩繪"]},
+    {q:"【空間智慧】傳統三合院前方曬穀空地的台語俗稱為？",a:"A",opts:["(A)埕","(B)井","(C)巷","(D)門口"]},
+    {q:"【守護神靈】城隍廟裡身材一高一矮、緝拿惡人的兩位將軍是？",a:"B",opts:["(A)千里眼與順風耳","(B)七爺與八爺","(C)土地公與土地婆","(D)文判官與武判官"]},
+    {q:"【媽祖文化】「媽祖生」護法神中，負責「看得遠」的是？",a:"C",opts:["(A)順風耳","(B)報馬仔","(C)千里眼","(D)虎爺"]},
+    {q:"【節慶習俗】冬至（Tang-tsih）吃哪種食物象徵團圓與增加一歲？",a:"C",opts:["(A)粽子","(B)潤餅","(C)湯圓","(D)月餅"]},
+    {q:"【中元節】農曆七月十五日邀請「好兄弟」享用供品的儀式稱作？",a:"B",opts:["(A)繞境","(B)普度","(C)刈香","(D)建醮"]},
+    {q:"【原住民文化】「賽夏族矮靈祭」是以哪種特殊的樂器/裝飾物聞名？",a:"A",opts:["(A)臀鈴","(B)口簧琴","(C)木鼓","(D)笛子"]},
+    {q:"【工藝之美】高雄美濃以製作精美、具祝福意義的哪種工藝品聞名？",a:"B",opts:["(A)陶瓷","(B)油紙傘","(C)藺草帽","(D)竹籠"]},
+    {q:"【歷史名稱】「艋舺」原意是指小船，源自哪種語系？",a:"C",opts:["(A)荷蘭語","(B)閩南語","(C)原住民語（平埔族）","(D)客家語"]},
+    {q:"【飲食文化】台灣「辦桌」負責指揮調度菜色與整場宴席的主廚是？",a:"B",opts:["(A)店小二","(B)總舖師","(C)跑堂","(D)掌櫃"]},
+    {q:"【古早童玩】利用竹子與橡皮筋製作出能射出紙彈的玩具是？",a:"C",opts:["(A)尪仔標","(B)陀螺","(C)竹槍","(D)毽子"]},
+    {q:"【守護神】金門地區隨處可見用來鎮風辟邪、外型威武的石刻像是？",a:"B",opts:["(A)石敢當","(B)風獅爺","(C)劍獅","(D)麒麟"]},
+    {q:"【自然保育】台灣蝴蝶王國中，冬天會集體南下避冬的壯觀蝶種是？",a:"B",opts:["(A)鳳蝶","(B)紫斑蝶","(C)粉蝶","(D)蛺蝶"]},
+    {q:"【廟宇文化】廟門兩邊石獅，左邊那一隻爪下踩著「繡球」的是？",a:"A",opts:["(A)公獅","(B)母獅","(C)不分公母","(D)都有可能"]}
   ],
+
+  // --- 成語測驗 (Idiom) ---
   idiom: [
     {q:"「胸有成竹」現用來比喻什麼？",a:"B",opts:["(A)為人正直","(B)很有把握","(C)孤芳自賞","(D)內心空虛"]},
     {q:"哪成語形容「文章極好，非常有價值」？",a:"A",opts:["(A)洛陽紙貴","(B)韋編三絕","(C)汗牛充棟","(D)買櫝還珠"]},
@@ -597,7 +653,7 @@ const QB = {
     {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
     {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)矛","(C)毛","(D)錨"]},
     {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
-    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)器","(D)棄"]},
+    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)氣","(D)棄"]},
     {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
     {q:"「濫___充數」正確填入？",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
     {q:"「怨天____人」正確填入？",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
@@ -623,62 +679,68 @@ const QB = {
     {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
     {q:"成語「一鳴驚人」的主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
     {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
-    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
+    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]}
   ],
-  general: [
-    {q:"下列何者沒有使用「譬喻」修辭？",a:"C",opts:["(A)他的笑容像朝陽在褐色田野","(B)清水就像帳戶裡的積蓄","(C)好像有責任追究典故","(D)太陽在我杯中，可以一口吞噬"]},
-    {q:"漢語東西南北說明，何者有誤？",a:"C",opts:["(A)西席後借指教師","(B)東道主稱東家為主人","(C)南極星輝哀悼老年男子","(D)南面表示居人君之位"]},
-    {q:"「網紅」一詞的形成屬何種詞彙變化？",a:"A",opts:["(A)詞彙縮略","(B)詞素重組","(C)詞義擴大","(D)語義轉移"]},
-    {q:"「我會說華語」和「我能說華語」的區別？",a:"D",opts:["(A)語氣強度","(B)情感態度","(C)時間指向","(D)能力或條件"]},
-    {q:"「哪裡哪裡，還差得遠」體現禮貌策略？",a:"B",opts:["(A)禮貌的誇大","(B)禮貌的貶低","(C)禮貌的間接","(D)禮貌的模糊"]},
-    {q:"台灣「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
-    {q:"農曆七月普渡「三牲」通常是？",a:"B",opts:["(A)雞、魚、鴨","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
-    {q:"向陌生人問路最符合語用習慣的說法？",a:"C",opts:["(A)拜託您來我家坐坐","(B)勞駕借我一百塊","(C)請問這附近有捷運站嗎","(D)麻煩你幫我批這份報告"]},
-    {q:"華語詞序顛倒後意義仍相近的是？",a:"B",opts:["(A)喜歡─歡喜/犯罪─罪犯","(B)繼承─承繼/半夜─夜半","(C)傷感─感傷/出生─生出","(D)朋友─友朋/音樂─樂音"]},
-    {q:"下列選項中何者沒有錯別字？",a:"A",opts:["(A)他迷糊健忘，經常當眾出糗","(B)洗心革面，這件事就既往不究","(C)購買彩卷的人大都做美夢","(D)不容許對嫌犯嚴刑烤打"]},
-    {q:"下列有關漢字的解說，何者合乎字源？",a:"D",opts:["(A)富是一人一口田","(B)喉在口中等候食物","(C)宿是一百人住一個房子","(D)夫字上一橫是男子插髮簪"]},
-    {q:"台南府城名匾「爾來了」是誰說的？",a:"B",opts:["(A)國姓爺","(B)城隍爺","(C)玉皇大帝","(D)武聖關公"]},
-    {q:"下列「超」字，何者意義與其他不同？",a:"B",opts:["(A)這次期末考超難","(B)我們沒有所謂超不超標","(C)小米的米麵包超好吃","(D)看到亂丟菸蒂超沒公德心"]},
-    {q:"老師說「就教過的內容」違反哪種言談準則？",a:"B",opts:["(A)質","(B)量","(C)關係","(D)方式"]},
-    {q:"把「仍然ㄖㄥˊㄖㄢˊ」讀成「ㄌㄥˊㄌㄢˊ」，何者有誤？",a:"D",opts:["(A)擦音唸成邊音","(B)兩個都是濁音","(C)捲舌音唸成齒齦音","(D)舌尖前音唸成舌尖後音"]},
-    {q:"外籍生把「我在餐廳吃飯」說成「我吃飯在餐廳」，未掌握何種語序原則？",a:"A",opts:["(A)時間順序","(B)從大到小","(C)從舊到新","(D)從輕到重"]},
-    {q:"下列選項中的數字，哪一個是虛指？",a:"A",opts:["(A)三令五申","(B)三教九流","(C)三綱五常","(D)三十而立"]},
-    {q:"句末助詞「啊」的語流音變屬於？",a:"A",opts:["(A)同化","(B)異化","(C)強化","(D)弱化"]},
-    {q:"「泰斗」的組構方式與哪些不同？",a:"B",opts:["(A)品管","(B)泰斗","(C)中巴","(D)公關"]},
-    {q:"媽媽反問「你作業寫了沒有？」違反哪個言談原則？",a:"C",opts:["(A)量","(B)質","(C)關係","(D)方式"]},
-    {q:"地名配對，何者有誤？",a:"C",opts:["(A)鳥松：植物","(B)鵝鑾鼻：地形","(C)八里：外來語言","(D)東石：族群原鄉"]},
-    {q:"下列與顏色相關的慣用語，何者沒有貶義？",a:"C",opts:["(A)開黃腔","(B)戴綠帽","(C)開紅盤","(D)黑吃黑"]},
-    {q:"「三姑六婆」中「三姑」指的是？",a:"B",opts:["(A)尼姑、道姑、紫姑","(B)尼姑、道姑、卦姑","(C)道姑、紫姑、仙姑","(D)道姑、卦姑、仙姑"]},
-    {q:"小美到哪個曾被法國殖民的國家教學？",a:"A",opts:["(A)越南","(B)印尼","(C)新加坡","(D)馬來西亞"]},
-    {q:"道別時最不適合說的是？",a:"B",opts:["(A)一路順風","(B)安詳離開","(C)路上小心","(D)多多保重"]},
-    {q:"下列何者是由台灣特有植物製作？",a:"C",opts:["(A)杏仁茶","(B)蓮藕茶","(C)愛玉凍","(D)烏梅汁"]},
-    {q:"「黯然銷魂飯」、「法蘭西多士」，最可能是哪種餐廳？",a:"D",opts:["(A)泰式餐廳","(B)美式西餐廳","(C)中式川菜館","(D)港式茶餐廳"]},
-    {q:"下列哪個詞彙並非來自閩南語？",a:"C",opts:["(A)強強滾","(B)花枝羹","(C)紅不讓","(D)鴨霸"]},
-    {q:"下列歇後語，何者前後對應不貼切？",a:"C",opts:["(A)劉備對孔明─言聽計從","(B)老鼠啃書本─咬文嚼字","(C)鋼絲穿豆腐─缺一不可","(D)螃蟹過馬路─橫行霸道"]},
-    {q:"「彭大海一棒把小白球打上了太空」符合哪種修辭？",a:"B",opts:["(A)譬喻","(B)誇飾","(C)婉曲","(D)擬人"]},
-    {q:"十六世紀哪者最不可能從美洲引進？",a:"A",opts:["(A)葡萄","(B)白銀","(C)玉米","(D)辣椒"]},
-    {q:"農曆月份別稱，何者正確？",a:"C",opts:["(A)四月稱梅月","(B)五月稱榴槤月","(C)六月稱荷月","(D)七月稱柳月"]},
-    {q:"「無形無蹤透人懷」詩所描述的對象是？",a:"B",opts:["(A)天空","(B)狂風","(C)流水","(D)松影"]},
-    {q:"「隔壁家老王的兒子已離婚了」不在預設範圍的是？",a:"D",opts:["(A)老王至少有個兒子","(B)老王的兒子結過婚","(C)老王住在講者附近","(D)老王的年紀不小"]},
-    {q:"「氣死我了」中的「我」是？",a:"B",opts:["(A)主語","(B)賓語","(C)狀語","(D)補語"]},
-    {q:"下列哪個詞不包含意譯成分？",a:"A",opts:["(A)凡士林","(B)冰淇淋","(C)迷你裙","(D)霓虹燈"]},
-    {q:"「水仙不開花—裝蒜」使用的歇後方式？",a:"D",opts:["(A)諧音","(B)推理","(C)藏尾","(D)比擬"]},
-    {q:"「八卦」詞義的發展是？",a:"C",opts:["(A)詞義擴大","(B)詞義縮小","(C)詞義轉移","(D)詞義提升"]},
-    {q:"關於世界各民族文化，何者錯誤？",a:"D",opts:["(A)日越印都有十二生肖","(B)越南卯年是貓年","(C)越南也有中秋節","(D)越南端午節紀念屈原"]},
-    {q:"《紅樓夢》中「那件東西」所指的是？",a:"A",opts:["(A)棺材","(B)衣櫃","(C)書桌","(D)藏寶箱"]},
-    {q:"太太說「買10個包子，若看到賣西瓜就買1個」，先生理解錯誤原因？",a:"B",opts:["(A)言外之意","(B)語言歧義","(C)言談預設","(D)禮貌行為"]},
-    {q:"台灣水果中，最可能原生於台灣的是？",a:"A",opts:["(A)楊梅","(B)香蕉","(C)蘋果","(D)芭樂"]},
-    {q:"把「上船」唸成「上床」，哪個部份出了問題？",a:"D",opts:["(A)聲調","(B)聲母","(C)介音","(D)韻尾"]},
-    {q:"台灣婚禮「拖竹青」的主要意義是？",a:"C",opts:["(A)婚姻美滿","(B)多子多孫","(C)防範鬼怪作祟","(D)長命富貴"]},
-    {q:"下列哪一個詞不是「音譯詞」？",a:"D",opts:["(A)三溫暖","(B)鴉片","(C)佛陀","(D)逍遙"]},
-    {q:"對聯運用「合體成字」製造諧趣的是？",a:"B",opts:["(A)白店白雞啼白晝","(B)鳥入風中銜去蟲而作鳳","(C)坐南朝北吃西瓜","(D)膏可吃藥可吃膏藥豈可吃"]},
-    {q:"關於顏色文化詞語，何者錯誤？",a:"C",opts:["(A)紅娘─媒人","(B)黃泉─人死之後","(C)青睞─受人鄙棄","(D)白丁─平民"]},
-    {q:"下列哪個詞是絕對反義詞？",a:"C",opts:["(A)大／小","(B)冷／熱","(C)死／活","(D)黑／白"]},
-    {q:"廣告「一把抵兩把，何需瑪麗亞？」使用的修辭？",a:"C",opts:["(A)諧音","(B)譬喻","(C)借代","(D)排比"]},
-    {q:"「真愛找麻煩」歧義與其他三句不同，原因是？",a:"A",opts:["(A)斷詞方式不同","(B)同義詞替換","(C)指代不清","(D)省略成分"]},
-  ]
-};
 
+  // --- 漢語拼音與語文常識 (Pinyin) ---
+  pinyin: [
+    // 文湖線
+    {q:"「南港展覽館」的拼音？",a:"Nángǎng Zhǎnlǎnguǎn",w:["Lángǎng Zhǎnlǎnguǎn","Nángǎn Zhǎnlǎnguǎn","Nángǎng Zhǎnlǎguǎn"]},
+    {q:"「內湖」的拼音？",a:"Nèihú",w:["Lèihú","Nèihú","Nèihóng"]},
+    {q:"「大直」的拼音？",a:"Dàzhí",w:["Dàzí","Tàzhí","Dàzhí"]},
+    {q:"「松山機場」的拼音？",a:"Sōngshān Jīchǎng",w:["Shōngshān Jīchǎng","Sōngsuān Jīchǎng","Sōngshān Jīcǎng"]},
+    {q:"「南京復興」的拼音？",a:"Nánjīng Fùxīng",w:["Lánjīng Fùxīng","Nánjīn Fùxīng","Nánjīng Fùxīn"]},
+    {q:"「忠孝復興」的拼音？",a:"Zhōngxiào Fùxīng",w:["Zōngxiào Fùxīng","Zhōngxiào Fùxīn","Zhòngxiào Fùxīng"]},
+    {q:"「大安」的拼音？(注意隔音符號)",a:"Dà'ān",w:["Dàān","Tà'ān","Dà'āng"]},
+    {q:"「科技大樓」的拼音？",a:"Kējì Dàlóu",w:["Chējì Dàlóu","Kējì Tàlóu","Kēzhì Dàlóu"]},
+    {q:"「萬芳社區」的拼音？",a:"Wànfāng Shèqū",w:["Wànfāng Sèqū","Wànfān Shèqū","Wànfāng Shèqǖ"]},
+    {q:"「動物園」的拼音？",a:"Dòngwùyuán",w:["Dòngwùyán","Tòngwùyuán","Dòngwùyuǎn"]},
+    // 淡水信義線
+    {q:"「淡水」的拼音？",a:"Dànshuǐ",w:["Dànsuǐ","Tànshuǐ","Dànshǔi"]},
+    {q:"「紅樹林」的拼音？",a:"Hóngshùlín",w:["Hóngsùlín","Hóngshùlíng","Hóngshùlǐn"]},
+    {q:"「北投」的拼音？",a:"Běitóu",w:["Běidóu","Běitó","Bēitóu"]},
+    {q:"「士林」的拼音？",a:"Shìlín",w:["Sìlín","Shìlíng","Shìlǐn"]},
+    {q:"「劍潭」的拼音？",a:"Jiàntán",w:["Jiàntáng","Qiàntán","Jiǎntán"]},
+    {q:"「圓山」的拼音？",a:"Yuánshān",w:["Yuánsuān","Yánshān","Yuánshā"]},
+    {q:"「雙連」的拼音？",a:"Shuānglián",w:["Suānglián","Shuāngnián","Shuānglián"]},
+    {q:"「中山」的拼音？",a:"Zhōngshān",w:["Zōngshān","Zhōngsuān","Zhōngshā"]},
+    {q:"「台北車站」的拼音？",a:"Táiběi Chēzhàn",w:["Táiběi Cēzàn","Táiběi Chēzàn","Táběi Chēzhàn"]},
+    {q:"「中正紀念堂」的拼音？",a:"Zhōngzhèng Jìniàntáng",w:["Zōngzèng Jìniàntáng","Zhōngzhèng Jìniàntán","Zhōngzhèng Jìnàitáng"]},
+    // 松山新店線
+    {q:"「松山」的拼音？",a:"Sōngshān",w:["Shōngshān","Sōngsuān","Shōngsuān"]},
+    {q:"「台北小巨蛋」的拼音？",a:"Táiběi Xiǎojùdàn",w:["Táiběi Xiǎoqùdàn","Táběi Xiǎojùdàn","Táiběi Xiǎojǔdàn"]},
+    {q:"「北門」的拼音？",a:"Běimén",w:["Běimín","Běimèng","Běiměn"]},
+    {q:"「西門」的拼音？",a:"Xīmén",w:["Xīmín","Xīměn","Xīmèng"]},
+    {q:"「古亭」的拼音？",a:"Gǔtíng",w:["Kǔtíng","Gǔtín","Gǔtǐng"]},
+    {q:"「台電大樓」的拼音？",a:"Táidiàn Dàlóu",w:["Tǎidiàn Dàlóu","Táidiàn Tàlóu","Táidiàn Dàló"]},
+    {q:"「公館」的拼音？",a:"Gōngguǎn",w:["Gōngguān","Kōngguǎn","Gòngguǎn"]},
+    {q:"「萬隆」的拼音？",a:"Wànlóng",w:["Wànlóng","Wànlóng","Wànlóng"]},
+    {q:"「景美」的拼音？",a:"Jǐngměi",w:["Jǐnměi","Qǐngměi","Jǐngmǐ"]},
+    {q:"「新店」的拼音？",a:"Xīndiàn",w:["Xīndiàn","Xīntiàn","Shīndiàn"]},
+    // 中和新蘆線
+    {q:"「蘆洲」的拼音？",a:"Lúzhōu",w:["Lúzhōu","Lúzōu","Núzhōu"]},
+    {q:"「三重」的拼音？",a:"Sānzhòng",w:["Shānzhòng","Sānzòng","Sāndòng"]},
+    {q:"「大橋頭」的拼音？",a:"Dàqiáotóu",w:["Dàqiáotó","Tàqiáotóu","Dàjiáotóu"]},
+    {q:"「民權西路」的拼音？",a:"Mínquán Xīlù",w:["Míngquán Xīlù","Mínquán Shīlù","Mínquán Xīlù"]},
+    {q:"「行天宮」的拼音？",a:"Xíngtiāngōng",w:["Xíntiāngōng","Shíngtiāngōng","Xíngtiāngōng"]},
+    {q:"「松江南京」的拼音？",a:"Sōngjiāng Nánjīng",w:["Shōngjiāng Lánjīng","Sōngjiāng Lánjīng","Sōngjiāng Nánjīn"]},
+    {q:"「頂溪」的拼音？",a:"Dǐngxī",w:["Dǐnxī","Tǐngxī","Dǐngshī"]},
+    {q:"「永安市場」的拼音？(隔音符號)",a:"Yǒng'ān Shìchǎng",w:["Yǒngān Shìchǎng","Yǒng'āng Shìcǎng","Yǒng'ān Sìcǎng"]},
+    {q:"「景安」的拼音？(隔音符號)",a:"Jǐng'ān",w:["Jǐngān","Jǐn'ān","Qǐng'ān"]},
+    {q:"「南勢角」的拼音？",a:"Nánshìjiǎo",w:["Lánshìjiǎo","Nánsuìjiǎo","Nánshì角"]},
+    // 板南線
+    {q:"「昆陽」的拼音？",a:"Kūnyáng",w:["Kūnyán","Gūnyáng","Kūnyǎng"]},
+    {q:"「後山埤」的拼音？",a:"Hòushānpí",w:["Hòusuānpí","Hòushānbēi","Hòushānpí"]},
+    {q:"「永春」的拼音？",a:"Yǒngchūn",w:["Yǒngcūn","Yǒngchūn","Yǒngchūn"]},
+    {q:"「善導寺」的拼音？",a:"Shàndǎosì",w:["Sàndǎoshì","Shàndǎoshì","Shàndǎosì"]},
+    {q:"「龍山寺」的拼音？",a:"Lóngshānsì",w:["Lóngsuānsì","Lóngsuānshì","Lóngshānshì"]},
+    {q:"「江子翠」的拼音？",a:"Jiāngzicuì",w:["Jiāngzhǐcuì","Jiāngzichuì","Qiāngzicuì"]},
+    {q:"「新埔」的拼音？",a:"Xīnpǔ",w:["Xīnbǔ","Shīnpǔ","Xīnpú"]},
+    {q:"「板橋」的拼音？",a:"Bǎnqiáo",w:["Pǎnqiáo","Bǎnqiǎo","Bǎnqiáo"]},
+    {q:"「府中」的拼音？",a:"Fǔzhōng",w:["Fǔzōng","Hǔzhōng","Fúzhōng"]},
+    {q:"「亞東醫院」的拼音？",a:"Yàdōng Yīyuàn",w:["Yàdòng Yīyuàn","Yàdōng Yīyàn","Yǎdōng Yīyuàn"]}
+  ],
+};
 // ============================================================
 // GAME SETTINGS & BOARD CONFIG
 // ============================================================
@@ -921,29 +983,26 @@ function renderCell(div, i) {
   const level = G.cellLevel[i];
   let typeClass = '';
 
-  // --- 修改邏輯：根據 G.diff 決定顯示的 Emoji ---
   let displayIco = def.ico;
   let displayLabel = def.label;
 
   if (def.type === 'question') {
     if (G.diff === 'easy') {
-      displayIco = '🔮';  // 簡單模式全部強制顯示字謎圖示
-      displayLabel = '字謎';
+      // 簡單模式圖示分配
+      const isRiddle = (def.qtype === 'riddle' || def.qtype === 'general');
+      displayIco = isRiddle ? '🔮' : '🧩';
+      displayLabel = isRiddle ? '字謎' : '結構';
     } else if (G.diff === 'hard') {
-      displayIco = '🌟';  // 困難模式全部強制顯示綜合圖示
-      displayLabel = '綜合';
+      // 困難模式圖示
+      displayIco = '🏛️';
+      displayLabel = '文化';
     } else {
-      // 普通模式：維持原本 CELL_DEFS 的分配 (文化+成語)
-      // 但我們確保不出現簡單或困難的圖示
-      if (def.qtype === 'riddle' || def.qtype === 'general') {
-         // 如果格子本來是字謎或綜合，在普通模式下隨機轉為文化或成語
-         const isIdiom = i % 2 === 0;
-         displayIco = isIdiom ? '📚' : '🏛️';
-         displayLabel = isIdiom ? '成語' : '文化';
-      }
+      // 普通模式圖示分配
+      const isIdiom = (def.qtype === 'idiom' || def.qtype === 'general');
+      displayIco = isIdiom ? '📚' : '🚇';
+      displayLabel = isIdiom ? '成語' : '拼音';
     }
   }
-  // ------------------------------------------
 
   if (def.type === 'start') typeClass = 'ct-start';
   else if (def.type === 'question') typeClass = `ct-q-${def.qtype}`;
@@ -1131,36 +1190,81 @@ function closeEvt() {
 // ============================================================
 function askQuestion(pi, cell, qtype) {
   G.waitAns=true; updateUI();
+  
+  // --- 重新定義難度對應的題庫分配 ---
   let pool;
   if (G.diff === 'easy') {
-    pool = 'riddle'; // 簡單模式：只出現字謎
+    // 簡單模式：漢字結構 (kanji_structure) 與 字謎 (riddle)
+    // 根據格子原本的 qtype 進行二次分配
+    pool = (qtype === 'riddle' || qtype === 'general') ? 'riddle' : 'kanji_structure';
   } else if (G.diff === 'hard') {
-    pool = 'general'; // 困難模式：只出現綜合題
+    // 困難模式：加入 文化 (culture) 與 綜合題庫
+    // 這裡讓困難模式包含所有進階題型，並以文化題為主
+    pool = (qtype === 'culture') ? 'culture' : 'culture'; // 或是設定 pool = 'culture' 強制執行
   } else {
-    // 普通模式：文化與成語交替（根據格子類型決定）
-    pool = (qtype === 'idiom') ? 'idiom' : 'culture';
+    // 普通模式：拼音 (pinyin) 與 成語 (idiom)
+    pool = (qtype === 'idiom' || qtype === 'general') ? 'idiom' : 'pinyin';
   }
-  const bank=QB[pool]; const idx=Math.floor(Math.random()*bank.length); const q=bank[idx];
-  const isAI=G.mode==='ai'&&pi===1;
 
-  const typeNames = { riddle: '🔮 字謎', culture: '🏛️ 文化', idiom: '📚 成語', general: '🌟 綜合' };
-  document.getElementById('q-type-badge').textContent = typeNames[pool];
-  document.getElementById('q-player-name').textContent=G.players[pi].name;
-  document.getElementById('q-text').textContent=q.q;
-  document.getElementById('q-res').style.display='none';
-  document.getElementById('q-ai').style.display=isAI?'block':'none';
+  const bank = QB[pool]; 
+  const idx = Math.floor(Math.random() * bank.length); 
+  const q = bank[idx];
+  const isAI = G.mode === 'ai' && pi === 1;
 
-  const optsDiv=document.getElementById('q-opts'); optsDiv.innerHTML='';
-  let options=[], correctIdx;
-  if(pool==='riddle'){
-    options=[q.a, ...q.w].sort(()=>Math.random()-.5); correctIdx=options.indexOf(q.a);
-    options.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.innerHTML=`${o}`; b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx); optsDiv.appendChild(b); });
+  // 更新顯示標籤名稱
+  const typeNames = { 
+    riddle: '🔮 字謎', 
+    kanji_structure: '🧩 漢字結構', 
+    culture: '🏛️ 文化知識', 
+    idiom: '📚 成語測驗', 
+    pinyin: '🚇 漢語拼音' 
+  };
+  
+  document.getElementById('q-type-badge').textContent = typeNames[pool] || '🌟 華語挑戰';
+  document.getElementById('q-player-name').textContent = G.players[pi].name;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-res').style.display = 'none';
+  document.getElementById('q-ai').style.display = isAI ? 'block' : 'none';
+
+  const optsDiv = document.getElementById('q-opts'); 
+  optsDiv.innerHTML = '';
+  
+  let options = [], correctIdx;
+  
+  // 處理不同格式的題庫 (riddle 與 pinyin 使用 a/w 格式；idiom 與 culture 使用 opts 格式)
+  if (q.opts) {
+    // 選擇題格式 (如 idiom, culture)
+    correctIdx = "ABCD".indexOf(q.a);
+    q.opts.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.innerHTML = o;
+      b.onclick = () => answerQ(pi, cell, pool, i === correctIdx, b, optsDiv, correctIdx);
+      optsDiv.appendChild(b);
+    });
   } else {
-    correctIdx="ABCD".indexOf(q.a);
-    q.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.innerHTML=`${o}`; b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx); optsDiv.appendChild(b); });
+    // 字謎、拼音、漢字結構格式 (a 為正解, w 為誤項)
+    options = [q.a, ...q.w].sort(() => Math.random() - 0.5);
+    correctIdx = options.indexOf(q.a);
+    options.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.innerHTML = o;
+      b.onclick = () => answerQ(pi, cell, pool, i === correctIdx, b, optsDiv, correctIdx);
+      optsDiv.appendChild(b);
+    });
   }
-  startQTimer(60); document.getElementById('qmodal').classList.add('open');
-  if(isAI){ setTimeout(()=>{ const ok=Math.random()<AI_RATES[G.diff]; const cIdx=ok?correctIdx:(correctIdx+1)%4; answerQ(pi,cell,pool,ok,optsDiv.children[cIdx],optsDiv,correctIdx); },2000); }
+  
+  startQTimer(60); 
+  document.getElementById('qmodal').classList.add('open');
+  
+  if (isAI) {
+    setTimeout(() => {
+      const ok = Math.random() < AI_RATES[G.diff];
+      const cIdx = ok ? correctIdx : (correctIdx + 1) % (q.opts ? q.opts.length : options.length);
+      answerQ(pi, cell, pool, ok, optsDiv.children[cIdx], optsDiv, correctIdx);
+    }, 2000);
+  }
 }
 
 function answerQ(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx) {
