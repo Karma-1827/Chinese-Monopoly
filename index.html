@@ -978,7 +978,7 @@ function buildBoard() {
 }
 
 function renderCell(div, i) {
-  // --- 步驟 A: 宣告所有變數並給予預設值 ---
+  // 1. 初始化所有變數，給予預設空值，防止 ReferenceError
   const def = CELL_DEFS[i];
   const owner = G.cellOwner[i];
   const level = G.cellLevel[i];
@@ -988,7 +988,7 @@ function renderCell(div, i) {
   let rentHtml = '';  // 預設為空字串
   let levelHtml = ''; // 預設為空字串
 
-  // --- 步驟 B: 根據難度與題目類型判斷圖示 ---
+  // 2. 處理題目格的 Icon 與內容判定
   if (def.type === 'question') {
     if (G.diff === 'easy') {
       const isRiddle = (def.qtype === 'riddle' || def.qtype === 'general');
@@ -998,26 +998,32 @@ function renderCell(div, i) {
       displayIco = '🏛️';
       displayLabel = '文化';
     } else {
+      // 普通模式：成語與拼音
       const isIdiom = (def.qtype === 'idiom' || def.qtype === 'general');
       displayIco = isIdiom ? '📚' : '🚇';
       displayLabel = isIdiom ? '成語' : '拼音';
     }
 
-    // 只有題目格且有主人時，才生成租金與等級標籤
+    // 只有當地板有主人時，才生成租金與等級標籤
     if (owner >= 0) {
       rentHtml = `<div class="cell-rent">租${RENT_TABLE[level]}</div>`;
       levelHtml = `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>`;
     }
   }
 
-  // --- 步驟 C: 判斷格子背景樣式 ---
+  // 3. 處理格子背景樣式類別
   const typeMap = {
-    'start': 'ct-start', 'question': `ct-q-${def.qtype}`, 'lucky': 'ct-lucky',
-    'forward': 'ct-forward', 'backward': 'ct-backward', 'skip': 'ct-skip', 'teleport': 'ct-teleport'
+    'start': 'ct-start',
+    'question': `ct-q-${def.qtype}`,
+    'lucky': 'ct-lucky',
+    'forward': 'ct-forward',
+    'backward': 'ct-backward',
+    'skip': 'ct-skip',
+    'teleport': 'ct-teleport'
   };
   typeClass = typeMap[def.type] || '';
 
-  // --- 步驟 D: 渲染 HTML ---
+  // 4. 最後組合 HTML 內容
   div.className = `cell ${typeClass} ${owner === 0 ? 'own-0' : (owner === 1 ? 'own-1' : '')}`;
   div.innerHTML = `
     <div class="cell-ico">${displayIco}</div>
