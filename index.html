@@ -978,15 +978,17 @@ function buildBoard() {
 }
 
 function renderCell(div, i) {
+  // --- 步驟 A: 宣告所有變數並給予預設值 ---
   const def = CELL_DEFS[i];
   const owner = G.cellOwner[i];
   const level = G.cellLevel[i];
   let typeClass = '';
-
   let displayIco = def.ico;
   let displayLabel = def.label;
+  let rentHtml = '';  // 預設為空字串
+  let levelHtml = ''; // 預設為空字串
 
-  // 1. 根據難度決定圖示與標籤
+  // --- 步驟 B: 根據難度與題目類型判斷圖示 ---
   if (def.type === 'question') {
     if (G.diff === 'easy') {
       const isRiddle = (def.qtype === 'riddle' || def.qtype === 'general');
@@ -1000,29 +1002,27 @@ function renderCell(div, i) {
       displayIco = isIdiom ? '📚' : '🚇';
       displayLabel = isIdiom ? '成語' : '拼音';
     }
+
+    // 只有題目格且有主人時，才生成租金與等級標籤
+    if (owner >= 0) {
+      rentHtml = `<div class="cell-rent">租${RENT_TABLE[level]}</div>`;
+      levelHtml = `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>`;
+    }
   }
 
-  // 2. 定義 CSS 類別
-  if (def.type === 'start') typeClass = 'ct-start';
-  else if (def.type === 'question') typeClass = `ct-q-${def.qtype}`;
-  else if (def.type === 'lucky') typeClass = 'ct-lucky';
-  else if (def.type === 'forward') typeClass = 'ct-forward';
-  else if (def.type === 'backward') typeClass = 'ct-backward';
-  else if (def.type === 'skip') typeClass = 'ct-skip';
-  else if (def.type === 'teleport') typeClass = 'ct-teleport';
+  // --- 步驟 C: 判斷格子背景樣式 ---
+  const typeMap = {
+    'start': 'ct-start', 'question': `ct-q-${def.qtype}`, 'lucky': 'ct-lucky',
+    'forward': 'ct-forward', 'backward': 'ct-backward', 'skip': 'ct-skip', 'teleport': 'ct-teleport'
+  };
+  typeClass = typeMap[def.type] || '';
 
+  // --- 步驟 D: 渲染 HTML ---
   div.className = `cell ${typeClass} ${owner === 0 ? 'own-0' : (owner === 1 ? 'own-1' : '')}`;
-
-  // --- 關鍵修復：確保這兩行定義存在 ---
-  let rentHtml = (def.type === 'question' && owner >= 0) ? `<div class="cell-rent">租${RENT_TABLE[level]}</div>` : '';
-  let levelHtml = (owner >= 0 && level > 0) ? `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>` : '';
-  // ------------------------------------
-
-  // 3. 組合 HTML
   div.innerHTML = `
     <div class="cell-ico">${displayIco}</div>
     ${levelHtml}
-    ${rentHtml} 
+    ${rentHtml}
     <div id="tok-${i}" class="token-container"></div>
   `;
 }
