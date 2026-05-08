@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>華語大富翁</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --p1: #FF4B5C;
@@ -14,6 +15,15 @@
       --card-bg: rgba(255, 255, 255, 0.05);
       --red: #ff5252;
       --green: #2ecc71;
+      --c1: #ff4d6d;
+      --c2: #ff9f43;
+      --c3: #f9ca24;
+      --c4: #6ab04c;
+      --c5: #22a6f2;
+      --c6: #a55eea;
+      --flower-red: #ff0033;
+      --flower-pink: #ff4d6d;
+      --flower-light: #ff85a1;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -27,7 +37,7 @@
     }
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
-    /* Screens Management */
+    /* ===== SCREENS ===== */
     .screen {
       position: absolute; width: 100%; height: 100%;
       display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -35,260 +45,165 @@
     }
     .screen.active { display: flex; animation: fadeIn 0.5s ease; }
 
-    .dept-logo {
-      position: fixed;
-      bottom: 20px; /* 距離底部距離 */
-      right: 25px;   /* 距離左側距離 */
-      width: 100px; /* 調整 Logo 大小 */
-      height: auto;
-      z-index: 2000; /* 確保在最上層 */
-      opacity: 0.8;  /* 稍微透明一點點比較自然 */
-      pointer-events: none; /* 讓滑鼠點擊可以穿透圖標，不影響遊戲操作 */
+    /* ===== MUSIC BTN ===== */
+    #music-btn {
+      position: fixed; top: 15px; right: 15px; z-index: 3000;
+      background: transparent; border: 2px solid var(--gold);
+      color: var(--gold); font-size: 18px; width: 42px; height: 42px;
+      cursor: pointer; border-radius: 50%; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #music-btn:hover { background: var(--gold); color: #121212; box-shadow: 0 0 15px var(--gold); }
+
+    /* ===== INFO OVERLAY ===== */
+    #info-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.82); z-index: 5000;
+      align-items: center; justify-content: center;
+    }
+    #info-overlay.show { display: flex; }
+    #info-box {
+      background: #1a1a2e;
+      border: 3px solid transparent;
+      border-image: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c4), var(--c5), var(--c6)) 1;
+      padding: 40px 50px; max-width: 700px; width: 92%;
+      text-align: left; position: relative;
+      box-shadow: 0 0 40px rgba(34,166,242,0.3);
+      animation: fadeInUp 0.4s ease;
+      max-height: 90vh; overflow-y: auto;
+    }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    #info-box h2 {
+      font-family: 'Press Start 2P', cursive; font-size: 20px; margin-bottom: 24px;
+      background: linear-gradient(90deg, var(--c1), var(--c3), var(--c5));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      text-align: center;
+    }
+    .info-section { margin-bottom: 18px; }
+    .info-section h4 {
+      font-family: 'Press Start 2P', cursive; font-size: 16px;
+      color: var(--c3); margin-bottom: 8px;
+    }
+    .info-section ul { margin:0; padding-left:20px; color:#ccc; font-size:14px; line-height:2; }
+    .info-section p { font-size:14px; color:#ccc; line-height:1.8; margin:0; }
+    #info-close {
+      display: block; margin: 24px auto 0;
+      background: transparent; border: 3px solid var(--c5); color: var(--c5);
+      font-family: 'Press Start 2P', cursive; font-size: 13px;
+      padding: 12px 36px; cursor: pointer; transition: 0.3s;
+    }
+    #info-close:hover { background: var(--c5); color: #0d0d1a; box-shadow: 0 0 20px var(--c5); }
+
+    #visit-counter {
+        position: fixed; bottom: 18px; left: 20px; z-index: 2000;
+        font-size: 13px; color: #555;
+        pointer-events: none;
     }
 
-    /* UI Components */
-    h1 { 
-      font-family: 'Fredoka One', cursive; 
-      font-size: 5rem; /* 從 3rem 大幅提升到 5rem */
-      margin: -30px 0 15px 0; 
-      color: var(--gold); 
-      text-shadow: 0 0 30px rgba(255, 215, 0, 0.6); 
+    /* ===== DEPT LOGO ===== */
+    .dept-logo {
+      position: fixed; bottom: 20px; right: 25px;
+      width: 100px; height: auto;
+      z-index: 2000; opacity: 0.8; pointer-events: none;
     }
-    /* 修改 h2 標題：模式選擇 / 請輸入大名 */
-    h2 {
-      font-size: 3.5rem; /* 顯著放大標題 */
-      font-weight: 900;
-      color: #FFFFFF;
-      margin-bottom: 40px;
-      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+
+    /* ===== TITLE ===== */
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 5rem;
+      margin: -30px 0 15px 0;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
     }
-    #s-title p {
-      font-size: 1.5rem; /* 放大副標題文字 */
-      letter-spacing: 4px;
-      margin-bottom: 40px;
-    }
+    h2 { font-size: 3.5rem; font-weight: 900; color: #fff; margin-bottom: 40px; text-shadow: 0 4px 10px rgba(0,0,0,.5); }
     .btn {
       background: linear-gradient(135deg, #ff9f43, #ff6b6b);
       border: none; border-radius: 50px; color: white;
-      padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
-      cursor: pointer; margin: 10px; transition: 0.3s;
+      padding: 22px 55px; font-size: 1.8rem; font-weight: bold;
+      cursor: pointer; margin: 15px; transition: 0.3s;
       box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+      border-radius: 60px;
     }
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
-    .btn {
-      padding: 22px 55px; /* 加大按鈕厚度與寬度 */
-      font-size: 1.8rem;   /* 字體從 1.2 提升到 1.8 */
-      border-radius: 60px;
-      margin: 15px;
-    }
 
-    /* Board Layout - 修改比例確保不被切掉 */
-    #board-container { 
-      height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: flex-start; /* 改為從頂部開始排列 */
-      padding-top: 20px; /* 控制最上方與瀏覽器邊界的距離 */
-      position: relative;
+    /* ===== BOARD ===== */
+    #board-container {
+      height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; padding-top: 20px; position: relative;
     }
     #board {
       display: grid;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 0;
-      border-radius: 8px;
-      position: relative;
+      background: rgba(255,255,255,0.1);
+      padding: 0; border-radius: 8px; position: relative;
       border: 4px solid #333;
-      /* 關鍵放大：從 70 提高到 82 vmin */
-      width: 82vmin; 
-      height: 82vmin;
-      flex-shrink: 0;
-      overflow: hidden;
+      width: 82vmin; height: 82vmin;
+      flex-shrink: 0; overflow: hidden;
     }
-    
     .cell {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      
-      /* 關鍵修復：鎖死內容，不允許任何東西撐開寬高 */
-      overflow: hidden; 
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
+      position: relative; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden; width: 100%; height: 100%; box-sizing: border-box;
     }
-    
-    /* 確保 Icon 縮小一點，留出四周空間給租金顯示，不擠在一起 */
-    .cell-ico {
-      font-size: 1.8rem; 
-      margin-bottom: 0;
-      z-index: 5;
+    .cell-ico { font-size: 2rem; margin-bottom: 0; z-index: 5; }
+    .cell-num, .cell-lbl { display: none !important; }
+    .cell-rent {
+      position: absolute; bottom: 2px; right: 2px;
+      font-size: 8px; color: var(--gold);
+      background: rgba(0,0,0,0.6); padding: 1px 3px; border-radius: 3px;
+      pointer-events: none; z-index: 10; white-space: nowrap;
     }
-    .cell-num, .cell-lbl {
-      display: none !important;
-    }
-    .cell-ico {
-      font-size: 2rem;
-    }    
-    .cell-rent { 
-      position: absolute; 
-      bottom: 2px; 
-      right: 2px; 
-      font-size: 8px; 
-      color: var(--gold); 
-      background: rgba(0, 0, 0, 0.6); /* 增加一點點黑底，避免蓋在圖示上看不清 */
-      padding: 1px 3px;
-      border-radius: 3px;
-      pointer-events: none; /* 確保滑鼠點擊穿透，不干擾遊戲 */
-      z-index: 10;
-      white-space: nowrap; /* 強制不換行，避免撐開格子 */
-    }
-    
-    .cell-level { 
-      position: absolute; 
-      top: 2px; 
-      right: 2px; 
-      font-size: 10px; 
-      font-weight: 900; 
-      z-index: 10;
-      pointer-events: none;
+    .cell-level {
+      position: absolute; top: 2px; right: 2px;
+      font-size: 10px; font-weight: 900; z-index: 10; pointer-events: none;
     }
     .cell-owner-dot { position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%; }
-
-    /* Cell Types Colors */
-    .ct-start { background: rgba(46, 204, 113, 0.3); }
-    .ct-q-riddle { background: rgba(155, 89, 182, 0.2); }
-    .ct-q-culture { background: rgba(52, 152, 219, 0.2); }
-    .ct-q-idiom { background: rgba(230, 126, 34, 0.2); }
-    .ct-q-general { background: rgba(241, 196, 15, 0.2); }
-    .ct-lucky { background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--gold); }
-    .ct-forward, .ct-teleport { background: rgba(46, 204, 113, 0.1); }
-    .ct-backward, .ct-skip { background: rgba(231, 76, 60, 0.1); }
-
+    .ct-start { background: rgba(46,204,113,0.3); }
+    .ct-q-riddle { background: rgba(155,89,182,0.2); }
+    .ct-q-culture { background: rgba(52,152,219,0.2); }
+    .ct-q-idiom { background: rgba(230,126,34,0.2); }
+    .ct-q-general { background: rgba(241,196,15,0.2); }
+    .ct-lucky { background: rgba(255,255,255,0.1); border: 2px dashed var(--gold); }
+    .ct-forward, .ct-teleport { background: rgba(46,204,113,0.1); }
+    .ct-backward, .ct-skip { background: rgba(231,76,60,0.1); }
     .own-0 { border: 2px solid var(--p1) !important; box-shadow: inset 0 0 10px var(--p1); }
     .own-1 { border: 2px solid var(--p2) !important; box-shadow: inset 0 0 10px var(--p2); }
 
-    /* 專門放大難度選擇容器（確保三個按鈕平分寬度且夠大） */
-    .difficulty-container {
-      width: 95%;
-      max-width: 1000px;
-      gap: 30px;
-    }
-
-    /* 放大輸入框容器寬度 */
-    #s-names .screen > div {
-      width: 450px !important; /* 將原本 280px 放大到 450px */
-    }
-    
-    /* 放大輸入框本人 */
-    #s-names input {
-      padding: 18px;
-      font-size: 1.4rem;
-      border-radius: 12px;
-    }
-    
-    /* 放大輸入框上方的標籤文字 (🦊 玩家一) */
-    #s-names label {
-      font-size: 1.2rem !important;
-      margin-bottom: 8px;
-      display: block;
-    }
-    
-    /* 放大「開始冒險」按鈕 */
-    #s-names .btn {
-      padding: 25px 80px;
-      font-size: 2.2rem; /* 讓進入遊戲的按鈕最顯眼 */
-      margin-top: 50px;
-    }
-
-    #s-mode button[onclick*="s-title"] {
-      font-size: 1.4rem;
-      padding: 12px 40px;
-      margin-top: 60px;
-      opacity: 0.8;
-    }
-
-    #g-badge {
-      white-space: nowrap;
-      font-size: 1.4rem; /* 從 1rem 放大到 1.4rem */
-      color: rgba(255, 255, 255, 1); /* 提高不透明度 */
-      font-weight: 900; /* 設定為極粗體 */
-      padding: 0 15px;
-      min-width: fit-content;
-      text-shadow: 0 0 10px rgba(0,0,0,0.5); /* 增加陰影使其更清晰 */
-    }
-
-    /* Game Info Bar */
+    /* ===== GAME HUD ===== */
     .game-hud {
-      display: flex;
-      align-items: center; /* 垂直置中 */
-      justify-content: center;
-      gap: 10px;
-      width: 95%;
-      max-width: 1000px;
-      margin-bottom: 5px; /* 縮小與下方的間距 */
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; width: 95%; max-width: 1000px; margin-bottom: 5px;
     }
     .player-panel {
-      flex: 0 1 42%; /* 稍微縮小比例讓兩者更靠近 */
-      background: var(--card-bg); 
-      padding: 8px 12px; 
-      border-radius: 12px;
-      border-bottom: 4px solid transparent; 
-      transition: 0.3s;
-      overflow: hidden; /* 確保內容不溢出 */
+      flex: 0 1 42%; background: var(--card-bg);
+      padding: 8px 12px; border-radius: 12px;
+      border-bottom: 4px solid transparent; transition: 0.3s; overflow: hidden;
     }
     .player-panel.my-turn { border-bottom-color: var(--gold); transform: translateY(-3px); background: rgba(255,255,255,0.1); }
     .p-coins { font-size: 1.2rem; font-weight: bold; color: var(--gold); }
     .p-progress { height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden; }
     .p-bar { height: 100%; transition: 0.5s; }
 
-    /* Dice UI */
-    #dice-area { 
-      grid-row: 3 / 10;    /* 佔據第 3 到第 9 列之間 */
-      grid-column: 3 / 10; /* 佔據第 3 到第 9 欄之間 */
-      display: flex; 
-      flex-direction: column; /* 改為垂直排列更省空間 */
-      align-items: center; 
-      justify-content: center;
-      gap: 15px; 
-      z-index: 50;
-      background: rgba(255, 255, 255, 0.05); /* 淡淡的底色區隔 */
-      border-radius: 20px;
-      pointer-events: auto; /* 確保按鈕可以點擊 */
+    /* ===== DICE ===== */
+    #dice-area {
+      grid-row: 3/10; grid-column: 3/10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 15px; z-index: 50;
+      background: rgba(255,255,255,0.05); border-radius: 20px; pointer-events: auto;
     }
-    
-    /* 微調骰子與字體大小，配合中央空間 */
-    .die { 
-      width: 65px; /* 從 50 放大到 65px */
-      height: 65px; 
-      font-size: 2.8rem; /* 圖示隨之放大 */
-    }
+    .die { width: 65px; height: 65px; font-size: 2.8rem; }
     .die.rolling { animation: dieShake 0.1s infinite; }
+    #dice-total { font-size: 0.9rem; color: var(--gold); margin-top: 5px; font-weight: bold; }
+    #dice-area .btn { padding: 18px 45px; font-size: 1.5rem; }
+    [id^="token-"] { font-size: 24px !important; }
 
-    #dice-total {
-      font-size: 0.9rem;
-      color: var(--gold);
-      margin-top: 5px;
-      font-weight: bold;
-    }
-
-    #dice-area .btn {
-      padding: 18px 45px; /* 加大擲骰子按鈕觸控範圍 */
-      font-size: 1.5rem;
-    }
-    [id^="token-"] {
-      font-size: 24px !important; /* 棋子 Icon 放大 */
-    }
-
-    /* Logs */
+    /* ===== LOGS ===== */
     #log-container { position: fixed; right: 10px; top: 10px; width: 180px; height: 250px; overflow: hidden; pointer-events: none; }
     #glog { list-style: none; padding: 0; margin: 0; font-size: 10px; display: flex; flex-direction: column; gap: 5px; }
     #glog li { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; border-left: 3px solid var(--gold); animation: slideIn 0.3s ease; }
 
-    /* Modals */
+    /* ===== MODALS ===== */
     .modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); z-index: 1000;
@@ -296,214 +211,362 @@
     }
     .modal.open { display: flex; }
     .modal-content {
-      background: #1e1e1e;
-      width: 95%; /* 提高螢幕佔比 */
-      max-width: 800px; /* 從 500px 增加到 800px */
-      padding: 45px; /* 增加內距，顯得更大器 */
-      border-radius: 30px;
-      border: 3px solid var(--gold);
-      position: relative;
+      background: #1e1e1e; width: 95%; max-width: 800px;
+      padding: 45px; border-radius: 30px; border: 3px solid var(--gold); position: relative;
     }
-    #q-text { 
-      font-size: 2rem; /* 題目文字大幅放大 */
-      line-height: 1.6;
-      margin-bottom: 35px;
-      font-weight: 700;
-    }
+    #q-text { font-size: 2rem; line-height: 1.6; margin-bottom: 35px; font-weight: 700; }
     .q-timer { position: absolute; top: -40px; right: 0; display: flex; align-items: center; gap: 10px; }
     .q-timer-ring { width: 70px; height: 70px; font-size: 1.4rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .opt-btn {
-      width: 100%;
-      text-align: left;
-      padding: 22px; /* 選項按鈕加高 */
-      margin: 12px 0;
-      font-size: 1.4rem; /* 選項文字放大 */
-      border: 1px solid #444;
-      background: #2a2a2a;
-      color: #fff;
-      border-radius: 15px;
-      cursor: pointer;
+      width: 100%; text-align: left; padding: 22px; margin: 12px 0;
+      font-size: 1.4rem; border: 1px solid #444; background: #2a2a2a;
+      color: #fff; border-radius: 15px; cursor: pointer;
     }
     .opt-btn:hover { background: #333; }
     .opt-btn.correct { background: var(--green) !important; color: #000; font-weight: bold; }
     .opt-btn.wrong { background: var(--red) !important; }
     .opt-btn.reveal-correct { border: 2px solid var(--green); box-shadow: 0 0 15px var(--green); }
 
-    /* Animations */
-    @keyframes dieShake { 0% {transform: rotate(0)} 50% {transform: rotate(10deg) translate(2px)} 100% {transform: rotate(-10deg) translate(-2px)} }
-    @keyframes fadeIn { from {opacity:0} to {opacity:1} }
-    @keyframes tokenBounce { 0% {transform:translateY(0)} 50% {transform:translateY(-10px)} 100% {transform:translateY(0)} }
-    @keyframes slideIn { from {transform:translateX(50px); opacity:0} to {transform:translateX(0); opacity:1} }
-    .coin-pop { position: fixed; font-weight: bold; pointer-events: none; z-index: 2000; animation: popUp 1.5s ease-out forwards; }
-    @keyframes popUp { 0% {opacity:1; transform:translateY(0)} 100% {opacity:0; transform:translateY(-50px)} }
-    .confetti { position: fixed; pointer-events: none; z-index: 999; animation: confettiFall linear forwards; }
-    @keyframes confettiFall { to { transform: translateY(100vh) translateX(var(--drift)); opacity: 0; } }
-
-    /* Custom utilities */
-    .visible { visibility: visible !important; }
-    .q-result { padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
-    .q-result.ok { background: rgba(46, 204, 113, 0.2); color: var(--green); }
-    .q-result.ng { background: rgba(231, 76, 60, 0.2); color: var(--red); }
-
-    /* 修改或新增這兩個標籤的樣式 */
+    /* ===== TURN INDICATORS ===== */
     #turn-p0, #turn-p1 {
-      position: absolute;
-      top: 15%; /* 向上移動一點，避開棋盤邊緣 */
-      padding: 8px 18px;
-      border-radius: 50px;
-      font-weight: 900;
-      font-size: 1rem;
-      z-index: 1000; /* 確保在最上層 */
-      border: 2px solid white;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      transition: opacity 0.3s ease;
-      white-space: nowrap;
+      position: absolute; padding: 8px 18px; border-radius: 50px;
+      font-weight: 900; font-size: 1rem; z-index: 1000;
+      border: 2px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      transition: opacity 0.3s ease; white-space: nowrap;
     }
-    
     #turn-p0 { left: 10px; top: 18%; }
     #turn-p1 { right: 10px; top: 18%; }
+
+    #g-badge {
+      white-space: nowrap; font-size: 1.4rem; color: rgba(255,255,255,1);
+      font-weight: 900; padding: 0 15px; min-width: fit-content;
+      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    /* ===== WIN SCREEN ===== */
+    #s-win { position: relative; }
+    .pixel-flower {
+      width: 4px; height: 4px; background: transparent;
+      margin-bottom: 20px;
+      box-shadow:
+        0px -28px var(--flower-red),
+        -4px -28px var(--flower-pink), 4px -28px var(--flower-pink),
+        -8px -24px var(--flower-red), -4px -24px var(--flower-light), 0px -24px var(--flower-pink), 4px -24px var(--flower-light), 8px -24px var(--flower-red),
+        -16px -20px var(--flower-pink), -12px -20px var(--flower-red), -8px -20px var(--flower-light), -4px -20px var(--flower-pink), 0px -20px var(--flower-red), 4px -20px var(--flower-pink), 8px -20px var(--flower-light), 12px -20px var(--flower-red), 16px -20px var(--flower-pink),
+        -20px -16px var(--flower-red), -16px -16px var(--flower-light), -12px -16px var(--flower-pink), -8px -16px var(--flower-red), -4px -16px var(--flower-light), 0px -16px var(--flower-pink), 4px -16px var(--flower-light), 8px -16px var(--flower-red), 12px -16px var(--flower-pink), 16px -16px var(--flower-light), 20px -16px var(--flower-red),
+        -20px -12px var(--flower-pink), -16px -12px var(--flower-red), -12px -12px var(--flower-light), -8px -12px var(--flower-pink), -4px -12px var(--flower-red), 0px -12px var(--flower-light), 4px -12px var(--flower-red), 8px -12px var(--flower-pink), 12px -12px var(--flower-light), 16px -12px var(--flower-red), 20px -12px var(--flower-pink),
+        -16px -8px var(--flower-red), -12px -8px var(--flower-pink), -8px -8px var(--flower-light), -4px -8px var(--flower-red), 0px -8px var(--flower-pink), 4px -8px var(--flower-red), 8px -8px var(--flower-light), 12px -8px var(--flower-pink), 16px -8px var(--flower-red),
+        -12px -4px var(--flower-pink), -8px -4px var(--flower-light), -4px -4px var(--flower-red), 0px -4px var(--flower-light), 4px -4px var(--flower-red), 8px -4px var(--flower-light), 12px -4px var(--flower-pink),
+        -8px 0px var(--flower-red), -4px 0px var(--flower-pink), 0px 0px var(--flower-light), 4px 0px var(--flower-pink), 8px 0px var(--flower-red),
+        -8px 4px #52b788, -4px 4px #74c69d, 0px 4px #40916c, 4px 4px #74c69d, 8px 4px #52b788,
+        -4px 8px #40916c, 0px 8px #2d6a4f, 4px 8px #40916c,
+        0px 12px #2d6a4f, 0px 16px #2d6a4f, 0px 20px #2d6a4f,
+        0px 24px #2d6a4f, 0px 28px #2d6a4f, 0px 32px #2d6a4f,
+        0px 36px #2d6a4f, 0px 40px #2d6a4f,
+        -4px 16px #52b788, -8px 16px #40916c, -12px 16px #52b788,
+        -4px 20px #74c69d, -8px 20px #52b788,
+        4px 28px #52b788, 8px 28px #40916c, 12px 28px #52b788,
+        4px 32px #74c69d, 8px 32px #52b788;
+      transform: scale(5);
+      animation: flower-glow 3s infinite ease-in-out;
+      display: none;
+    }
+    @keyframes flower-glow {
+      0%   { transform: scale(5) translateY(0);    filter: drop-shadow(0 0 12px #ff4d6d) hue-rotate(0deg); }
+      25%  { transform: scale(5.1) translateY(-4px); filter: drop-shadow(0 0 18px #a55eea) hue-rotate(90deg); }
+      50%  { transform: scale(5.15) translateY(-6px); filter: drop-shadow(0 0 22px #22a6f2) hue-rotate(180deg); }
+      75%  { transform: scale(5.1) translateY(-4px); filter: drop-shadow(0 0 18px #f9ca24) hue-rotate(270deg); }
+      100% { transform: scale(5) translateY(0);    filter: drop-shadow(0 0 12px #ff4d6d) hue-rotate(360deg); }
+    }
+    #win-stats {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 15px; margin: 20px 0; width: 300px;
+    }
+    #win-stats div { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; }
+    #win-extra-msg {
+      font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;
+      display: none;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes dieShake { 0%{transform:rotate(0)} 50%{transform:rotate(10deg) translate(2px)} 100%{transform:rotate(-10deg) translate(-2px)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes slideIn { from{transform:translateX(50px);opacity:0} to{transform:translateX(0);opacity:1} }
+    .coin-pop { position: fixed; font-weight: bold; pointer-events: none; z-index: 2000; animation: popUp 1.5s ease-out forwards; }
+    @keyframes popUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-50px)} }
+    .confetti { position: fixed; pointer-events: none; z-index: 999; animation: confettiFall linear forwards; }
+    @keyframes confettiFall { to{transform:translateY(100vh) translateX(var(--drift));opacity:0} }
+
+    /* ===== Q RESULT ===== */
+    .q-result { padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; display: none; }
+    .q-result.ok { background: rgba(46,204,113,0.2); color: var(--green); }
+    .q-result.ng { background: rgba(231,76,60,0.2); color: var(--red); }
+
+    /* ===== RESPONSIVE: TABLET ===== */
+    @media (max-width: 900px) {
+      h1 { font-size: 3rem !important; margin: -10px 0 10px 0; }
+      h2 { font-size: 2.2rem; margin-bottom: 20px; }
+      .btn { padding: 15px 35px; font-size: 1.3rem; margin: 8px; }
+      #board { width: 92vmin; height: 92vmin; }
+      .game-hud { gap: 6px; }
+      .player-panel { padding: 6px 8px; }
+      #g-badge { font-size: 1rem; padding: 0 6px; }
+      .modal-content { padding: 25px; border-radius: 20px; }
+      #q-text { font-size: 1.5rem; margin-bottom: 20px; }
+      .opt-btn { padding: 14px; font-size: 1.1rem; margin: 7px 0; }
+      #info-box { padding: 28px 24px; }
+      #info-box h2 { font-size: 13px; }
+      .info-section h4 { font-size: 10px; }
+      .info-section ul, .info-section p { font-size: 13px; }
+      #info-close { font-size: 11px; padding: 10px 24px; }
+      .die { width: 50px; height: 50px; font-size: 2.2rem; }
+      #dice-area .btn { padding: 14px 30px; font-size: 1.2rem; }
+      #turn-p0, #turn-p1 { font-size: 0.75rem; padding: 5px 10px; }
+      .dept-logo { width: 70px; bottom: 12px; right: 12px; }
+      .pixel-flower { transform: scale(3.5); margin-bottom: 80px; }
+      @keyframes flower-glow {
+        0%,100%{transform:scale(3.5) translateY(0);}
+        50%{transform:scale(3.65) translateY(-4px);}
+      }
+    }
+
+    /* ===== RESPONSIVE: MOBILE PORTRAIT ===== */
+    @media (max-width: 600px) {
+      body { align-items: flex-start; overflow-y: auto; }
+      h1 { font-size: 2.2rem !important; margin: 5px 0 8px 0; }
+      h2 { font-size: 1.6rem; margin-bottom: 15px; }
+      .btn { padding: 13px 28px; font-size: 1.1rem; margin: 6px; }
+      .screen { padding: 8px; justify-content: flex-start; padding-top: 20px; }
+      #s-title { justify-content: center; }
+      #board-container { padding-top: 8px; }
+      #board { width: 96vmin; height: 96vmin; }
+      .game-hud { width: 100%; gap: 4px; margin-bottom: 3px; }
+      .player-panel { padding: 5px 6px; flex: 0 1 44%; }
+      #g-badge { font-size: 0.8rem; padding: 0 3px; }
+      .modal-content { padding: 18px; border-radius: 14px; max-height: 90vh; overflow-y: auto; }
+      #q-text { font-size: 1.2rem; margin-bottom: 14px; }
+      .opt-btn { padding: 11px 10px; font-size: 0.95rem; margin: 5px 0; border-radius: 10px; }
+      .q-timer-ring { width: 52px; height: 52px; font-size: 1.1rem; }
+      .die { width: 42px; height: 42px; font-size: 1.8rem; }
+      #dice-area { gap: 10px; }
+      #dice-area .btn { padding: 12px 22px; font-size: 1rem; }
+      #log-container { width: 130px; height: 180px; right: 5px; top: 5px; }
+      #glog li { font-size: 8px; padding: 3px 6px; }
+      #turn-p0 { left: 2px; top: auto; bottom: 22%; font-size: 0.65rem; padding: 4px 8px; }
+      #turn-p1 { right: 2px; top: auto; bottom: 22%; font-size: 0.65rem; padding: 4px 8px; }
+      .dept-logo { width: 55px; bottom: 8px; right: 8px; }
+      #info-box { padding: 20px 16px; }
+      #info-box h2 { font-size: 11px; margin-bottom: 14px; }
+      .info-section h4 { font-size: 9px; }
+      .info-section ul, .info-section p { font-size: 12px; }
+      #info-close { font-size: 10px; padding: 9px 20px; }
+      .pixel-flower { transform: scale(2.8); margin-bottom: 60px; }
+      #win-stats { width: 90%; }
+      #s-win h1 { font-size: 1.8rem !important; }
+      #music-btn { width: 36px; height: 36px; font-size: 15px; top: 10px; right: 10px; }
+    }
+
+    /* ===== RESPONSIVE: MOBILE LANDSCAPE ===== */
+    @media (max-height: 500px) and (orientation: landscape) {
+      body { align-items: flex-start; overflow-y: auto; }
+      #board-container { padding-top: 5px; }
+      #board { width: 80vmin; height: 80vmin; }
+      h1 { font-size: 2rem !important; }
+      h2 { font-size: 1.5rem; }
+      .btn { padding: 10px 22px; font-size: 1rem; margin: 5px; }
+      .game-hud { margin-bottom: 2px; }
+      .player-panel { padding: 4px 6px; }
+      #g-badge { font-size: 0.8rem; }
+      .die { width: 38px; height: 38px; font-size: 1.6rem; }
+      #dice-area { gap: 8px; }
+      #dice-area .btn { padding: 10px 18px; font-size: 0.9rem; }
+      #turn-p0 { left: 2px; font-size: 0.6rem; padding: 3px 7px; }
+      #turn-p1 { right: 2px; font-size: 0.6rem; padding: 3px 7px; }
+      .dept-logo { width: 50px; bottom: 5px; right: 5px; }
+      .pixel-flower { transform: scale(2.5); margin-bottom: 50px; }
+      #info-box { max-height: 80vh; padding: 16px 20px; }
+      #info-box h2 { font-size: 10px; margin-bottom: 10px; }
+      .info-section { margin-bottom: 10px; }
+      .info-section h4 { font-size: 9px; }
+      .info-section ul, .info-section p { font-size: 11px; line-height: 1.6; }
+      #info-close { font-size: 9px; padding: 8px 18px; margin-top: 10px; }
+    }
   </style>
 </head>
 <body>
+  <audio id="bgm" loop><source src="Fairy Tail Main Theme.mp3" type="audio/mpeg"></audio>
+  <button id="music-btn" onclick="toggleMusic()" title="音樂開關">🔊</button>
   <canvas id="bg-canvas"></canvas>
   <img src="NTNU-CSL-LOGO (12).png" class="dept-logo" alt="系所Logo">
+  <div id="visit-counter">
+    👾 累計瀏覽 <span id="busuanzi_value_site_pv">...</span> 次
+  </div>
 
-  <div id="s-title" class="screen active">
-    <h1 style="font-size: 100px;">NTNU CSL</h1>
-    <br></br>
-    <h1>🎲華語大富翁💰</h1>
-    <p style="opacity: 0.7; letter-spacing: 2px;">ONLINE CHINESE MONOPOLY</p>
-    <div style="margin-top: 30px;">
-      <button class="btn" onclick="pickDiff('easy')">🌱 簡單 </button>
-      <button class="btn" onclick="pickDiff('normal')">🎓 普通 </button>
-      <button class="btn" onclick="pickDiff('hard')">🔥 困難 </button>
+  <!-- ===== INFO OVERLAY ===== -->
+  <div id="info-overlay">
+    <div id="info-box">
+      <h2>🎲 遊戲說明 🎲</h2>
+      <div class="info-section">
+        <h4>🎮 玩法</h4>
+        <ul>
+          <li>選擇難度與對戰模式後開始遊戲</li>
+          <li>輪流擲兩顆骰子，依點數前進</li>
+          <li>踩到題目格 → 答對可佔領該格，升級最多3星</li>
+          <li>踩到他人地盤 → 答對免租金，答錯付租金</li>
+          <li>率先累積 <strong style="color:var(--c3)">2000💰</strong> 或對手破產即獲勝！</li>
+          <li>勝利後可解鎖 🌸 繽紛康乃馨彩蛋</li>
+        </ul>
+      </div>
+      <div class="info-section">
+        <h4>📚 難度說明</h4>
+        <ul>
+          <li><span style="color:var(--c4)">簡單</span>：字謎 ＋ 漢字結構</li>
+          <li><span style="color:var(--c2)">普通</span>：成語 ＋ 拼音練習</li>
+          <li><span style="color:var(--c1)">困難</span>：文化知識 ＋ 語法練習</li>
+        </ul>
+      </div>
+      <div class="info-section">
+        <h4>📝 題目來源</h4>
+        <p>本遊戲題目由<strong style="color:var(--c3)">系上老師</strong>出題及網路資源整理，經審查確認正確性後收錄。</p>
+      </div>
+      <div class="info-section">
+        <h4>🎵 BGM 來源</h4>
+        <p>Fairy Tail Main Theme（魔導少年片頭曲）</p>
+      </div>
+      <div class="info-section">
+        <h4>🛠️ 技術</h4>
+        <p>遊戲由 <strong style="color:var(--c5)">Gemini</strong> ＋ <strong style="color:var(--c6)">Claude</strong> 協作開發</p>
+      </div>
+      <button id="info-close" onclick="closeInfo()">開始冒險！</button>
     </div>
   </div>
 
+  <!-- ===== TITLE SCREEN ===== -->
+  <div id="s-title" class="screen active">
+    <h1 style="font-size:100px;">NTNU CSL</h1>
+    <br>
+    <h1>🎲華語大富翁💰</h1>
+    <p style="opacity:0.7;letter-spacing:2px;">ONLINE CHINESE MONOPOLY</p>
+    <div style="margin-top:30px;">
+      <button class="btn" onclick="pickDiff('easy')">🌱 簡單</button>
+      <button class="btn" onclick="pickDiff('normal')">🎓 普通</button>
+      <button class="btn" onclick="pickDiff('hard')">🔥 困難</button>
+    </div>
+  </div>
+
+  <!-- ===== MODE SELECT ===== -->
   <div id="s-mode" class="screen">
     <h2 id="mode-diff-label">模式選擇</h2>
-    <div style="display: flex; gap: 20px;">
-      <button class="btn" style="background: #4A90E2;" onclick="pickMode('ai')">🤖 挑戰電腦</button>
-      <button class="btn" style="background: #9B59B2;" onclick="pickMode('pvp')">⚔️ 雙人對戰</button>
+    <div style="display:flex;gap:20px;">
+      <button class="btn" style="background:#4A90E2;" onclick="pickMode('ai')">🤖 挑戰電腦</button>
+      <button class="btn" style="background:#9B59B2;" onclick="pickMode('pvp')">⚔️ 雙人對戰</button>
     </div>
-    <button class="btn" style="background: transparent; border: 1px solid #555; margin-top: 30px;" onclick="goTo('s-title')">返回</button>
+    <button class="btn" style="background:transparent;border:1px solid #555;margin-top:30px;" onclick="goTo('s-title')">返回</button>
   </div>
 
+  <!-- ===== NAME INPUT ===== -->
   <div id="s-names" class="screen">
     <h2>請輸入大名</h2>
-    <div style="display: flex; flex-direction: column; gap: 15px; width: 280px;">
-      <div style="text-align: left;">
-        <label id="lbl1" style="font-size: 0.8rem; opacity: 0.6;">🦊 玩家一</label>
-        <input type="text" id="n1" placeholder="玩家一" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
+    <div style="display:flex;flex-direction:column;gap:15px;width:320px;">
+      <div style="text-align:left;">
+        <label id="lbl1" style="font-size:1rem;opacity:0.8;display:block;margin-bottom:6px;">🦊 玩家一</label>
+        <input type="text" id="n1" placeholder="玩家一" style="width:100%;padding:14px;border-radius:10px;border:none;background:#333;color:#fff;font-size:1.2rem;">
       </div>
-      <div style="text-align: left;" id="nf2">
-        <label id="lbl2" style="font-size: 0.8rem; opacity: 0.6;">🔵 玩家二</label>
-        <input type="text" id="n2" placeholder="玩家二" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #333; color: #fff;">
+      <div style="text-align:left;" id="nf2">
+        <label id="lbl2" style="font-size:1rem;opacity:0.8;display:block;margin-bottom:6px;">🔵 玩家二</label>
+        <input type="text" id="n2" placeholder="玩家二" style="width:100%;padding:14px;border-radius:10px;border:none;background:#333;color:#fff;font-size:1.2rem;">
       </div>
     </div>
-    <button class="btn" style="margin-top: 30px;" onclick="startGame()">開始冒險 🚀</button>
+    <button class="btn" style="margin-top:30px;" onclick="startGame()">開始冒險 🚀</button>
   </div>
 
+  <!-- ===== GAME SCREEN ===== -->
   <div id="s-game" class="screen">
     <div class="game-hud">
       <div class="player-panel" id="pp0">
-        <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-          <span id="pav0" style="font-size: 1.2rem;">🦊</span>
-          <span id="pnm0" style="font-weight: bold; font-size: 0.9rem;">玩家一</span>
-          <span id="pcn0" style="font-weight: bold; color: var(--gold); margin-left: auto;">1000💰</span>
-          <span id="pskip0" style="visibility: hidden;">⏸</span>
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <span id="pav0" style="font-size:1.2rem;">🦊</span>
+          <span id="pnm0" style="font-weight:bold;font-size:0.9rem;">玩家一</span>
+          <span id="pcn0" style="font-weight:bold;color:var(--gold);margin-left:auto;">1000💰</span>
+          <span id="pskip0" style="visibility:hidden;">⏸</span>
         </div>
-        <div class="p-progress"><div id="pb0" class="p-bar" style="background: var(--p1); width: 33%;"></div></div>
-        <div id="po0" style="font-size: 8px; margin-top: 4px;">佔領：0格</div>
+        <div class="p-progress"><div id="pb0" class="p-bar" style="background:var(--p1);width:33%;"></div></div>
+        <div id="po0" style="font-size:8px;margin-top:4px;">佔領：0格</div>
       </div>
-
-      <div id="g-badge" style="font-size: 0.9rem; color: rgba(255,255,255,0.7); font-weight: 500;">
-        遊戲載入中...
-      </div>
-
+      <div id="g-badge">遊戲載入中...</div>
       <div class="player-panel" id="pp1">
-        <div style="display: flex; align-items: center; gap: 8px; width: 100%; flex-direction: row-reverse;">
-          <span id="pav1" style="font-size: 1.2rem;">🤖</span>
-          <span id="pnm1" style="font-weight: bold; font-size: 0.9rem;">電腦</span>
-          <span id="pcn1" style="font-weight: bold; color: var(--gold); margin-right: auto;">1000💰</span>
-          <span id="pskip1" style="visibility: hidden;">⏸</span>
+        <div style="display:flex;align-items:center;gap:8px;width:100%;flex-direction:row-reverse;">
+          <span id="pav1" style="font-size:1.2rem;">🤖</span>
+          <span id="pnm1" style="font-weight:bold;font-size:0.9rem;">電腦</span>
+          <span id="pcn1" style="font-weight:bold;color:var(--gold);margin-right:auto;">1000💰</span>
+          <span id="pskip1" style="visibility:hidden;">⏸</span>
         </div>
-        <div class="p-progress"><div id="pb1" class="p-bar" style="background: var(--p2); width: 33%;"></div></div>
-        <div id="po1" style="font-size: 8px; margin-top: 4px; text-align: right;">佔領：0格</div>
+        <div class="p-progress"><div id="pb1" class="p-bar" style="background:var(--p2);width:33%;"></div></div>
+        <div id="po1" style="font-size:8px;margin-top:4px;text-align:right;">佔領：0格</div>
       </div>
     </div>
 
     <div id="board-container">
-      <div id="turn-p0" style="position: absolute; left: -100px; top: 20px; background: var(--p1); color: white; padding: 6px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; white-space: nowrap;">
-        ⬅️ 玩家回合
-      </div>
-      <div id="turn-p1" style="position: absolute; right: -100px; top: 20px; background: var(--p2); color: white; padding: 6px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; white-space: nowrap;">
-        電腦回合 ➡️
-      </div>
-      
-      <div id="board">
+      <div id="turn-p0" style="background:var(--p1);color:white;visibility:hidden;">⬅️ 玩家回合</div>
+      <div id="turn-p1" style="background:var(--p2);color:white;visibility:hidden;">電腦回合 ➡️</div>
+      <div id="board"></div>
     </div>
 
-    <div id="turn-indicator-container" style="position: absolute; width: 72vmin; display: flex; justify-content: space-between; top: 12%; pointer-events: none;">
-      <div id="turn-p0" style="background: var(--p1); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; animation: fadeIn 0.3s ease;">
-        ⬅️ 玩家回合
-      </div>
-      <div id="turn-p1" style="background: var(--p2); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; visibility: hidden; animation: fadeIn 0.3s ease;">
-        電腦回合 ➡️
-      </div>
-    </div>
     <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position: fixed; bottom: 10px; left: 10px; background: none; border: none; color: #555; cursor: pointer; font-size: 11px;">放棄遊戲</button>
+    <button onclick="quitGame()" style="position:fixed;bottom:10px;left:10px;background:none;border:none;color:#555;cursor:pointer;font-size:11px;">放棄遊戲</button>
   </div>
 
+  <!-- ===== QUESTION MODAL ===== -->
   <div id="qmodal" class="modal">
     <div class="modal-content">
       <div class="q-timer">
-        <div id="q-tring" class="q-timer-ring" style="background: conic-gradient(var(--gold) 360deg, rgba(255,255,255,0.1) 0deg);">
+        <div id="q-tring" class="q-timer-ring" style="background:conic-gradient(var(--gold) 360deg,rgba(255,255,255,0.1) 0deg);">
           <span id="q-tnum">60</span>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <span id="q-type-badge" class="q-type-badge">字謎</span>
-        <span id="q-player-name" style="font-weight: bold; color: var(--gold);">玩家一</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <span id="q-type-badge">字謎</span>
+        <span id="q-player-name" style="font-weight:bold;color:var(--gold);">玩家一</span>
       </div>
-      <div id="q-text" style="font-size: 1.3rem; line-height: 1.5; margin-bottom: 25px;">這是一道題目內容載入中...</div>
-      <div id="q-ai" style="font-style: italic; opacity: 0.5; margin-bottom: 10px; display: none;">🤖 AI 正在思考中...</div>
-      <div id="q-opts">
-        </div>
-      <div id="q-res" class="q-result">✅ 答對了！獲得獎金</div>
+      <div id="q-text">題目載入中...</div>
+      <div id="q-ai" style="font-style:italic;opacity:0.5;margin-bottom:10px;display:none;">🤖 AI 正在思考中...</div>
+      <div id="q-opts"></div>
+      <div id="q-res" class="q-result">✅ 答對了！</div>
     </div>
   </div>
 
+  <!-- ===== EVENT MODAL ===== -->
   <div id="emodal" class="modal">
-    <div class="modal-content" style="text-align: center; border-color: #2ecc71;">
-      <div id="e-ico" style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
+    <div class="modal-content" style="text-align:center;border-color:#2ecc71;">
+      <div id="e-ico" style="font-size:4rem;margin-bottom:10px;">🎁</div>
       <h2 id="e-title">幸運格</h2>
       <p id="e-desc">恭喜獲得驚喜獎勵！</p>
-      <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); font-weight: bold; color: var(--gold);" id="e-player">玩家一</div>
+      <div style="margin:20px 0;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);font-weight:bold;color:var(--gold);" id="e-player">玩家一</div>
       <button class="btn" onclick="closeEvt()">確認</button>
     </div>
   </div>
 
+  <!-- ===== WIN SCREEN ===== -->
   <div id="s-win" class="screen">
-    <div id="w-trophy" style="font-size: 6rem; filter: drop-shadow(0 0 30px var(--gold));">🦊</div>
+    <div class="pixel-flower" id="win-flower"></div>
+    <div id="w-trophy" style="font-size:6rem;filter:drop-shadow(0 0 30px var(--gold));">🦊</div>
     <h1 id="w-name">🏆 玩家一 獲勝！</h1>
-    <p id="w-sub" style="font-size: 1.2rem; opacity: 0.8;">最終金幣：2000💰</p>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 300px;">
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">回合數<br><b id="ws-rounds">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">正確題數<br><b id="ws-correct">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">佔領格數<br><b id="ws-owned">0</b></div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">租金總計<br><b id="ws-rent">0</b></div>
+    <div id="win-extra-msg"></div>
+    <p id="w-sub" style="font-size:1.2rem;opacity:0.8;">最終金幣：2000💰</p>
+    <div id="win-stats">
+      <div>回合數<br><b id="ws-rounds">0</b></div>
+      <div>正確題數<br><b id="ws-correct">0</b></div>
+      <div>佔領格數<br><b id="ws-owned">0</b></div>
+      <div>租金總計<br><b id="ws-rent">0</b></div>
     </div>
     <button class="btn" onclick="location.reload()">再玩一局</button>
   </div>
 
 <script>
 // ============================================================
-// QUESTION BANKS
+// QUESTION BANKS (RPG 版本)
 // ============================================================
 const QB = {
-  // --- 字謎與漢字結構 (Riddle) ---
   riddle: [
     {q:"一人一張口。",a:"合",w:["含","答","口"]},
     {q:"兩人在內。",a:"肉",w:["內","囚","網"]},
@@ -547,51 +610,46 @@ const QB = {
     {q:"誰是傻瓜？",a:"保",w:["愚","笨","呆"]},
     {q:"請勿入口。",a:"囫",w:["入","口","圈"]},
   ],
-
   kanji_structure: [
-    // 部首測驗
-    { q: "「校」的部首是什麼？", a: "木", w: ["交", "卜", "文"] },
-    { q: "「媽」的部首是什麼？", a: "女", w: ["馬", "口", "一"] },
-    { q: "「跑」的部首是什麼？", a: "足", w: ["包", "止", "口"] },
-    { q: "「甜」的部首是什麼？", a: "甘", w: ["舌", "口", "十"] },
-    { q: "「遠」的部首是什麼？", a: "辶", w: ["袁", "土", "口"] },
-    { q: "「打」的部首是什麼？", a: "扌", w: ["丁", "一", "丨"] },
-    { q: "「雷」的部首是什麼？", a: "雨", w: ["田", "雲", "電"] },
-    { q: "「草」的部首是什麼？", a: "艹", w: ["早", "日", "十"] },
-    { q: "「臉」的部首是什麼？", a: "肉", w: ["僉", "口", "頁"] },
-    { q: "「狗」的部首是什麼？", a: "犭", w: ["句", "口", "勹"] },
-    { q: "「這」的部首是什麼？", a: "辶", w: ["言", "文", "止"] },
-    { q: "「跳」的部首是什麼？", a: "足", w: ["兆", "止", "目"] },
-    { q: "「晨」的部首是什麼？", a: "日", w: ["辰", "止", "廠"] },
-    { q: "「唱」的部首是什麼？", a: "口", w: ["昌", "日", "舌"] },
-    { q: "「睡」的部首是什麼？", a: "目", w: ["垂", "禾", "十"] },
-    { q: "「海」的部首是什麼？", a: "氵", w: ["每", "人", "母"] },
-    { q: "「燈」的部首是什麼？", a: "火", w: ["登", "丁", "皿"] },
-    { q: "「願」的部首是什麼？", a: "頁", w: ["原", "心", "白"] },
-    { q: "「站」的部首是什麼？", a: "立", w: ["占", "口", "卜"] },
-    { q: "「空」的部首是什麼？", a: "穴", w: ["工", "宀", "八"] },
-    // 合體字測驗
-    { q: "口 ＋ 牙 = ？", a: "呀", w: ["穿", "鴉", "訝"] },
-    { q: "日 ＋ 月 = ？", a: "明", w: ["旦", "玥", "閒"] },
-    { q: "女 ＋ 子 = ？", a: "好", w: ["如", "媽", "耍"] },
-    { q: "門 ＋ 市 = ？", a: "鬧", w: ["闖", "閃", "問"] },
-    { q: "木 ＋ 木 = ？", a: "林", w: ["森", "相", "札"] },
-    { q: "氵 ＋ 青 = ？", a: "清", w: ["請", "睛", "精"] },
-    { q: "忄 ＋ 曼 = ？", a: "慢", w: ["漫", "饅", "蔓"] },
-    { q: "忄 ＋ 亡 = ？", a: "忙", w: ["忘", "盲", "妄"] },
-    { q: "山 ＋ 夆 = ？", a: "峰", w: ["鋒", "蜂", "烽"] },
-    { q: "口 ＋ 昌 = ？", a: "唱", w: ["倡", "猖", "冒"] },
-    { q: "目 ＋ 青 = ？", a: "睛", w: ["情", "清", "晴"] },
-    { q: "舌 ＋ 甘 = ？", a: "甜", w: ["恬", "亂", "辭"] },
-    { q: "亻 ＋ 呆 = ？", a: "保", w: ["何", "伴", "信"] },
-    { q: "禾 ＋ 火 = ？", a: "秋", w: ["愁", "秒", "炒"] },
-    { q: "口 ＋ 鳥 = ？", a: "鳴", w: ["雞", "鴨", "鵝"] },
-    { q: "言 ＋ 成 = ？", a: "誠", w: ["城", "盛", "減"] },
-    { q: "小 ＋ 大 = ？", a: "尖", w: ["塵", "奈", "夯"] },
-    { q: "牛 ＋ 寺 = ？", a: "特", w: ["持", "等", "詩"] }
+    {q:"「校」的部首是什麼？",a:"木",w:["交","卜","文"]},
+    {q:"「媽」的部首是什麼？",a:"女",w:["馬","口","一"]},
+    {q:"「跑」的部首是什麼？",a:"足",w:["包","止","口"]},
+    {q:"「甜」的部首是什麼？",a:"甘",w:["舌","口","十"]},
+    {q:"「遠」的部首是什麼？",a:"辶",w:["袁","土","口"]},
+    {q:"「打」的部首是什麼？",a:"扌",w:["丁","一","丨"]},
+    {q:"「雷」的部首是什麼？",a:"雨",w:["田","雲","電"]},
+    {q:"「草」的部首是什麼？",a:"艹",w:["早","日","十"]},
+    {q:"「臉」的部首是什麼？",a:"肉",w:["僉","口","頁"]},
+    {q:"「狗」的部首是什麼？",a:"犭",w:["句","口","勹"]},
+    {q:"「這」的部首是什麼？",a:"辶",w:["言","文","止"]},
+    {q:"「跳」的部首是什麼？",a:"足",w:["兆","止","目"]},
+    {q:"「晨」的部首是什麼？",a:"日",w:["辰","止","廠"]},
+    {q:"「唱」的部首是什麼？",a:"口",w:["昌","日","舌"]},
+    {q:"「睡」的部首是什麼？",a:"目",w:["垂","禾","十"]},
+    {q:"「海」的部首是什麼？",a:"氵",w:["每","人","母"]},
+    {q:"「燈」的部首是什麼？",a:"火",w:["登","丁","皿"]},
+    {q:"「願」的部首是什麼？",a:"頁",w:["原","心","白"]},
+    {q:"「站」的部首是什麼？",a:"立",w:["占","口","卜"]},
+    {q:"「空」的部首是什麼？",a:"穴",w:["工","宀","八"]},
+    {q:"口 ＋ 牙 = ？",a:"呀",w:["穿","鴉","訝"]},
+    {q:"日 ＋ 月 = ？",a:"明",w:["旦","玥","閒"]},
+    {q:"女 ＋ 子 = ？",a:"好",w:["如","媽","耍"]},
+    {q:"鬥 ＋ 市 = ？",a:"鬧",w:["闖","閃","問"]},
+    {q:"木 ＋ 木 = ？",a:"林",w:["森","相","札"]},
+    {q:"氵 ＋ 青 = ？",a:"清",w:["請","睛","精"]},
+    {q:"忄 ＋ 曼 = ？",a:"慢",w:["漫","饅","蔓"]},
+    {q:"忄 ＋ 亡 = ？",a:"忙",w:["忘","盲","妄"]},
+    {q:"山 ＋ 夆 = ？",a:"峰",w:["鋒","蜂","烽"]},
+    {q:"口 ＋ 昌 = ？",a:"唱",w:["倡","猖","冒"]},
+    {q:"目 ＋ 青 = ？",a:"睛",w:["情","清","晴"]},
+    {q:"舌 ＋ 甘 = ？",a:"甜",w:["恬","亂","辭"]},
+    {q:"亻 ＋ 呆 = ？",a:"保",w:["何","伴","信"]},
+    {q:"禾 ＋ 火 = ？",a:"秋",w:["愁","秒","炒"]},
+    {q:"口 ＋ 鳥 = ？",a:"鳴",w:["雞","鴨","鵝"]},
+    {q:"言 ＋ 成 = ？",a:"誠",w:["城","盛","減"]},
+    {q:"小 ＋ 大 = ？",a:"尖",w:["塵","奈","夯"]},
+    {q:"牛 ＋ 寺 = ？",a:"特",w:["持","等","詩"]}
   ],
-
-  // --- 文化知識 (Culture) ---
   culture: [
     {q:"下列何者是宋代以後主要的私學機構？",a:"A",opts:["(A)書院","(B)精舍","(C)國子監","(D)太學"]},
     {q:"哪句成語顯示服飾具有區隔夷夏的作用？",a:"C",opts:["(A)布衣卿相","(B)衣冠禽獸","(C)被髮左衽","(D)沐猴而冠"]},
@@ -607,40 +665,31 @@ const QB = {
     {q:"宋代理學融通儒家與哪種思想？",a:"C",opts:["(A)墨、法","(B)佛、法","(C)佛、道","(D)名、法"]},
     {q:"台灣「紅毛城」中「紅毛」指？",a:"B",opts:["(A)西班牙人","(B)荷蘭人","(C)英國人","(D)葡萄牙人"]},
     {q:"最早在台灣建立孔廟的是？",a:"A",opts:["(A)鄭經","(B)鄭成功","(C)劉銘傳","(D)丁日昌"]},
-    {q:"佛教宗派中，何者特重念佛？",a:"B",opts:["(A)唯識宗","(B)淨土宗","(C)禪宗","(D)華嚴宗"]},
     {q:"新竹地區「九降風」成就的重要食材？",a:"A",opts:["(A)米粉","(B)粉圓","(C)冬粉","(D)意麵"]},
     {q:"中國飲茶之風，至何時茶館成為庶民文化？",a:"B",opts:["(A)唐","(B)宋","(C)元","(D)明"]},
-    {q:"下列哪一種非佛教特有建築？",a:"D",opts:["(A)寺院","(B)寶塔","(C)經幢","(D)華表"]},
     {q:"台灣著名的「五月雪」是哪種花？",a:"B",opts:["(A)桂花","(B)油桐花","(C)鳳凰花","(D)玉蘭花"]},
     {q:"下列何者為新大陸引進的作物？",a:"A",opts:["(A)番薯","(B)胡椒","(C)西瓜","(D)洋蔥"]},
-    {q:"農曆七月普渡「三牲」通常是哪三項？",a:"B",opts:["(A)雞、魚、豬肉","(B)雞、魚、豬肉","(C)雞、鴨、牛肉","(D)雞、鴨、豬頭"]},
     {q:"日語與台語稱麵包為「PANG」，淵源哪種語言？",a:"C",opts:["(A)英語","(B)韓語","(C)葡萄牙語","(D)台灣原住民語"]},
     {q:"西周封建宗法制度依何種關係建立準則？",a:"C",opts:["(A)行業職能","(B)才識表現","(C)血緣尊卑","(D)社經地位"]},
     {q:"記錄家族世系及成員關係的文書稱為？",a:"B",opts:["(A)家法","(B)家譜","(C)家學","(D)家風"]},
     {q:"宋代何人開始設置族田、義莊？",a:"A",opts:["(A)范仲淹","(B)朱熹","(C)歐陽脩","(D)蘇洵"]},
-    {q:"台灣導演侯孝賢「聶隱娘」故事出自？",a:"C",opts:["(A)諸子寓言","(B)魏晉志怪","(C)唐人傳奇","(D)宋代話本"]},
-    {q:"漢代皇后宮殿「椒房」的意義是？",a:"A",opts:["(A)象徵溫暖芳香多子","(B)象徵後宮和諧","(C)象徵富貴吉祥","(D)象徵高潔貞信"]},
-    {q:"台灣以下新舊地名，何者有誤？",a:"B",opts:["(A)金包裏─金山","(B)焦吧哖─玉里","(C)干豆─關渡","(D)打狗─高雄"]},
-    {q:"下列何者不是台灣電影導演？",a:"D",opts:["(A)楊德昌","(B)李安","(C)吳念真","(D)張藝謀"]},
-    // 加入台灣文化專題
-    {q:"【三合院格局】傳統三合院建築中，中間最高、供奉祖先的大廳稱為？",a:"B",opts:["(A)廂房","(B)正身（正廳）","(C)護龍","(D)庭院"]},
-    {q:"【廟宇裝飾】屋脊上彩色碎瓷片拼貼而成的工法稱為？",a:"C",opts:["(A)泥塑","(B)木雕","(C)剪黏","(D)彩繪"]},
-    {q:"【空間智慧】傳統三合院前方曬穀空地的台語俗稱為？",a:"A",opts:["(A)埕","(B)井","(C)巷","(D)門口"]},
-    {q:"【守護神靈】城隍廟裡身材一高一矮、緝拿惡人的兩位將軍是？",a:"B",opts:["(A)千里眼與順風耳","(B)七爺與八爺","(C)土地公與土地婆","(D)文判官與武判官"]},
-    {q:"【媽祖文化】「媽祖生」護法神中，負責「看得遠」的是？",a:"C",opts:["(A)順風耳","(B)報馬仔","(C)千里眼","(D)虎爺"]},
-    {q:"【節慶習俗】冬至（Tang-tsih）吃哪種食物象徵團圓與增加一歲？",a:"C",opts:["(A)粽子","(B)潤餅","(C)湯圓","(D)月餅"]},
-    {q:"【中元節】農曆七月十五日邀請「好兄弟」享用供品的儀式稱作？",a:"B",opts:["(A)繞境","(B)普度","(C)刈香","(D)建醮"]},
-    {q:"【原住民文化】「賽夏族矮靈祭」是以哪種特殊的樂器/裝飾物聞名？",a:"A",opts:["(A)臀鈴","(B)口簧琴","(C)木鼓","(D)笛子"]},
-    {q:"【工藝之美】高雄美濃以製作精美、具祝福意義的哪種工藝品聞名？",a:"B",opts:["(A)陶瓷","(B)油紙傘","(C)藺草帽","(D)竹籠"]},
-    {q:"【歷史名稱】「艋舺」原意是指小船，源自哪種語系？",a:"C",opts:["(A)荷蘭語","(B)閩南語","(C)原住民語（平埔族）","(D)客家語"]},
-    {q:"【飲食文化】台灣「辦桌」負責指揮調度菜色與整場宴席的主廚是？",a:"B",opts:["(A)店小二","(B)總舖師","(C)跑堂","(D)掌櫃"]},
-    {q:"【古早童玩】利用竹子與橡皮筋製作出能射出紙彈的玩具是？",a:"C",opts:["(A)尪仔標","(B)陀螺","(C)竹槍","(D)毽子"]},
-    {q:"【守護神】金門地區隨處可見用來鎮風辟邪、外型威武的石刻像是？",a:"B",opts:["(A)石敢當","(B)風獅爺","(C)劍獅","(D)麒麟"]},
-    {q:"【自然保育】台灣蝴蝶王國中，冬天會集體南下避冬的壯觀蝶種是？",a:"B",opts:["(A)鳳蝶","(B)紫斑蝶","(C)粉蝶","(D)蛺蝶"]},
-    {q:"【廟宇文化】廟門兩邊石獅，左邊那一隻爪下踩著「繡球」的是？",a:"A",opts:["(A)公獅","(B)母獅","(C)不分公母","(D)都有可能"]}
+    {q:"【廟宇裝飾】屋脊上彩色碎瓷片拼貼的工法稱為？",a:"C",opts:["(A)泥塑","(B)木雕","(C)剪黏","(D)彩繪"]},
+    {q:"【守護神靈】城隍廟裡緝拿惡人的兩位將軍是？",a:"B",opts:["(A)千里眼與順風耳","(B)七爺與八爺","(C)土地公與土地婆","(D)文判官與武判官"]},
+    {q:"【節慶習俗】冬至吃哪種食物象徵團圓增加一歲？",a:"C",opts:["(A)粽子","(B)潤餅","(C)湯圓","(D)月餅"]},
+    {q:"【中元節】農曆七月十五日邀請「好兄弟」的儀式？",a:"B",opts:["(A)繞境","(B)普度","(C)刈香","(D)建醮"]},
+    {q:"【工藝之美】高雄美濃以製作哪種工藝品聞名？",a:"B",opts:["(A)陶瓷","(B)油紙傘","(C)藺草帽","(D)竹籠"]},
+    {q:"「艋舺」原意是指小船，源自哪種語系？",a:"C",opts:["(A)荷蘭語","(B)閩南語","(C)原住民語（平埔族）","(D)客家語"]},
+    {q:"台灣「辦桌」負責指揮調度整場宴席的主廚是？",a:"B",opts:["(A)店小二","(B)總舖師","(C)跑堂","(D)掌櫃"]},
+    {q:"金門地區隨處可見用來鎮風辟邪的石刻像是？",a:"B",opts:["(A)石敢當","(B)風獅爺","(C)劍獅","(D)麒麟"]},
+    {q:"在馬來西亞華人社群中，「撈生」通常在什麼節日進行？",a:"C",opts:["(A)端午節","(B)中秋節","(C)農曆新年","(D)清明節"]},
+    {q:"傳統三合院中，中間供奉祖先的大廳稱為？",a:"B",opts:["(A)廂房","(B)正身（正廳）","(C)護龍","(D)庭院"]},
+    {q:"傳統三合院前方曬穀聚會的空地，台語俗稱為？",a:"A",opts:["(A)埕","(B)井","(C)巷","(D)門口"]},
+    {q:"【媽祖文化】媽祖護法中，「看得遠」的是？",a:"C",opts:["(A)順風耳","(B)報馬仔","(C)千里眼","(D)虎爺"]},
+    {q:"「賽夏族矮靈祭」以哪種特殊裝飾物聞名？",a:"A",opts:["(A)臀鈴","(B)口簧琴","(C)木鼓","(D)笛子"]},
+    {q:"用竹子與橡皮筋製作、能射出紙彈的童玩是？",a:"C",opts:["(A)尪仔標","(B)陀螺","(C)竹槍","(D)毽子"]},
+    {q:"冬天集體南下避冬、形成壯觀景象的蝴蝶是？",a:"B",opts:["(A)鳳蝶","(B)紫斑蝶","(C)粉蝶","(D)蛺蝶"]},
+    {q:"廟門兩旁石獅中，爪下踩著「繡球」的是？",a:"A",opts:["(A)公獅","(B)母獅","(C)都有可能","(D)不分公母"]}
   ],
-
-  // --- 成語測驗 (Idiom) ---
   idiom: [
     {q:"「胸有成竹」現用來比喻什麼？",a:"B",opts:["(A)為人正直","(B)很有把握","(C)孤芳自賞","(D)內心空虛"]},
     {q:"哪成語形容「文章極好，非常有價值」？",a:"A",opts:["(A)洛陽紙貴","(B)韋編三絕","(C)汗牛充棟","(D)買櫝還珠"]},
@@ -648,7 +697,7 @@ const QB = {
     {q:"「破釜沉舟」與哪位歷史人物有關？",a:"B",opts:["(A)劉邦","(B)項羽","(C)韓信","(D)諸葛亮"]},
     {q:"「刎頸之交」形容？",a:"B",opts:["(A)貌合神離","(B)關係非常親密","(C)萍水相逢","(D)一面之緣"]},
     {q:"「望洋興嘆」現多比喻什麼？",a:"B",opts:["(A)欣賞美景","(B)做事力不從心","(C)登高望遠","(D)哀悼逝者"]},
-    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)認識字","(C)專注工作","(D)傲慢無禮"]},
+    {q:"「目不識丁」形容一個人？",a:"B",opts:["(A)視力不好","(B)不識字","(C)專注工作","(D)傲慢無禮"]},
     {q:"「草船借箭」的主角是？",a:"C",opts:["(A)周瑜","(B)曹操","(C)諸葛亮","(D)魯肅"]},
     {q:"「班門弄斧」的「班」指？",a:"C",opts:["(A)班固","(B)班超","(C)魯班","(D)班捷明"]},
     {q:"「三顧茅廬」是誰去拜訪誰？",a:"C",opts:["(A)曹操訪郭嘉","(B)孫權訪周瑜","(C)劉備訪諸葛亮","(D)趙雲訪黃忠"]},
@@ -659,25 +708,23 @@ const QB = {
     {q:"「世外桃源」出自哪位作家？",a:"B",opts:["(A)蘇軾","(B)陶淵明","(C)王維","(D)李白"]},
     {q:"下列成語字形「正確」的是？",a:"B",opts:["(A)鞠躬盡萃","(B)鞠躬盡瘁","(C)鞠躬盡粹","(D)鞠躬盡碎"]},
     {q:"「再接再___」正確的字？",a:"B",opts:["(A)勵","(B)厲","(C)力","(D)歷"]},
-    {q:"「不可____思量」正確填入？",a:"C",opts:["(A)意","(B)譯","(C)議","(D)誼"]},
     {q:"「變本加____」正確填入？",a:"A",opts:["(A)厲","(B)利","(C)力","(D)勵"]},
     {q:"「走投____路」正確填入？",a:"C",opts:["(A)謀","(B)沒","(C)無","(D)埋"]},
     {q:"「世外桃____」正確填入？",a:"A",opts:["(A)源","(B)原","(C)園","(D)緣"]},
-    {q:"「名列前____」正確填入？",a:"B",opts:["(A)矛","(B)矛","(C)毛","(D)錨"]},
     {q:"「按____就班」正確填入？",a:"A",opts:["(A)步","(B)部","(C)佈","(D)不"]},
-    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)氣","(D)棄"]},
+    {q:"「一鼓作____」正確填入？",a:"B",opts:["(A)汽","(B)氣","(C)鼓","(D)棄"]},
     {q:"「自怨自____」正確填入？",a:"A",opts:["(A)艾","(B)哎","(C)唉","(D)愛"]},
     {q:"「濫___充數」正確填入？",a:"A",opts:["(A)竽","(B)竿","(C)筍","(D)芋"]},
     {q:"「怨天____人」正確填入？",a:"A",opts:["(A)尤","(B)優","(C)憂","(D)由"]},
     {q:"「畫蛇添足」近義詞為？",a:"A",opts:["(A)多此一舉","(B)雪中送炭","(C)錦上添花","(D)精益求精"]},
     {q:"「緣木求魚」比喻？",a:"B",opts:["(A)勤勞工作","(B)方法不對必難達目的","(C)愛護環境","(D)追求夢想"]},
     {q:"「掩耳盜鈴」比喻？",a:"B",opts:["(A)聰明反被聰明誤","(B)自欺欺人","(C)聽覺敏銳","(D)做事隱密"]},
-    {q:"「聞雞起舞」形容？",a:"B",opts:["(A)喜愛跳舞","(B)志士及時奮發努力","(C)畜幕業興旺","(D)生活悠閒"]},
+    {q:"「聞雞起舞」形容？",a:"B",opts:["(A)喜愛跳舞","(B)志士及時奮發努力","(C)畜牧業興旺","(D)生活悠閒"]},
     {q:"「守株待兔」農夫犯了什麼錯誤？",a:"B",opts:["(A)懶惰","(B)死守經驗不知變通","(C)運氣不好","(D)殘害動物"]},
     {q:"「老馬識途」中老馬比喻？",a:"B",opts:["(A)體力不支的人","(B)富有經驗的人","(C)迷失方向的人","(D)不聽指揮的人"]},
     {q:"「井底之蛙」形容人？",a:"B",opts:["(A)謙虛好學","(B)見識狹窄","(C)擅長游泳","(D)居住簡陋"]},
     {q:"「螳臂當車」比喻？",a:"B",opts:["(A)勇往直前","(B)不自量力","(C)守衛家園","(D)交通違規"]},
-    {q:"「塞翁失馬」下一句接什麼？",a:"B",opts:["(A)必有後福","(B)焉知非福","(C)禍不單行","(D)因小失大"]},
+    {q:"「塞翁失馬」下一句？",a:"B",opts:["(A)必有後福","(B)焉知非福","(C)禍不單行","(D)因小失大"]},
     {q:"「紙上談兵」是指誰？",a:"A",opts:["(A)趙括","(B)廉頗","(C)白起","(D)藺相如"]},
     {q:"「入木三分」原本形容？",a:"B",opts:["(A)劍法高超","(B)書法有力","(C)刻功深厚","(D)觀察敏銳"]},
     {q:"「驚弓之鳥」比喻？",a:"A",opts:["(A)受驚後極度惶恐的人","(B)飛得很快的鳥","(C)箭術高明","(D)膽大包天"]},
@@ -685,21 +732,20 @@ const QB = {
     {q:"「差之毫釐，失之____」？",a:"B",opts:["(A)萬丈","(B)千里","(C)百里","(D)須臾"]},
     {q:"「半途而廢」的反義詞？",a:"B",opts:["(A)功虧一簣","(B)鍥而不捨","(C)淺嘗輒止","(D)虎頭蛇尾"]},
     {q:"「罄竹難書」通常形容？",a:"B",opts:["(A)功勳卓著","(B)罪惡極多","(C)歷史悠久","(D)才華洋溢"]},
-    {q:"下列成語，褒貶色彩與其他三個不同的是？",a:"C",opts:["(A)大公無私","(B)捨己為人","(C)卑躬屈膝","(D)剛正不阿"]},
-    {q:"「揚湯止沸」與哪個成語意思最接近？",a:"A",opts:["(A)飲鴆止渴","(B)釜底抽薪","(C)亡羊補牢","(D)隔靴搔癢"]},
     {q:"「飽經風霜」形容？",a:"B",opts:["(A)環境極優越","(B)歷經磨難","(C)心情極輕鬆","(D)衣食無虞"]},
-    {q:"「守株待兔」說明的道理？",a:"B",opts:["(A)勤奮才有收穫","(B)不能只靠僥倖","(C)做事要有計劃","(D)多觀察才能成功"]},
     {q:"成語「一鳴驚人」的主人公是？",a:"A",opts:["(A)楚莊王","(B)齊威王","(C)秦始皇","(D)漢武帝"]},
     {q:"「四面楚歌」形容處境？",a:"C",opts:["(A)意外大勝","(B)力挽狂瀾","(C)四面受敵、孤立無援","(D)重振旗鼓"]},
-    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]}
+    {q:"「完璧歸趙」主要人物？",a:"B",opts:["(A)廉頗","(B)藺相如","(C)趙括","(D)藺相公"]},
+    {q:"哪個成語與岳飛有關？",a:"A",opts:["(A)精忠報國","(B)見風轉舵","(C)隨波逐流","(D)無所事事"]},
+    {q:"哪個成語與勾踐有關？",a:"A",opts:["(A)臥薪嘗膽","(B)坐井觀天","(C)自相矛盾","(D)畫龍點睛"]},
+    {q:"哪個成語與諸葛亮有關？",a:"A",opts:["(A)鞠躬盡瘁","(B)見風轉舵","(C)隨波逐流","(D)無所事事"]},
+    {q:"哪個成語與西施有關？",a:"A",opts:["(A)沉魚落雁","(B)自相矛盾","(C)一成不變","(D)無所事事"]},
+    {q:"哪個成語與貂蟬有關？",a:"A",opts:["(A)閉月羞花","(B)見風轉舵","(C)得過且過","(D)坐享其成"]}
   ],
-
-  // --- 漢語拼音與語文常識 (Pinyin) ---
   pinyin: [
-    // 文湖線
     {q:"「南港展覽館」的拼音？",a:"Nángǎng Zhǎnlǎnguǎn",w:["Lángǎng Zhǎnlǎnguǎn","Nángǎn Zhǎnlǎnguǎn","Nángǎng Zhǎnlǎguǎn"]},
-    {q:"「內湖」的拼音？",a:"Nèihú",w:["Lèihú","Nèihú","Nèihóng"]},
-    {q:"「大直」的拼音？",a:"Dàzhí",w:["Dàzí","Tàzhí","Dàzhí"]},
+    {q:"「內湖」的拼音？",a:"Nèihú",w:["Lèihú","Nèihóu","Nèihóng"]},
+    {q:"「大直」的拼音？",a:"Dàzhí",w:["Dàzí","Tàzhí","Dàzhǐ"]},
     {q:"「松山機場」的拼音？",a:"Sōngshān Jīchǎng",w:["Shōngshān Jīchǎng","Sōngsuān Jīchǎng","Sōngshān Jīcǎng"]},
     {q:"「南京復興」的拼音？",a:"Nánjīng Fùxīng",w:["Lánjīng Fùxīng","Nánjīn Fùxīng","Nánjīng Fùxīn"]},
     {q:"「忠孝復興」的拼音？",a:"Zhōngxiào Fùxīng",w:["Zōngxiào Fùxīng","Zhōngxiào Fùxīn","Zhòngxiào Fùxīng"]},
@@ -707,92 +753,87 @@ const QB = {
     {q:"「科技大樓」的拼音？",a:"Kējì Dàlóu",w:["Chējì Dàlóu","Kējì Tàlóu","Kēzhì Dàlóu"]},
     {q:"「萬芳社區」的拼音？",a:"Wànfāng Shèqū",w:["Wànfāng Sèqū","Wànfān Shèqū","Wànfāng Shèqǖ"]},
     {q:"「動物園」的拼音？",a:"Dòngwùyuán",w:["Dòngwùyán","Tòngwùyuán","Dòngwùyuǎn"]},
-    // 淡水信義線
     {q:"「淡水」的拼音？",a:"Dànshuǐ",w:["Dànsuǐ","Tànshuǐ","Dànshǔi"]},
     {q:"「紅樹林」的拼音？",a:"Hóngshùlín",w:["Hóngsùlín","Hóngshùlíng","Hóngshùlǐn"]},
     {q:"「北投」的拼音？",a:"Běitóu",w:["Běidóu","Běitó","Bēitóu"]},
     {q:"「士林」的拼音？",a:"Shìlín",w:["Sìlín","Shìlíng","Shìlǐn"]},
     {q:"「劍潭」的拼音？",a:"Jiàntán",w:["Jiàntáng","Qiàntán","Jiǎntán"]},
     {q:"「圓山」的拼音？",a:"Yuánshān",w:["Yuánsuān","Yánshān","Yuánshā"]},
-    {q:"「雙連」的拼音？",a:"Shuānglián",w:["Suānglián","Shuāngnián","Shuānglián"]},
-    {q:"「中山」的拼音？",a:"Zhōngshān",w:["Zōngshān","Zhōngsuān","Zhōngshā"]},
     {q:"「台北車站」的拼音？",a:"Táiběi Chēzhàn",w:["Táiběi Cēzàn","Táiběi Chēzàn","Táběi Chēzhàn"]},
     {q:"「中正紀念堂」的拼音？",a:"Zhōngzhèng Jìniàntáng",w:["Zōngzèng Jìniàntáng","Zhōngzhèng Jìniàntán","Zhōngzhèng Jìnàitáng"]},
-    // 松山新店線
-    {q:"「松山」的拼音？",a:"Sōngshān",w:["Shōngshān","Sōngsuān","Shōngsuān"]},
-    {q:"「台北小巨蛋」的拼音？",a:"Táiběi Xiǎojùdàn",w:["Táiběi Xiǎoqùdàn","Táběi Xiǎojùdàn","Táiběi Xiǎojǔdàn"]},
-    {q:"「北門」的拼音？",a:"Běimén",w:["Běimín","Běimèng","Běiměn"]},
     {q:"「西門」的拼音？",a:"Xīmén",w:["Xīmín","Xīměn","Xīmèng"]},
     {q:"「古亭」的拼音？",a:"Gǔtíng",w:["Kǔtíng","Gǔtín","Gǔtǐng"]},
-    {q:"「台電大樓」的拼音？",a:"Táidiàn Dàlóu",w:["Tǎidiàn Dàlóu","Táidiàn Tàlóu","Táidiàn Dàló"]},
     {q:"「公館」的拼音？",a:"Gōngguǎn",w:["Gōngguān","Kōngguǎn","Gòngguǎn"]},
-    {q:"「萬隆」的拼音？",a:"Wànlóng",w:["Wànglóng","Wànlón","Wānlóng"]},
     {q:"「景美」的拼音？",a:"Jǐngměi",w:["Jǐnměi","Qǐngměi","Jǐngmǐ"]},
     {q:"「新店」的拼音？",a:"Xīndiàn",w:["Xìndiàn","Xīntiàn","Shīndiàn"]},
-    // 中和新蘆線
-    {q:"「蘆洲」的拼音？",a:"Lúzhōu",w:["Lúzhōu","Lúzōu","Núzhōu"]},
+    {q:"「蘆洲」的拼音？",a:"Lúzhōu",w:["Lúzōu","Núzhōu","Lùzhōu"]},
     {q:"「三重」的拼音？",a:"Sānzhòng",w:["Shānzhòng","Sānzòng","Sāndòng"]},
-    {q:"「大橋頭」的拼音？",a:"Dàqiáotóu",w:["Dàqiáotó","Tàqiáotóu","Dàjiáotóu"]},
-    {q:"「民權西路」的拼音？",a:"Mínquán Xīlù",w:["Míngquán Xīlù","Mínquán Shīlù","Mínquán Xīlù"]},
-    {q:"「行天宮」的拼音？",a:"Xíngtiāngōng",w:["Xíntiāngōng","Shíngtiāngōng","Xíngtiāngōng"]},
-    {q:"「松江南京」的拼音？",a:"Sōngjiāng Nánjīng",w:["Shōngjiāng Lánjīng","Sōngjiāng Lánjīng","Sōngjiāng Nánjīn"]},
-    {q:"「頂溪」的拼音？",a:"Dǐngxī",w:["Dǐnxī","Tǐngxī","Dǐngshī"]},
+    {q:"「民權西路」的拼音？",a:"Mínquán Xīlù",w:["Míngquán Xīlù","Mínquán Shīlù","Mínquáng Xīlù"]},
+    {q:"「行天宮」的拼音？",a:"Xíngtiāngōng",w:["Xíntiāngōng","Shíngtiāngōng","Xíngtiāngóng"]},
     {q:"「永安市場」的拼音？(隔音符號)",a:"Yǒng'ān Shìchǎng",w:["Yǒngān Shìchǎng","Yǒng'āng Shìcǎng","Yǒng'ān Sìcǎng"]},
     {q:"「景安」的拼音？(隔音符號)",a:"Jǐng'ān",w:["Jǐngān","Jǐn'ān","Qǐng'ān"]},
-    {q:"「南勢角」的拼音？",a:"Nánshìjiǎo",w:["Lánshìjiǎo","Nánsuìjiǎo","Nánshì角"]},
-    // 板南線
-    {q:"「昆陽」的拼音？",a:"Kūnyáng",w:["Kūnyán","Gūnyáng","Kūnyǎng"]},
-    {q:"「後山埤」的拼音？",a:"Hòushānpí",w:["Hòusuānpí","Hòushānbēi","Hòushānpí"]},
-    {q:"「永春」的拼音？",a:"Yǒngchūn",w:["Yǒngcūn","Yǒngchūn","Yǒngchūn"]},
-    {q:"「善導寺」的拼音？",a:"Shàndǎosì",w:["Sàndǎoshì","Shàndǎoshì","Shàndǎosì"]},
     {q:"「龍山寺」的拼音？",a:"Lóngshānsì",w:["Lóngsuānsì","Lóngsuānshì","Lóngshānshì"]},
-    {q:"「江子翠」的拼音？",a:"Jiāngzicuì",w:["Jiāngzhǐcuì","Jiāngzichuì","Qiāngzicuì"]},
-    {q:"「新埔」的拼音？",a:"Xīnpǔ",w:["Xīnbǔ","Shīnpǔ","Xīnpú"]},
-    {q:"「板橋」的拼音？",a:"Bǎnqiáo",w:["Pǎnqiáo","Bǎnqiǎo","Bǎnqiáo"]},
+    {q:"「板橋」的拼音？",a:"Bǎnqiáo",w:["Pǎnqiáo","Bǎnqiǎo","Bǎnjiáo"]},
     {q:"「府中」的拼音？",a:"Fǔzhōng",w:["Fǔzōng","Hǔzhōng","Fúzhōng"]},
-    {q:"「亞東醫院」的拼音？",a:"Yàdōng Yīyuàn",w:["Yàdòng Yīyuàn","Yàdōng Yīyàn","Yǎdōng Yīyuàn"]}
+    {q:"「頂溪」的拼音？",a:"Dǐngxī",w:["Dǐnxī","Tǐngxī","Dǐngshī"]},
+    {q:"「昆陽」的拼音？",a:"Kūnyáng",w:["Kūnyán","Gūnyáng","Kūnyǎng"]},
+    {q:"「松山」的拼音？",a:"Sōngshān",w:["Shōngshān","Sōngsuān","Shōngsuān"]},
   ],
+  grammar: [
+    {q:"哪一個用法是新興用法？",a:"(3)小晨被塑膠",w:["(1)小強被讚美","(2)小綺被看見","(4)小蓁被推薦"]},
+    {q:"哪一個用法不是臺灣華語的用法？",a:"(2)老闆用麥克筆簽名",w:["(1)這條魚，我想用煎的","(3)你用吵的是得不到想要的東西","(4)我們用走的去買晚餐"]},
+    {q:"哪一個句子是正確的？",a:"(4)弟弟很可能會去打排球",w:["(1)妹妹很會猜拳，每次都贏","(2)姊姊很肯幫助大家","(3)哥哥很能騎腳踏車"]},
+    {q:"哪一個用法是錯誤的？",a:"(4)我贏給他一箱餅乾",w:["(1)我還給他一件外套","(2)我送給他一組積木","(3)我借給他一本小說"]},
+    {q:"哪一個選項是正確的？",a:"(2)寫功課",w:["(1)坐椅子","(3)跑操場","(4)走馬路"]},
+    {q:"哪一個句子是錯誤的？",a:"(3)小安很能吃",w:["(1)小花很漂亮","(2)小如很有錢","(4)小華很怕狗"]},
+    {q:"哪一個選項的「就」用法跟另外三個不一樣？",a:"(3)姊姊要的餅乾不就拿來了",w:["(1)弟弟換衣服就出門打球了","(2)哥哥一出門就下雨了","(4)妹妹睡醒就想找媽媽"]},
+    {q:"哪一個選項是媽媽提醒小孩寫功課最溫和的口氣？",a:"(3)快寫功課喔！",w:["(1)快寫功課了！","(2)快寫功課啦！","(4)快寫功課啊！"]},
+    {q:"哪一個選項沒有表達「完成」的語義？",a:"(1)小如吃小華的蘋果",w:["(2)小安送小花一本小說","(3)小晨從家裡搭車到學校","(4)小蓁笑到流眼淚"]},
+    {q:"哪一個用法是新興用法？",a:"(2)中秋賞月、烤起來",w:["(1)這道菜吃起來很辣","(3)現場氣氛帶起來了","(4)這件褲子穿起來很舒服"]},
+    {q:"哪一個選項表示小華無法確認書包是否是他的？",a:"(1)這個書包是我的吧！",w:["(2)這個書包是我的啊！","(3)這個書包是我的喔！","(4)這個書包是我的了！"]},
+    {q:"哪一個選項的句子用法是錯誤的？",a:"(3)小如沒有要參加比賽",w:["(1)小花不喝咖啡","(2)小安沒有買到麵包","(4)不想整理房間"]},
+    {q:"哪一個句子是表達委婉否定祈使句的用法？",a:"(1)請別開電燈",w:["(2)請不要開電燈","(3)請不必開電燈","(4)請不用開電燈"]},
+    {q:"哪一個句子不會出現在你的對話中？",a:"(4)我把功課寫得很辛苦",w:["(1)我把活動設計得很精彩","(2)我把教室整理得很整齊","(3)我把海報設計得很漂亮"]}
+  ]
 };
+
 // ============================================================
-// GAME SETTINGS & BOARD CONFIG
+// GAME SETTINGS
 // ============================================================
 const WINNING_COINS = 2000;
 const RENT_TABLE = [0, 80, 180, 350];
 const CORRECT_REWARD = 200;
 const SALARY = 200;
-const BOARD_SIZE = 11; // 11x11 grid, perimeter = 40 cells
+const BOARD_SIZE = 11;
 
 function cellGridPos(i) {
-  if(i < 10) return {r:10, c:i};              // bottom
-  if(i < 20) return {r:10-(i-10), c:10};      // right
-  if(i < 30) return {r:0, c:10-(i-20)};       // top
-  return {r:(i-30)+1, c:0};                   // left
+  if(i<10) return {r:10,c:i};
+  if(i<20) return {r:10-(i-10),c:10};
+  if(i<30) return {r:0,c:10-(i-20)};
+  return {r:(i-30)+1,c:0};
 }
 
 const CELL_DEFS = (() => {
   const defs = [];
-  defs[0] = {type:'start', label:'出發', ico:'🏠'};
+  defs[0] = {type:'start',label:'出發',ico:'🏠'};
   const specials = {
-    4:  {type:'forward',  label:'+2格', ico:'⚡', steps:2},
-    8:  {type:'lucky',    label:'幸運', ico:'🎁'},
-    12: {type:'backward', label:'-3格', ico:'💨', steps:3},
-    16: {type:'skip',     label:'暫停', ico:'⏸'},
-    20: {type:'forward',  label:'+3格', ico:'⚡', steps:3},
-    24: {type:'lucky',    label:'幸運', ico:'🎁'},
-    28: {type:'backward', label:'-2格', ico:'💨', steps:2},
-    32: {type:'skip',     label:'暫停', ico:'⏸'},
-    36: {type:'teleport', label:'傳送', ico:'🌀'},
+    4:{type:'forward',label:'+2格',ico:'⚡',steps:2},
+    8:{type:'lucky',label:'幸運',ico:'🎁'},
+    12:{type:'backward',label:'-3格',ico:'💨',steps:3},
+    16:{type:'skip',label:'暫停',ico:'⏸'},
+    20:{type:'forward',label:'+3格',ico:'⚡',steps:3},
+    24:{type:'lucky',label:'幸運',ico:'🎁'},
+    28:{type:'backward',label:'-2格',ico:'💨',steps:2},
+    32:{type:'skip',label:'暫停',ico:'⏸'},
+    36:{type:'teleport',label:'傳送',ico:'🌀'},
   };
   const qTypes = ['riddle','culture','idiom','general'];
   const qIcos = {riddle:'🔮',culture:'🏛️',idiom:'📚',general:'🌟'};
   const qLabels = {riddle:'字謎',culture:'文化',idiom:'成語',general:'綜合'};
-  let qCount = 0;
+  let qCount=0;
   for(let i=1;i<40;i++){
-    if(specials[i]) { defs[i] = specials[i]; }
-    else {
-      const qt = qTypes[qCount % qTypes.length]; qCount++;
-      defs[i] = {type:'question', qtype:qt, label:qLabels[qt], ico:qIcos[qt]};
-    }
+    if(specials[i]){defs[i]=specials[i];}
+    else{const qt=qTypes[qCount%qTypes.length];qCount++;defs[i]={type:'question',qtype:qt,label:qLabels[qt],ico:qIcos[qt]};}
   }
   return defs;
 })();
@@ -801,75 +842,74 @@ const CELL_DEFS = (() => {
 // GAME STATE
 // ============================================================
 let G = {
-  diff: 'normal', mode: 'ai',
-  players: [
-    {name:'玩家一', coins:1000, pos:0, props:{}, skipTurn:false, correct:0, rentEarned:0, totalMoves:0},
-    {name:'玩家二', coins:1000, pos:0, props:{}, skipTurn:false, correct:0, rentEarned:0, totalMoves:0}
+  diff:'normal',mode:'ai',
+  players:[
+    {name:'玩家一',coins:1000,pos:0,props:{},skipTurn:false,correct:0,rentEarned:0,totalMoves:0},
+    {name:'玩家二',coins:1000,pos:0,props:{},skipTurn:false,correct:0,rentEarned:0,totalMoves:0}
   ],
-  turn: 0, round: 0, rolling: false, waitAns: false, evtCb: null,
-  qTimerInterval: null, qTimerVal: 60,
-  usedQ: {riddle:new Set(), culture:new Set(), idiom:new Set(), general:new Set()},
-  cellOwner: Array(40).fill(-1), cellLevel: Array(40).fill(0),
-  gameOver: false,
+  turn:0,round:0,rolling:false,waitAns:false,evtCb:null,
+  qTimerInterval:null,qTimerVal:60,
+  usedQ:{riddle:new Set(),culture:new Set(),idiom:new Set(),general:new Set()},
+  cellOwner:Array(40).fill(-1),cellLevel:Array(40).fill(0),
+  gameOver:false,infoShown:false,
 };
-
-const AI_RATES = {easy:0.30, normal:0.60, hard:0.90};
+const AI_RATES = {easy:0.30,normal:0.60,hard:0.90};
 
 // ============================================================
-// AUDIO ENGINE
+// MUSIC
+// ============================================================
+function toggleMusic() {
+  const bgm = document.getElementById('bgm');
+  const btn = document.getElementById('music-btn');
+  if(bgm.paused){ bgm.play().catch(()=>{}); btn.textContent='🔊'; }
+  else { bgm.pause(); btn.textContent='🔇'; }
+}
+
+// ============================================================
+// INFO OVERLAY
+// ============================================================
+function showInfo() {
+  document.getElementById('info-overlay').classList.add('show');
+}
+function closeInfo() {
+  document.getElementById('info-overlay').classList.remove('show');
+}
+
+// ============================================================
+// AUDIO ENGINE (SFX)
 // ============================================================
 let ACX = null;
-let bgmOsc = null, bgmGain = null;
-function getACX() { if(!ACX) ACX = new (window.AudioContext||window.webkitAudioContext)(); return ACX; }
-
-function playTone(freq, type, dur, vol=0.2, delay=0) {
-  try {
-    const ctx = getACX(); const o = ctx.createOscillator(); const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination); o.type = type; o.frequency.value = freq;
-    const t = ctx.currentTime + delay; g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol, t+0.015); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    o.start(t); o.stop(t+dur+0.05);
-  } catch(e){}
+function getACX(){ if(!ACX) ACX=new (window.AudioContext||window.webkitAudioContext)(); return ACX; }
+function playTone(freq,type,dur,vol=0.2,delay=0){
+  try{const ctx=getACX();const o=ctx.createOscillator();const g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);o.type=type;o.frequency.value=freq;
+  const t=ctx.currentTime+delay;g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol,t+0.015);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.start(t);o.stop(t+dur+0.05);}catch(e){}
 }
-
 const SFX = {
-  click()   { playTone(660,'sine',.08,.15); },
-  roll()    { [0,1,2,3,4,5].forEach(i=>playTone(180+Math.random()*280,'square',.06,.12,i*.04)); },
-  move()    { playTone(440+Math.random()*200,'sine',.07,.1); },
-  correct() { [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.18,.28,i*.09)); },
-  wrong()   { [200,170,140].forEach((f,i)=>playTone(f,'sawtooth',.1,.2,i*.07)); },
-  rent()    { [330,415,523].forEach((f,i)=>playTone(f,'sine',.15,.2,i*.08)); },
-  win()     { const notes=[523,659,784,1047,1047,784,1047];notes.forEach((f,i)=>playTone(f,'sine',.25,.4,i*.11)); },
-  special() { [300,450,600,750].forEach((f,i)=>playTone(f,'square',.08,.15,i*.05)); },
-  coin()    { playTone(880,'sine',.12,.15); playTone(1108,'sine',.1,.12,.06); },
+  click()  {playTone(660,'sine',.08,.15);},
+  roll()   {[0,1,2,3,4,5].forEach(i=>playTone(180+Math.random()*280,'square',.06,.12,i*.04));},
+  move()   {playTone(440+Math.random()*200,'sine',.07,.1);},
+  correct(){[523,659,784,1047].forEach((f,i)=>playTone(f,'sine',.18,.28,i*.09));},
+  wrong()  {[200,170,140].forEach((f,i)=>playTone(f,'sawtooth',.1,.2,i*.07));},
+  rent()   {[330,415,523].forEach((f,i)=>playTone(f,'sine',.15,.2,i*.08));},
+  win()    {const notes=[523,659,784,1047,1047,784,1047];notes.forEach((f,i)=>playTone(f,'sine',.25,.4,i*.11));},
+  special(){[300,450,600,750].forEach((f,i)=>playTone(f,'square',.08,.15,i*.05));},
+  coin()   {playTone(880,'sine',.12,.15);playTone(1108,'sine',.1,.12,.06);},
 };
-
-function startBGM() {
-  try {
-    const ctx = getACX(); const melody = [261.6,293.7,329.6,349.2,392,440,493.9,523.3]; let idx=0;
-    function playNote() {
-      if(!bgmGain) return; const o = ctx.createOscillator(); const g = ctx.createGain();
-      o.connect(g); g.connect(bgmGain); o.type='triangle'; o.frequency.value=melody[idx%melody.length];
-      g.gain.setValueAtTime(0.04,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.7);
-      o.start(); o.stop(ctx.currentTime+0.75); idx++;
-    }
-    bgmGain = ctx.createGain(); bgmGain.gain.value=1; bgmGain.connect(ctx.destination);
-    if(G._bgmInt) clearInterval(G._bgmInt); G._bgmInt = setInterval(playNote,380);
-  } catch(e){}
-}
-function stopBGM() { if(G._bgmInt) { clearInterval(G._bgmInt); G._bgmInt=null; } if(bgmGain) { try{bgmGain.disconnect();}catch(e){} bgmGain=null; } }
 
 // ============================================================
 // PARTICLE BG
 // ============================================================
-function initBG() {
-  const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-  let W,H,particles; function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
-  resize(); window.addEventListener('resize',resize);
-  const N=80; particles=Array.from({length:N},()=>({ x:Math.random()*W, y:Math.random()*H, r:.5+Math.random()*1.5, vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3, a:Math.random() }));
+function initBG(){
+  const canvas=document.getElementById('bg-canvas');const ctx=canvas.getContext('2d');
+  let W,H;function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const N=80;const particles=Array.from({length:N},()=>({x:Math.random()*W,y:Math.random()*H,r:.5+Math.random()*1.5,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,a:Math.random()}));
   function draw(){
     ctx.clearRect(0,0,W,H);
-    particles.forEach(p=>{ p.x=(p.x+p.vx+W)%W; p.y=(p.y+p.vy+H)%H; p.a=.3+.4*Math.abs(Math.sin(Date.now()/3000+p.x)); ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,215,80,${p.a*.4})`;ctx.fill(); });
+    particles.forEach(p=>{p.x=(p.x+p.vx+W)%W;p.y=(p.y+p.vy+H)%H;p.a=.3+.4*Math.abs(Math.sin(Date.now()/3000+p.x));ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,215,80,${p.a*.4})`;ctx.fill();});
     ctx.strokeStyle='rgba(255,215,80,.025)';ctx.lineWidth=1;
     for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
     for(let y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
@@ -881,178 +921,171 @@ function initBG() {
 // ============================================================
 // UI HELPERS
 // ============================================================
-function goTo(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); SFX.click(); }
-function addLog(msg, cls='ll-move') {
-  const ul = document.getElementById('glog'); const li = document.createElement('li'); li.className=cls; li.textContent=msg;
-  ul.insertBefore(li, ul.firstChild); while(ul.children.length>25) ul.removeChild(ul.lastChild);
+function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');SFX.click();}
+function addLog(msg){const ul=document.getElementById('glog');const li=document.createElement('li');li.textContent=msg;ul.insertBefore(li,ul.firstChild);while(ul.children.length>25)ul.removeChild(ul.lastChild);}
+function showCoinPop(el,amount){
+  if(!el)return;const r=el.getBoundingClientRect();const d=document.createElement('div');
+  d.className='coin-pop';d.textContent=(amount>0?'+':'')+amount+'💰';
+  d.style.left=(r.left+r.width/2-30)+'px';d.style.top=(r.top-10)+'px';
+  d.style.color=amount>0?'#FFD700':'#ff5252';d.style.fontSize='1.2rem';
+  document.body.appendChild(d);setTimeout(()=>d.remove(),1500);
 }
-function showCoinPop(el, amount) {
-  if(!el) return; const r = el.getBoundingClientRect(); const d = document.createElement('div');
-  d.className=`coin-pop ${amount>0?'pos':'neg'}`; d.textContent=(amount>0?'+':'')+amount+'💰';
-  d.style.left=(r.left+r.width/2-30)+'px'; d.style.top=(r.top-10)+'px'; document.body.appendChild(d);
-  setTimeout(()=>d.remove(),1500);
-}
-function launchConfetti(n=60) {
-  const colors=['#FFD700','#FF4B5C','#2ECC71','#4A90E2'];
+function launchConfetti(n=60){
+  const colors=['#FFD700','#FF4B5C','#2ECC71','#4A90E2','#ff4d6d','#a55eea','#22a6f2'];
   for(let i=0;i<n;i++){
-    const el=document.createElement('div'); el.className='confetti';
+    const el=document.createElement('div');el.className='confetti';
     el.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${6+Math.random()*8}px;height:${10+Math.random()*8}px;background:${colors[i%colors.length]};animation-duration:${2+Math.random()*2.5}s;animation-delay:${Math.random()*1.5}s;--drift:${(Math.random()-0.5)*200}px;`;
-    document.body.appendChild(el); setTimeout(()=>el.remove(),(4+Math.random()*2)*1000);
+    document.body.appendChild(el);setTimeout(()=>el.remove(),(4+Math.random()*2)*1000);
   }
 }
 
 // ============================================================
 // SCREEN FLOW
 // ============================================================
-function pickDiff(d) {
-  G.diff=d; const labels={easy:'🌱 簡單模式',normal:'🎓 普通模式',hard:'🔥 困難模式'};
-  document.getElementById('mode-diff-label').textContent=labels[d]; goTo('s-mode');
+function pickDiff(d){
+  G.diff=d;
+  const labels={easy:'🌱 簡單模式',normal:'🎓 普通模式',hard:'🔥 困難模式'};
+  document.getElementById('mode-diff-label').textContent=labels[d];
+  goTo('s-mode');
 }
-function pickMode(m) {
-  G.mode=m; SFX.click();
-  if(m==='ai'){ document.getElementById('nf2').style.display='none'; document.getElementById('lbl2').textContent='🤖 電腦 (AI)'; document.getElementById('n2').value='電腦'; }
-  else { document.getElementById('nf2').style.display='block'; document.getElementById('lbl2').textContent='🔵 玩家二'; }
+function pickMode(m){
+  G.mode=m;SFX.click();
+  if(m==='ai'){
+    document.getElementById('nf2').style.display='none';
+    document.getElementById('lbl2').textContent='🤖 電腦 (AI)';
+    document.getElementById('n2').value='電腦';
+  } else {
+    document.getElementById('nf2').style.display='block';
+    document.getElementById('lbl2').textContent='🔵 玩家二';
+  }
   goTo('s-names');
 }
-function startGame() {
-  const n1 = document.getElementById('n1').value.trim()||'玩家一';
-  const n2 = G.mode==='ai' ? '🤖 電腦' : (document.getElementById('n2').value.trim()||'玩家二');
-  G.players[0].name=n1; G.players[1].name=n2; G.players[0].coins=1000; G.players[1].coins=1000;
-  G.players[0].pos=0; G.players[1].pos=0; G.turn=0; G.round=0; G.gameOver=false;
-  G.cellOwner=Array(40).fill(-1); G.cellLevel=Array(40).fill(0);
+function startGame(){
+  const n1=document.getElementById('n1').value.trim()||'玩家一';
+  const n2=G.mode==='ai'?'🤖 電腦':(document.getElementById('n2').value.trim()||'玩家二');
+  G.players[0].name=n1;G.players[1].name=n2;
+  G.players[0].coins=1000;G.players[1].coins=1000;
+  G.players[0].pos=0;G.players[1].pos=0;
+  G.players[0].props={};G.players[1].props={};
+  G.players[0].correct=0;G.players[1].correct=0;
+  G.players[0].rentEarned=0;G.players[1].rentEarned=0;
+  G.turn=0;G.round=0;G.gameOver=false;
+  G.cellOwner=Array(40).fill(-1);G.cellLevel=Array(40).fill(0);
 
-  // --- 新增：動態更新模式文字邏輯 ---
-  const badge = document.getElementById('g-badge');
-  const labels = {
-    easy: '🌱 簡單模式',
-    normal: '🎓 普通模式',
-    hard: '🔥 困難模式'
-  };
-  // 根據 G.diff 取得對應的文字，若無匹配則預設顯示普通模式
-  badge.innerText = labels[G.diff] || '🎓 普通模式';
-  // ------------------------------
+  const badge=document.getElementById('g-badge');
+  const labels={easy:'🌱 簡單',normal:'🎓 普通',hard:'🔥 困難'};
+  badge.innerText=labels[G.diff]||'🎓 普通';
 
-  buildBoard(); 
-  updateUI(); 
-  goTo('s-game'); 
-  setTimeout(()=>startBGM(),300); 
+  // 更新回合指示標籤文字
+  document.getElementById('turn-p0').textContent='⬅️ '+n1;
+  document.getElementById('turn-p1').textContent=(G.mode==='ai'?'🤖 電腦':'🔵 '+n2)+' ➡️';
+
+  buildBoard();updateUI();goTo('s-game');
+
+  // 播放 BGM
+  const bgm=document.getElementById('bgm');
+  bgm.play().catch(()=>{});
+
+  // 首次顯示說明視窗
+  if(!G.infoShown){
+    G.infoShown=true;
+    setTimeout(()=>showInfo(),400);
+  }
+
   setTimeout(()=>beginTurn(),600);
 }
-function quitGame() { stopBGM(); clearQTimer(); G.gameOver=true; goTo('s-title'); }
+function quitGame(){clearQTimer();G.gameOver=true;document.getElementById('bgm').pause();goTo('s-title');}
 
 // ============================================================
 // BOARD BUILDER
 // ============================================================
-function buildBoard() {
-  const board = document.getElementById('board');
-  // 1. 先把裡面的內容清空
-  board.innerHTML = '';
-  const S = BOARD_SIZE;
-  board.style.gridTemplateColumns = `repeat(${S}, 1fr)`;
-  board.style.gridTemplateRows = `repeat(${S}, 1fr)`;
+function buildBoard(){
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  const S=BOARD_SIZE;
+  board.style.gridTemplateColumns=`repeat(${S},1fr)`;
+  board.style.gridTemplateRows=`repeat(${S},1fr)`;
 
-  // 2. 重新加入骰子區域 (這是關鍵，避免被清掉後 updateUI 找不到按鈕)
-  // 加入骰子區域 (設定為佔據中間 7x7 的範圍)
-  const diceArea = document.createElement('div');
-  diceArea.id = 'dice-area';
-  // 關鍵：明確指定佔據第 3 列到第 9 列，避免撐開邊緣格子
-  diceArea.style.gridArea = "3 / 3 / 10 / 10"; 
-  diceArea.innerHTML = `
+  const diceArea=document.createElement('div');
+  diceArea.id='dice-area';
+  diceArea.style.gridArea='3/3/10/10';
+  diceArea.innerHTML=`
     <div id="die0" class="die">⚀</div>
     <div id="die1" class="die">⚀</div>
-    <div style="display: flex; flex-direction: column; align-items: center;">
+    <div style="display:flex;flex-direction:column;align-items:center;">
       <button class="btn" id="btnroll" onclick="rollDice()">擲骰子</button>
       <span id="dice-total">點擊擲骰</span>
     </div>`;
   board.appendChild(diceArea);
 
-  // 3. 生成格子
-  const cells = {};
-  for (let r = 0; r < S; r++) {
-    for (let c = 0; c < S; c++) {
-      const div = document.createElement('div');
-      div.style.gridRow = r + 1;
-      div.style.gridColumn = c + 1;
-      if (r === 0 || r === S - 1 || c === 0 || c === S - 1) {
-        cells[`${r},${c}`] = div;
-        board.appendChild(div);
-      }
+  const cells={};
+  for(let r=0;r<S;r++){
+    for(let c=0;c<S;c++){
+      const div=document.createElement('div');
+      div.style.gridRow=r+1;div.style.gridColumn=c+1;
+      if(r===0||r===S-1||c===0||c===S-1){cells[`${r},${c}`]=div;board.appendChild(div);}
     }
   }
-  for (let i = 0; i < 40; i++) {
-    const { r, c } = cellGridPos(i);
-    const div = cells[`${r},${c}`];
-    if (!div) continue;
-    div.id = `cell-${i}`;
-    renderCell(div, i);
+  for(let i=0;i<40;i++){
+    const {r,c}=cellGridPos(i);
+    const div=cells[`${r},${c}`];
+    if(!div)continue;
+    div.id=`cell-${i}`;
+    renderCell(div,i);
   }
   placeTokens();
 }
 
-function renderCell(div, i) {
-  // 1. 初始化所有變數，給予預設空值，防止 ReferenceError
-  const def = CELL_DEFS[i];
-  const owner = G.cellOwner[i];
-  const level = G.cellLevel[i];
-  let typeClass = '';
-  let displayIco = def.ico;
-  let displayLabel = def.label;
-  let rentHtml = '';  // 預設為空字串
-  let levelHtml = ''; // 預設為空字串
+function renderCell(div,i){
+  const def=CELL_DEFS[i];
+  const owner=G.cellOwner[i];
+  const level=G.cellLevel[i];
+  let typeClass='';
+  let displayIco=def.ico;
+  let rentHtml='';
+  let levelHtml='';
 
-  // 2. 處理題目格的 Icon 與內容判定
-  if (def.type === 'question') {
-    if (G.diff === 'easy') {
-      const isRiddle = (def.qtype === 'riddle' || def.qtype === 'general');
-      displayIco = isRiddle ? '🔮' : '🧩';
-      displayLabel = isRiddle ? '字謎' : '結構';
-    } else if (G.diff === 'hard') {
-      displayIco = '🏛️';
-      displayLabel = '文化';
+  if(def.type==='question'){
+    if(G.diff==='easy'){
+      const isRiddle=(def.qtype==='riddle'||def.qtype==='general');
+      displayIco=isRiddle?'🔮':'🧩';
+    } else if(G.diff==='hard'){
+      displayIco='🏛️';
     } else {
-      // 普通模式：成語與拼音
-      const isIdiom = (def.qtype === 'idiom' || def.qtype === 'general');
-      displayIco = isIdiom ? '📚' : '🚇';
-      displayLabel = isIdiom ? '成語' : '拼音';
+      const isIdiom=(def.qtype==='idiom'||def.qtype==='general');
+      displayIco=isIdiom?'📚':'🚇';
     }
-
-    // 只有當地板有主人時，才生成租金與等級標籤
-    if (owner >= 0) {
-      rentHtml = `<div class="cell-rent">租${RENT_TABLE[level]}</div>`;
-      levelHtml = `<div class="cell-level" style="color:${owner === 0 ? 'var(--p1)' : 'var(--p2)'}">${['', '★', '★★', '★★★'][level]}</div>`;
+    if(owner>=0){
+      rentHtml=`<div class="cell-rent">租${RENT_TABLE[level]}</div>`;
+      levelHtml=`<div class="cell-level" style="color:${owner===0?'var(--p1)':'var(--p2)'}">${['','★','★★','★★★'][level]}</div>`;
     }
   }
 
-  // 3. 處理格子背景樣式類別
-  const typeMap = {
-    'start': 'ct-start',
-    'question': `ct-q-${def.qtype}`,
-    'lucky': 'ct-lucky',
-    'forward': 'ct-forward',
-    'backward': 'ct-backward',
-    'skip': 'ct-skip',
-    'teleport': 'ct-teleport'
+  const typeMap={
+    'start':'ct-start','question':`ct-q-${def.qtype}`,
+    'lucky':'ct-lucky','forward':'ct-forward','backward':'ct-backward',
+    'skip':'ct-skip','teleport':'ct-teleport'
   };
-  typeClass = typeMap[def.type] || '';
+  typeClass=typeMap[def.type]||'';
 
-  // 4. 最後組合 HTML 內容
-  div.className = `cell ${typeClass} ${owner === 0 ? 'own-0' : (owner === 1 ? 'own-1' : '')}`;
-  div.innerHTML = `
+  div.className=`cell ${typeClass} ${owner===0?'own-0':(owner===1?'own-1':'')}`;
+  div.innerHTML=`
     <div class="cell-ico">${displayIco}</div>
-    ${levelHtml}
-    ${rentHtml}
-    <div id="tok-${i}" class="token-container"></div>
-  `;
+    ${levelHtml}${rentHtml}
+    <div id="tok-${i}" class="token-container"></div>`;
 }
 
-function refreshCell(i) { const div=document.getElementById(`cell-${i}`); if(div) renderCell(div,i); }
+function refreshCell(i){const div=document.getElementById(`cell-${i}`);if(div)renderCell(div,i);}
 
-function placeTokens() {
+function placeTokens(){
   document.querySelectorAll('[id^="tok-"]').forEach(el=>el.innerHTML='');
   G.players.forEach((p,pi)=>{
-    const slot=document.getElementById(`tok-${p.pos}`); if(slot){
-      const t=document.createElement('span'); t.id=`token-${pi}`; t.style.cssText='font-size:16px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));';
-      t.textContent=pi===0?'🦊':(G.mode==='ai'?'🤖':'制'); slot.appendChild(t);
+    const slot=document.getElementById(`tok-${p.pos}`);
+    if(slot){
+      const t=document.createElement('span');t.id=`token-${pi}`;
+      t.style.cssText='font-size:16px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));';
+      t.textContent=pi===0?'🦊':(G.mode==='ai'?'🤖':'🔵');
+      slot.appendChild(t);
     }
   });
 }
@@ -1060,290 +1093,277 @@ function placeTokens() {
 // ============================================================
 // UI UPDATE
 // ============================================================
-function updateUI() {
-  G.players.forEach((p, i) => {
-    // 更新金錢 (對應新的同一行 HTML 結構)
-    const coinEl = document.getElementById(`pcn${i}`);
-    if (coinEl) coinEl.textContent = p.coins + "💰";
-
-    // 更新進度條
-    const barEl = document.getElementById(`pb${i}`);
-    if (barEl) {
-      const pct = Math.min(100, Math.max(0, (p.coins / WINNING_COINS) * 100));
-      barEl.style.width = pct + '%';
-    }
-
-    // 更新佔領格數
-    const ownedEl = document.getElementById(`po${i}`);
-    if (ownedEl) ownedEl.textContent = `佔領：${Object.keys(p.props).length}格`;
-
-    // 更新暫停狀態
-    const skipEl = document.getElementById(`pskip${i}`);
-    if (skipEl) {
-      if (p.skipTurn) { skipEl.classList.add('visible'); } 
-      else { skipEl.classList.remove('visible'); }
-    }
+function updateUI(){
+  G.players.forEach((p,i)=>{
+    const coinEl=document.getElementById(`pcn${i}`);
+    if(coinEl) coinEl.textContent=p.coins+'💰';
+    const barEl=document.getElementById(`pb${i}`);
+    if(barEl) barEl.style.width=Math.min(100,Math.max(0,(p.coins/WINNING_COINS)*100))+'%';
+    const ownedEl=document.getElementById(`po${i}`);
+    if(ownedEl) ownedEl.textContent=`佔領：${Object.keys(p.props).length}格`;
+    const skipEl=document.getElementById(`pskip${i}`);
+    if(skipEl) skipEl.style.visibility=p.skipTurn?'visible':'hidden';
   });
 
-  // --- 核心改動：左右回合指示燈控制 ---
-  const t0 = document.getElementById('turn-p0');
-  const t1 = document.getElementById('turn-p1');
-  
-  // 移除舊的 g-turn 邏輯，改為控制 visibility
-  if (!G.gameOver) {
-    // 玩家一回合：顯示左邊標籤，隱藏右邊
-    t0.style.visibility = (G.turn === 0) ? 'visible' : 'hidden';
-    // 電腦回合：顯示右邊標籤，隱藏左邊
-    t1.style.visibility = (G.turn === 1) ? 'visible' : 'hidden';
+  const t0=document.getElementById('turn-p0');
+  const t1=document.getElementById('turn-p1');
+  if(!G.gameOver){
+    t0.style.visibility=G.turn===0?'visible':'hidden';
+    t1.style.visibility=G.turn===1?'visible':'hidden';
   } else {
-    t0.style.visibility = 'hidden';
-    t1.style.visibility = 'hidden';
+    t0.style.visibility='hidden';
+    t1.style.visibility='hidden';
   }
+  document.getElementById('pp0').classList.toggle('my-turn',G.turn===0&&!G.gameOver);
+  document.getElementById('pp1').classList.toggle('my-turn',G.turn===1&&!G.gameOver);
 
-  // 高亮當前玩家框框
-  document.getElementById('pp0').classList.toggle('my-turn', G.turn === 0 && !G.gameOver);
-  document.getElementById('pp1').classList.toggle('my-turn', G.turn === 1 && !G.gameOver);
-
-  // 擲骰子按鈕禁用邏輯
-  const isAI = G.mode === 'ai' && G.turn === 1;
-  const rollBtn = document.getElementById('btnroll');
-  if (rollBtn) {
-    rollBtn.disabled = G.rolling || G.waitAns || isAI || G.gameOver;
-  }
+  const isAI=G.mode==='ai'&&G.turn===1;
+  const rollBtn=document.getElementById('btnroll');
+  if(rollBtn) rollBtn.disabled=G.rolling||G.waitAns||isAI||G.gameOver;
 }
 
 // ============================================================
 // GAME LOGIC
 // ============================================================
-function beginTurn() {
-  if(G.gameOver) return; updateUI(); const p=G.players[G.turn];
-  if(p.skipTurn){ p.skipTurn=false; addLog(`${p.name} 跳過回合 ⏸`, 'll-evt'); showEvt('⏸','跳過回合！',`${p.name} 被迫暫停一輪`,()=>nextTurn()); return; }
-  if(G.mode==='ai'&&G.turn===1){ setTimeout(()=>{ if(!G.gameOver) executeRoll(); },1200); }
+function beginTurn(){
+  if(G.gameOver)return;updateUI();const p=G.players[G.turn];
+  if(p.skipTurn){p.skipTurn=false;addLog(`${p.name} 跳過回合 ⏸`);showEvt('⏸','跳過回合！',`${p.name} 被迫暫停一輪`,()=>nextTurn());return;}
+  if(G.mode==='ai'&&G.turn===1){setTimeout(()=>{if(!G.gameOver)executeRoll();},1200);}
 }
-
-function rollDice() { if(G.rolling||G.waitAns||G.gameOver) return; executeRoll(); }
-
-function executeRoll() {
-  G.rolling=true; SFX.roll(); updateUI();
+function rollDice(){if(G.rolling||G.waitAns||G.gameOver)return;executeRoll();}
+function executeRoll(){
+  G.rolling=true;SFX.roll();updateUI();
   const dieEls=[document.getElementById('die0'),document.getElementById('die1')];
   dieEls.forEach(d=>d.classList.add('rolling'));
-  let t=0; const anim=setInterval(()=>{
-    const faces=['⚀','⚁','⚂','⚃','⚄','⚅']; dieEls.forEach(d=>d.textContent=faces[Math.floor(Math.random()*6)]);
-    if(++t>12){ clearInterval(anim); dieEls.forEach(d=>d.classList.remove('rolling')); finalizeRoll(); }
+  let t=0;const anim=setInterval(()=>{
+    const faces=['⚀','⚁','⚂','⚃','⚄','⚅'];dieEls.forEach(d=>d.textContent=faces[Math.floor(Math.random()*6)]);
+    if(++t>12){clearInterval(anim);dieEls.forEach(d=>d.classList.remove('rolling'));finalizeRoll();}
   },50);
 }
-
-function finalizeRoll() {
-  const d1=Math.floor(Math.random()*6)+1, d2=Math.floor(Math.random()*6)+1, total=d1+d2;
-  const faces=['⚀','⚁','⚂','⚃','⚄','⚅']; document.getElementById('die0').textContent=faces[d1-1]; document.getElementById('die1').textContent=faces[d2-1];
-  document.getElementById('dice-total').textContent=`合計：${total} 點`; movePlayer(G.turn, total);
+function finalizeRoll(){
+  const d1=Math.floor(Math.random()*6)+1,d2=Math.floor(Math.random()*6)+1,total=d1+d2;
+  const faces=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  document.getElementById('die0').textContent=faces[d1-1];
+  document.getElementById('die1').textContent=faces[d2-1];
+  document.getElementById('dice-total').textContent=`合計：${total} 點`;
+  movePlayer(G.turn,total);
 }
-
-function movePlayer(pi, steps) {
-  const p=G.players[pi]; let stepsLeft=steps;
+function movePlayer(pi,steps){
+  const p=G.players[pi];let stepsLeft=steps;
   function step(){
     if(stepsLeft<=0){G.rolling=false;landOn(pi);return;}
-    const prev=p.pos; p.pos=(p.pos+1)%40;
-    if(prev===39&&p.pos===0){ p.coins+=SALARY; addLog(`${p.name} 經過起點領取 +${SALARY}💰`, 'll-good'); showCoinPop(document.getElementById(`pcn${pi}`),SALARY); SFX.coin(); updateUI(); }
-    SFX.move(); placeTokens(); stepsLeft--; setTimeout(step,170);
+    const prev=p.pos;p.pos=(p.pos+1)%40;
+    if(prev===39&&p.pos===0){p.coins+=SALARY;addLog(`${p.name} 經過起點 +${SALARY}💰`);showCoinPop(document.getElementById(`pcn${pi}`),SALARY);SFX.coin();updateUI();}
+    SFX.move();placeTokens();stepsLeft--;setTimeout(step,170);
   }
   step();
 }
-
-function landOn(pi) {
-  const p=G.players[pi]; const cell=p.pos; const def=CELL_DEFS[cell];
-  if(def.type==='start'){ p.coins+=SALARY; showCoinPop(document.getElementById(`pcn${pi}`),SALARY); SFX.coin(); updateUI(); nextTurn(); return; }
-  if(def.type==='question'){
-    const owner=G.cellOwner[cell];
-    if(owner>=0 && owner!==pi){
-        // 觸發挑戰機制：若踩到別人的地，先啟動問答，答對則免租金
-        askQuestion(pi, cell, def.qtype);
-        return;
-    }
-    askQuestion(pi, cell, def.qtype); return;
-  }
-  if(def.type==='lucky'){ handleLucky(pi);return; }
-  if(def.type==='forward'){ showEvt('⚡','前進！',`${p.name} 前進 ${def.steps} 格！`,()=>moveExtra(pi,def.steps,true,()=>nextTurn())); return; }
-  if(def.type==='backward'){ showEvt('💨','後退！',`${p.name} 後退 ${def.steps} 格！`,()=>moveExtra(pi,-def.steps,false,()=>nextTurn())); return; }
-  if(def.type==='skip'){ p.skipTurn=true; showEvt('⏸','暫停！',`${p.name} 下回停走`,()=>nextTurn()); return; }
-  if(def.type==='teleport'){ const d=Math.floor(Math.random()*39)+1; showEvt('🌀','傳送！',`傳送到 ${d} 格`,()=>{ p.pos=d; placeTokens(); landOn(pi); }); return; }
+function landOn(pi){
+  const p=G.players[pi];const cell=p.pos;const def=CELL_DEFS[cell];
+  if(def.type==='start'){p.coins+=SALARY;showCoinPop(document.getElementById(`pcn${pi}`),SALARY);SFX.coin();updateUI();nextTurn();return;}
+  if(def.type==='question'){askQuestion(pi,cell,def.qtype);return;}
+  if(def.type==='lucky'){handleLucky(pi);return;}
+  if(def.type==='forward'){showEvt('⚡','前進！',`${p.name} 前進 ${def.steps} 格！`,()=>moveExtra(pi,def.steps,true,()=>nextTurn()));return;}
+  if(def.type==='backward'){showEvt('💨','後退！',`${p.name} 後退 ${def.steps} 格！`,()=>moveExtra(pi,-def.steps,false,()=>nextTurn()));return;}
+  if(def.type==='skip'){p.skipTurn=true;showEvt('⏸','暫停！',`${p.name} 下回停走`,()=>nextTurn());return;}
+  if(def.type==='teleport'){const d=Math.floor(Math.random()*39)+1;showEvt('🌀','傳送！',`傳送到 ${d} 格`,()=>{p.pos=d;placeTokens();landOn(pi);});return;}
   nextTurn();
 }
-
-function moveExtra(pi, steps, forward, cb) {
-  const p=G.players[pi]; let rem=Math.abs(steps); const dir=forward?1:-1;
-  function step(){ if(rem<=0){placeTokens();cb();return;} p.pos=((p.pos+dir)+40)%40; SFX.move(); placeTokens(); rem--; setTimeout(step,180); }
+function moveExtra(pi,steps,forward,cb){
+  const p=G.players[pi];let rem=Math.abs(steps);const dir=forward?1:-1;
+  function step(){if(rem<=0){placeTokens();cb();return;}p.pos=((p.pos+dir)+40)%40;SFX.move();placeTokens();rem--;setTimeout(step,180);}
   step();
 }
-
-function handleLucky(pi) {
-  const p=G.players[pi]; const r=Math.random(); let amt, title, desc;
-  if(r<.5){ amt=200; title='🎁 幸運獎金'; desc=`獲得 ${amt}💰`; p.coins+=amt; SFX.coin(); updateUI(); if(checkWin())return; }
-  else { title='🔄 再擲一次'; desc='獲得額外回合'; showEvt('🔄',title,desc,()=>{G.rolling=false;executeRoll();}); return; }
+function handleLucky(pi){
+  const p=G.players[pi];const r=Math.random();let amt,title,desc;
+  if(r<.5){amt=200;title='🎁 幸運獎金';desc=`獲得 ${amt}💰`;p.coins+=amt;SFX.coin();updateUI();if(checkWin())return;}
+  else{title='🔄 再擲一次';desc='獲得額外回合';showEvt('🔄',title,desc,()=>{G.rolling=false;executeRoll();});return;}
   showEvt('🎁',title,desc,()=>nextTurn());
 }
-
-// ============================================================
-// SYSTEM UTILS (補回缺失函數)
-// ============================================================
-function showEvt(ico, title, desc, cb) {
-  G.evtCb = cb;
-  document.getElementById('e-ico').textContent = ico;
-  document.getElementById('e-title').textContent = title;
-  document.getElementById('e-desc').textContent = desc;
-  document.getElementById('e-player').textContent = G.players[G.turn].name;
+function showEvt(ico,title,desc,cb){
+  G.evtCb=cb;
+  document.getElementById('e-ico').textContent=ico;
+  document.getElementById('e-title').textContent=title;
+  document.getElementById('e-desc').textContent=desc;
+  document.getElementById('e-player').textContent=G.players[G.turn].name;
   document.getElementById('emodal').classList.add('open');
   SFX.special();
 }
-
-function closeEvt() { 
-  document.getElementById('emodal').classList.remove('open'); 
-  if(G.evtCb) {
-    const cb = G.evtCb;
-    G.evtCb = null;
-    cb();
-  }
+function closeEvt(){
+  document.getElementById('emodal').classList.remove('open');
+  if(G.evtCb){const cb=G.evtCb;G.evtCb=null;cb();}
 }
 
 // ============================================================
-// QUESTION & ANSWER (OPTIMIZED)
+// QUESTION & ANSWER
 // ============================================================
-function askQuestion(pi, cell, qtype) {
-  G.waitAns=true; updateUI();
-  
-  // --- 重新定義難度對應的題庫分配 ---
+function askQuestion(pi,cell,qtype){
+  G.waitAns=true;updateUI();
   let pool;
-  if (G.diff === 'easy') {
-    // 簡單模式：漢字結構 (kanji_structure) 與 字謎 (riddle)
-    // 根據格子原本的 qtype 進行二次分配
-    pool = (qtype === 'riddle' || qtype === 'general') ? 'riddle' : 'kanji_structure';
-  } else if (G.diff === 'hard') {
-    // 困難模式：加入 文化 (culture) 與 綜合題庫
-    // 這裡讓困難模式包含所有進階題型，並以文化題為主
-    pool = (qtype === 'culture') ? 'culture' : 'culture'; // 或是設定 pool = 'culture' 強制執行
+  if(G.diff==='easy'){
+    pool=(qtype==='riddle'||qtype==='general')?'riddle':'kanji_structure';
+  } else if(G.diff==='hard'){
+    pool=(qtype==='culture'||qtype==='general')?'culture':'grammar';
   } else {
-    // 普通模式：拼音 (pinyin) 與 成語 (idiom)
-    pool = (qtype === 'idiom' || qtype === 'general') ? 'idiom' : 'pinyin';
+    pool=(qtype==='idiom'||qtype==='general')?'idiom':'pinyin';
   }
 
-  const bank = QB[pool]; 
-  const idx = Math.floor(Math.random() * bank.length); 
-  const q = bank[idx];
-  const isAI = G.mode === 'ai' && pi === 1;
+  const bank=QB[pool];
+  const idx=Math.floor(Math.random()*bank.length);
+  const q=bank[idx];
+  const isAI=G.mode==='ai'&&pi===1;
 
-  // 更新顯示標籤名稱
-  const typeNames = { 
-    riddle: '🔮 字謎', 
-    kanji_structure: '🧩 漢字結構', 
-    culture: '🏛️ 文化知識', 
-    idiom: '📚 成語測驗', 
-    pinyin: '🚇 漢語拼音' 
+  const typeNames={
+    riddle:'🔮 字謎',kanji_structure:'🧩 漢字結構',
+    culture:'🏛️ 文化知識',idiom:'📚 成語測驗',
+    pinyin:'🚇 漢語拼音',grammar:'📝 語法練習'
   };
-  
-  document.getElementById('q-type-badge').textContent = typeNames[pool] || '🌟 華語挑戰';
-  document.getElementById('q-player-name').textContent = G.players[pi].name;
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('q-res').style.display = 'none';
-  document.getElementById('q-ai').style.display = isAI ? 'block' : 'none';
+  document.getElementById('q-type-badge').textContent=typeNames[pool]||'🌟 華語挑戰';
+  document.getElementById('q-player-name').textContent=G.players[pi].name;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-res').style.display='none';
+  document.getElementById('q-ai').style.display=isAI?'block':'none';
 
-  const optsDiv = document.getElementById('q-opts'); 
-  optsDiv.innerHTML = '';
-  
-  let options = [], correctIdx;
-  
-  // 處理不同格式的題庫 (riddle 與 pinyin 使用 a/w 格式；idiom 與 culture 使用 opts 格式)
-  if (q.opts) {
-    // 選擇題格式 (如 idiom, culture)
-    correctIdx = "ABCD".indexOf(q.a);
-    q.opts.forEach((o, i) => {
-      const b = document.createElement('button');
-      b.className = 'opt-btn';
-      b.innerHTML = o;
-      b.onclick = () => answerQ(pi, cell, pool, i === correctIdx, b, optsDiv, correctIdx);
+  const optsDiv=document.getElementById('q-opts');
+  optsDiv.innerHTML='';
+  let options=[],correctIdx;
+
+  if(q.opts){
+    correctIdx='ABCD'.indexOf(q.a);
+    q.opts.forEach((o,i)=>{
+      const b=document.createElement('button');b.className='opt-btn';b.innerHTML=o;
+      b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx);
       optsDiv.appendChild(b);
     });
   } else {
-    // 字謎、拼音、漢字結構格式 (a 為正解, w 為誤項)
-    options = [q.a, ...q.w].sort(() => Math.random() - 0.5);
-    correctIdx = options.indexOf(q.a);
-    options.forEach((o, i) => {
-      const b = document.createElement('button');
-      b.className = 'opt-btn';
-      b.innerHTML = o;
-      b.onclick = () => answerQ(pi, cell, pool, i === correctIdx, b, optsDiv, correctIdx);
+    options=[q.a,...q.w].sort(()=>Math.random()-0.5);
+    correctIdx=options.indexOf(q.a);
+    options.forEach((o,i)=>{
+      const b=document.createElement('button');b.className='opt-btn';b.innerHTML=o;
+      b.onclick=()=>answerQ(pi,cell,pool,i===correctIdx,b,optsDiv,correctIdx);
       optsDiv.appendChild(b);
     });
   }
-  
-  startQTimer(60); 
+
+  startQTimer(60);
   document.getElementById('qmodal').classList.add('open');
-  
-  if (isAI) {
-    setTimeout(() => {
-      const ok = Math.random() < AI_RATES[G.diff];
-      const cIdx = ok ? correctIdx : (correctIdx + 1) % (q.opts ? q.opts.length : options.length);
-      answerQ(pi, cell, pool, ok, optsDiv.children[cIdx], optsDiv, correctIdx);
-    }, 2000);
+
+  if(isAI){
+    setTimeout(()=>{
+      const ok=Math.random()<AI_RATES[G.diff];
+      const cIdx=ok?correctIdx:(correctIdx+1)%(q.opts?q.opts.length:options.length);
+      answerQ(pi,cell,pool,ok,optsDiv.children[cIdx],optsDiv,correctIdx);
+    },2000);
   }
 }
 
-function answerQ(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx) {
-  clearQTimer(); document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+function answerQ(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx){
+  clearQTimer();document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
   finishQuestion(pi,cell,pool,isCorrect,btn,optsDiv,correctIdx);
 }
 
-function finishQuestion(pi, cell, pool, isCorrect, chosenBtn, optsDiv, correctIdx) {
-  const p = G.players[pi];
-  const allBtns = Array.from(optsDiv.children);
-  if (correctIdx !== undefined && allBtns[correctIdx] && !isCorrect) { allBtns[correctIdx].classList.add('reveal-correct'); }
-  if (chosenBtn) chosenBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+function finishQuestion(pi,cell,pool,isCorrect,chosenBtn,optsDiv,correctIdx){
+  const p=G.players[pi];
+  const allBtns=Array.from(optsDiv.children);
+  if(correctIdx!==undefined&&allBtns[correctIdx]&&!isCorrect){allBtns[correctIdx].classList.add('reveal-correct');}
+  if(chosenBtn) chosenBtn.classList.add(isCorrect?'correct':'wrong');
 
-  const resDiv = document.getElementById('q-res');
-  resDiv.style.display = 'block';
+  const resDiv=document.getElementById('q-res');
+  resDiv.style.display='block';
 
-  if (isCorrect) {
-    SFX.correct(); p.coins += CORRECT_REWARD; p.correct++;
-    resDiv.className = 'q-result ok';
-    resDiv.textContent = `✅ 答對了！獲得 +${CORRECT_REWARD}💰 學習金幣！`;
-    showCoinPop(document.getElementById(`pcn${pi}`), CORRECT_REWARD);
-
-    const owner = G.cellOwner[cell];
-    if (owner < 0) {
-      G.cellOwner[cell] = pi; G.cellLevel[cell] = 1; G.players[pi].props[cell] = 1;
-      addLog(`${p.name} 佔領格子 ${cell}`, 'll-evt');
-    } else if (owner === pi) {
-      if (G.cellLevel[cell] < 3) { G.cellLevel[cell]++; G.players[pi].props[cell] = G.cellLevel[cell]; addLog(`${p.name} 升級格子 ${cell} 至 Lv${G.cellLevel[cell]}`, 'll-evt'); }
-    } else {
-      addLog(`${p.name} 踢館成功！展現華語實力，免付租金！`, 'll-good');
-      resDiv.textContent = `🔥 挑戰成功！免除本次租金並獲得 ${CORRECT_REWARD}💰！`;
-    }
-    refreshCell(cell); updateUI();
+  if(isCorrect){
+    SFX.correct();p.coins+=CORRECT_REWARD;p.correct++;
+    resDiv.className='q-result ok';
+    resDiv.textContent=`✅ 答對了！獲得 +${CORRECT_REWARD}💰 學習金幣！`;
+    showCoinPop(document.getElementById(`pcn${pi}`),CORRECT_REWARD);
+    const owner=G.cellOwner[cell];
+    if(owner<0){G.cellOwner[cell]=pi;G.cellLevel[cell]=1;G.players[pi].props[cell]=1;addLog(`${p.name} 佔領格子 ${cell}`);}
+    else if(owner===pi){if(G.cellLevel[cell]<3){G.cellLevel[cell]++;G.players[pi].props[cell]=G.cellLevel[cell];addLog(`${p.name} 升級格子至 Lv${G.cellLevel[cell]}`);}}
+    else{addLog(`${p.name} 踢館成功！免付租金！`);resDiv.textContent=`🔥 挑戰成功！免除租金並獲得 ${CORRECT_REWARD}💰！`;}
+    refreshCell(cell);updateUI();
   } else {
-    SFX.wrong(); resDiv.className = 'q-result ng'; resDiv.textContent = `❌ 答錯了！無法獲得獎勵。`;
-    const owner = G.cellOwner[cell];
-    if (owner >= 0 && owner !== pi) {
-        const rent = RENT_TABLE[G.cellLevel[cell]];
-        p.coins -= rent; G.players[owner].coins += rent; G.players[owner].rentEarned += rent;
-        addLog(`${p.name} 答錯且需支付租金 ${rent}💰`, 'll-rent');
+    SFX.wrong();resDiv.className='q-result ng';resDiv.textContent='❌ 答錯了！無法獲得獎勵。';
+    const owner=G.cellOwner[cell];
+    if(owner>=0&&owner!==pi){
+      const rent=RENT_TABLE[G.cellLevel[cell]];
+      p.coins-=rent;G.players[owner].coins+=rent;G.players[owner].rentEarned+=rent;
+      addLog(`${p.name} 支付租金 ${rent}💰`);
     }
   }
-  if (checkWin()) return;
-  setTimeout(() => { document.getElementById('qmodal').classList.remove('open'); G.waitAns = false; nextTurn(); }, isCorrect ? 1600 : 1800);
+  if(checkWin())return;
+  setTimeout(()=>{document.getElementById('qmodal').classList.remove('open');G.waitAns=false;nextTurn();},isCorrect?1600:1800);
 }
 
 // ============================================================
-// TIMER UTILS
+// TIMER
 // ============================================================
-function startQTimer(s) { clearQTimer(); G.qTimerVal=s; G.qTimerInterval=setInterval(()=>{ G.qTimerVal--; document.getElementById('q-tnum').textContent=G.qTimerVal + "s"; if(G.qTimerVal<=0){ clearQTimer(); finishQuestion(G.turn, G.players[G.turn].pos, 'any', false, null, document.getElementById('q-opts')); } },1000); }
-function clearQTimer() { if(G.qTimerInterval){clearInterval(G.qTimerInterval); G.qTimerInterval=null;} }
-function checkWin() {
-  for(let i=0;i<2;i++){ if(G.players[i].coins>=WINNING_COINS){endGame(i);return true;} if(G.players[i].coins<=0){endGame(1-i);return true;} }
+function startQTimer(s){
+  clearQTimer();G.qTimerVal=s;
+  G.qTimerInterval=setInterval(()=>{
+    G.qTimerVal--;
+    document.getElementById('q-tnum').textContent=G.qTimerVal+'s';
+    if(G.qTimerVal<=0){clearQTimer();finishQuestion(G.turn,G.players[G.turn].pos,'any',false,null,document.getElementById('q-opts'));}
+  },1000);
+}
+function clearQTimer(){if(G.qTimerInterval){clearInterval(G.qTimerInterval);G.qTimerInterval=null;}}
+
+// ============================================================
+// WIN CONDITION & END GAME
+// ============================================================
+function checkWin(){
+  for(let i=0;i<2;i++){
+    if(G.players[i].coins>=WINNING_COINS){endGame(i);return true;}
+    if(G.players[i].coins<=0){endGame(1-i);return true;}
+  }
   return false;
 }
-function endGame(wIdx) { G.gameOver=true; stopBGM(); SFX.win(); launchConfetti(); document.getElementById('w-name').textContent=`🏆 ${G.players[wIdx].name} 獲勝！`; document.getElementById('w-sub').textContent=`最終金幣：${G.players[wIdx].coins}💰`; document.getElementById('ws-rounds').textContent=Math.floor(G.round/2); document.getElementById('ws-correct').textContent=G.players[wIdx].correct; document.getElementById('ws-owned').textContent=Object.keys(G.players[wIdx].props).length; document.getElementById('ws-rent').textContent=G.players[wIdx].rentEarned; goTo('s-win'); }
-function nextTurn() { if(G.gameOver)return; G.turn=1-G.turn; G.round++; beginTurn(); }
 
-window.onload = () => { initBG(); };
+function endGame(wIdx){
+  G.gameOver=true;SFX.win();launchConfetti();
+
+  const winner=G.players[wIdx];
+  const loser=G.players[1-wIdx];
+
+  document.getElementById('w-name').textContent=`🏆 ${winner.name} 獲勝！`;
+  document.getElementById('w-sub').textContent=`最終金幣：${winner.coins}💰`;
+  document.getElementById('ws-rounds').textContent=Math.floor(G.round/2);
+  document.getElementById('ws-correct').textContent=winner.correct;
+  document.getElementById('ws-owned').textContent=Object.keys(winner.props).length;
+  document.getElementById('ws-rent').textContent=winner.rentEarned;
+
+  // 繽紛康乃馨：玩家（非AI）獲勝才顯示
+  const flower=document.getElementById('win-flower');
+  const extraMsg=document.getElementById('win-extra-msg');
+  const trophy=document.getElementById('w-trophy');
+
+  const isPlayerWin = (G.mode==='ai' && wIdx===0) || (G.mode==='pvp');
+
+  if(isPlayerWin){
+    flower.style.display='block';
+    extraMsg.style.display='block';
+    if(G.mode==='ai'){
+      extraMsg.textContent='🌸 恭喜！你打敗了AI，這束康乃馨送給你！';
+      extraMsg.style.color='var(--flower-pink)';
+      extraMsg.style.textShadow='0 0 15px var(--flower-red)';
+      trophy.textContent='🌸';
+    } else {
+      extraMsg.textContent=`🌸 ${winner.name} 勝出！繽紛康乃馨屬於你！`;
+      extraMsg.style.color='var(--flower-pink)';
+      extraMsg.style.textShadow='0 0 15px var(--flower-red)';
+      trophy.textContent='🌸';
+    }
+  } else {
+    flower.style.display='none';
+    extraMsg.style.display='none';
+    trophy.textContent='🤖';
+  }
+
+  goTo('s-win');
+}
+
+function nextTurn(){if(G.gameOver)return;G.turn=1-G.turn;G.round++;beginTurn();}
+
+window.onload=()=>{initBG();};
 </script>
 </body>
 </html>
