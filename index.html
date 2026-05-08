@@ -240,7 +240,12 @@
     }
 
     /* ===== WIN SCREEN ===== */
-    #s-win { position: relative; overflow-y: auto; padding: 30px 15px 20px; justify-content: flex-start; }
+    #s-win { 
+      position: relative; 
+      overflow-y: auto; 
+      padding: 30px 15px 100px; /* 增加底部填充，將內容往下拉 */
+      justify-content: flex-end; /* 改為靠下對齊 */
+    }
     .pixel-flower {
       width: 4px; height: 4px; background: transparent;
       margin-bottom: 20px;
@@ -276,7 +281,7 @@
       visibility: visible;
       opacity: 1;
       max-height: 200px;
-      margin-bottom: 80px;
+      margin-bottom: 120px;
     }
     @keyframes flower-glow {
       0%   { transform: scale(5) translateY(0);    filter: drop-shadow(0 0 12px #ff4d6d) hue-rotate(0deg); }
@@ -577,13 +582,6 @@
     <div id="w-trophy" style="font-size:6rem;filter:drop-shadow(0 0 30px var(--gold));">🦊</div>
     <h1 id="w-name">🏆 玩家一 獲勝！</h1>
     <div id="win-extra-msg"></div>
-    <p id="w-sub" style="font-size:1.2rem;opacity:0.8;">最終金幣：2000💰</p>
-    <div id="win-stats">
-      <div>回合數<br><b id="ws-rounds">0</b></div>
-      <div>正確題數<br><b id="ws-correct">0</b></div>
-      <div>佔領格數<br><b id="ws-owned">0</b></div>
-      <div>租金總計<br><b id="ws-rent">0</b></div>
-    </div>
     <button class="btn" onclick="location.reload()">再玩一局</button>
   </div>
 
@@ -1337,12 +1335,13 @@ function startQTimer(s){
 function clearQTimer(){if(G.qTimerInterval){clearInterval(G.qTimerInterval);G.qTimerInterval=null;}}
 
 // ============================================================
-// WIN CONDITION & END GAME
+// WIN CONDITION & END GAME (簡化版)
 // ============================================================
 function checkWin(){
-  for(let i=0;i<2;i++){
-    if(G.players[i].coins>=WINNING_COINS){endGame(i);return true;}
-    if(G.players[i].coins<=0){endGame(1-i);return true;}
+  for(let i=0; i<2; i++){
+    // 條件：金幣達標 或 對手破產
+    if(G.players[i].coins >= WINNING_COINS){ endGame(i); return true; }
+    if(G.players[i].coins <= 0){ endGame(1-i); return true; }
   }
   return false;
 }
@@ -1352,7 +1351,7 @@ function endGame(wIdx) {
   SFX.win();
   launchConfetti();
 
-  // 先關閉所有 modal
+  // 關閉所有彈窗
   document.getElementById('qmodal').classList.remove('open');
   document.getElementById('emodal').classList.remove('open');
   clearQTimer();
@@ -1362,41 +1361,31 @@ function endGame(wIdx) {
   const extraMsg = document.getElementById('win-extra-msg');
   const trophy = document.getElementById('w-trophy');
   const wName = document.getElementById('w-name');
-  const wSub = document.getElementById('w-sub'); // 雖不再顯示文字，但保留引用以利控制
 
-  // 隱藏原本的數據小方塊容器 (假設 ID 為 ws-container)
-  const statsContainer = document.querySelector('.win-stats-grid') || document.querySelector('[style*="grid-template-columns"]');
-  if (statsContainer) statsContainer.style.display = 'none';
+  // 1. 徹底移除人物 Emoji
+  trophy.textContent = ''; 
 
-  // 隱藏最終金幣那一行
-  if (wSub) wSub.style.display = 'none';
+  // 2. 判斷是否為「玩家」獲勝 (AI模式下的玩家0，或雙人模式下的任一人)
+  const isPlayerWinner = (G.mode === 'ai' && wIdx === 0) || (G.mode === 'pvp');
 
-  const isPlayerWin = (G.mode === 'ai' && wIdx === 0) || (G.mode === 'pvp');
-  const isPerfect = isPlayerWin && winner.correct >= 3;
-
-  if (isPlayerWin && isPerfect) {
+  if (isPlayerWinner) {
+    // 玩家勝利：顯示康乃馨與祝福
     flower.classList.add('show');
-    wName.textContent = `🏆 ${winner.name} 完美獲勝！`;
+    wName.textContent = `${winner.name} 獲勝！`;
     wName.style.color = 'var(--flower-pink)';
     wName.style.textShadow = '0 0 20px var(--flower-red)';
+    
     extraMsg.style.display = 'block';
     extraMsg.textContent = '這束繽紛康乃馨，送給最親愛的媽媽！';
     extraMsg.style.color = 'white';
     extraMsg.style.textShadow = '0 0 20px var(--flower-pink)';
-  } else if (isPlayerWin) {
-    flower.classList.remove('show');
-    trophy.textContent = '🏆';
-    wName.textContent = `🏆 ${winner.name} 獲勝！`;
-    wName.style.color = '#f9ca24';
-    wName.style.textShadow = '0 0 20px #ff9f43';
-    extraMsg.style.display = 'block';
-    extraMsg.textContent = '遠征成功！再接再厲，答更多題解鎖康乃馨！';
   } else {
+    // 電腦勝利：不顯示康乃馨，顯示安慰訊息
     flower.classList.remove('show');
-    trophy.textContent = '😔';
-    wName.textContent = `${G.mode === 'ai' ? '🤖 電腦' : winner.name} 獲勝⋯⋯`;
+    wName.textContent = `🤖 電腦 獲勝⋯⋯`;
     wName.style.color = '#ff4d6d';
     wName.style.textShadow = '0 0 15px #ff0000';
+    
     extraMsg.style.display = 'block';
     extraMsg.textContent = '任務失敗⋯⋯重整旗鼓，再戰一場！';
   }
