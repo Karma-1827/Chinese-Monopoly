@@ -74,14 +74,14 @@
     }
     @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
     #info-box h2 {
-      font-family: 'Press Start 2P', cursive; font-size: 20px; margin-bottom: 24px;
+      font-family: 'Press Start 2P', cursive; font-size: 16px; margin-bottom: 24px;
       background: linear-gradient(90deg, var(--c1), var(--c3), var(--c5));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       text-align: center;
     }
     .info-section { margin-bottom: 18px; }
     .info-section h4 {
-      font-family: 'Press Start 2P', cursive; font-size: 16px;
+      font-family: 'Press Start 2P', cursive; font-size: 11px;
       color: var(--c3); margin-bottom: 8px;
     }
     .info-section ul { margin:0; padding-left:20px; color:#ccc; font-size:14px; line-height:2; }
@@ -93,12 +93,6 @@
       padding: 12px 36px; cursor: pointer; transition: 0.3s;
     }
     #info-close:hover { background: var(--c5); color: #0d0d1a; box-shadow: 0 0 20px var(--c5); }
-
-    #visit-counter {
-        position: fixed; bottom: 18px; left: 20px; z-index: 2000;
-        font-size: 13px; color: #555;
-        pointer-events: none;
-    }
 
     /* ===== DEPT LOGO ===== */
     .dept-logo {
@@ -129,9 +123,9 @@
 
     /* ===== BOARD ===== */
     #board-container {
-      height: 100vh;
+      height: auto;
       display: flex; flex-direction: column; align-items: center;
-      justify-content: flex-start; padding-top: 20px; position: relative;
+      justify-content: flex-start; padding-top: 8px; position: relative;
     }
     #board {
       display: grid;
@@ -228,14 +222,16 @@
     .opt-btn.reveal-correct { border: 2px solid var(--green); box-shadow: 0 0 15px var(--green); }
 
     /* ===== TURN INDICATORS ===== */
+    #turn-indicator-row {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 82vmin; margin-bottom: 4px; min-height: 32px;
+    }
     #turn-p0, #turn-p1 {
-      position: absolute; padding: 8px 18px; border-radius: 50px;
-      font-weight: 900; font-size: 1rem; z-index: 1000;
-      border: 2px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      padding: 6px 16px; border-radius: 50px;
+      font-weight: 900; font-size: 0.9rem;
+      border: 2px solid white; box-shadow: 0 0 12px rgba(0,0,0,0.5);
       transition: opacity 0.3s ease; white-space: nowrap;
     }
-    #turn-p0 { left: 10px; top: 18%; }
-    #turn-p1 { right: 10px; top: 18%; }
 
     #g-badge {
       white-space: nowrap; font-size: 1.4rem; color: rgba(255,255,255,1);
@@ -244,7 +240,7 @@
     }
 
     /* ===== WIN SCREEN ===== */
-    #s-win { position: relative; }
+    #s-win { position: relative; overflow-y: auto; padding: 30px 15px 20px; justify-content: flex-start; }
     .pixel-flower {
       width: 4px; height: 4px; background: transparent;
       margin-bottom: 20px;
@@ -269,7 +265,18 @@
         4px 32px #74c69d, 8px 32px #52b788;
       transform: scale(5);
       animation: flower-glow 3s infinite ease-in-out;
-      display: none;
+      /* 預設隱藏但不佔版面 */
+      visibility: hidden;
+      opacity: 0;
+      max-height: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .pixel-flower.show {
+      visibility: visible;
+      opacity: 1;
+      max-height: 200px;
+      margin-bottom: 80px;
     }
     @keyframes flower-glow {
       0%   { transform: scale(5) translateY(0);    filter: drop-shadow(0 0 12px #ff4d6d) hue-rotate(0deg); }
@@ -287,6 +294,13 @@
       font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;
       display: none;
     }
+
+    #visit-counter {
+            position: fixed; bottom: 18px; left: 20px; z-index: 2000;
+            font-size: 18px; color: #555;
+            pointer-events: none;
+    }
+
 
     /* ===== ANIMATIONS ===== */
     @keyframes dieShake { 0%{transform:rotate(0)} 50%{transform:rotate(10deg) translate(2px)} 100%{transform:rotate(-10deg) translate(-2px)} }
@@ -323,7 +337,7 @@
       #dice-area .btn { padding: 14px 30px; font-size: 1.2rem; }
       #turn-p0, #turn-p1 { font-size: 0.75rem; padding: 5px 10px; }
       .dept-logo { width: 70px; bottom: 12px; right: 12px; }
-      .pixel-flower { transform: scale(3.5); margin-bottom: 80px; }
+      .pixel-flower.show { transform: scale(3.5); margin-bottom: 60px; max-height: 160px; }
       @keyframes flower-glow {
         0%,100%{transform:scale(3.5) translateY(0);}
         50%{transform:scale(3.65) translateY(-4px);}
@@ -352,15 +366,15 @@
       #dice-area .btn { padding: 12px 22px; font-size: 1rem; }
       #log-container { width: 130px; height: 180px; right: 5px; top: 5px; }
       #glog li { font-size: 8px; padding: 3px 6px; }
-      #turn-p0 { left: 2px; top: auto; bottom: 22%; font-size: 0.65rem; padding: 4px 8px; }
-      #turn-p1 { right: 2px; top: auto; bottom: 22%; font-size: 0.65rem; padding: 4px 8px; }
+      #turn-p0, #turn-p1 { font-size: 0.65rem; padding: 4px 8px; }
+      #turn-indicator-row { width: 96vmin; }
       .dept-logo { width: 55px; bottom: 8px; right: 8px; }
       #info-box { padding: 20px 16px; }
       #info-box h2 { font-size: 11px; margin-bottom: 14px; }
       .info-section h4 { font-size: 9px; }
       .info-section ul, .info-section p { font-size: 12px; }
       #info-close { font-size: 10px; padding: 9px 20px; }
-      .pixel-flower { transform: scale(2.8); margin-bottom: 60px; }
+      .pixel-flower.show { transform: scale(2.8); margin-bottom: 50px; max-height: 120px; }
       #win-stats { width: 90%; }
       #s-win h1 { font-size: 1.8rem !important; }
       #music-btn { width: 36px; height: 36px; font-size: 15px; top: 10px; right: 10px; }
@@ -380,10 +394,10 @@
       .die { width: 38px; height: 38px; font-size: 1.6rem; }
       #dice-area { gap: 8px; }
       #dice-area .btn { padding: 10px 18px; font-size: 0.9rem; }
-      #turn-p0 { left: 2px; font-size: 0.6rem; padding: 3px 7px; }
-      #turn-p1 { right: 2px; font-size: 0.6rem; padding: 3px 7px; }
+      #turn-p0, #turn-p1 { font-size: 0.6rem; padding: 3px 7px; }
+      #turn-indicator-row { width: 80vmin; }
       .dept-logo { width: 50px; bottom: 5px; right: 5px; }
-      .pixel-flower { transform: scale(2.5); margin-bottom: 50px; }
+      .pixel-flower.show { transform: scale(2.5); margin-bottom: 40px; max-height: 100px; }
       #info-box { max-height: 80vh; padding: 16px 20px; }
       #info-box h2 { font-size: 10px; margin-bottom: 10px; }
       .info-section { margin-bottom: 10px; }
@@ -399,32 +413,8 @@
   <canvas id="bg-canvas"></canvas>
   <img src="NTNU-CSL-LOGO (12).png" class="dept-logo" alt="系所Logo">
   <div id="visit-counter">
-    👾 累計瀏覽 <span id="busuanzi_value_site_pv">...</span> 次
+    累計瀏覽 <span id="busuanzi_value_page_pv">...</span> 次
   </div>
-  <script>
-    // 這段小程式碼會每 0.5 秒檢查一次，直到不蒜子把數字傳回來
-    var fixBusuanzi = setInterval(function() {
-        var originalValue = document.getElementById('busuanzi_value_site_pv').innerText;
-        if (originalValue !== "" && originalValue !== "--") {
-            // 取得原始數字
-            var count = parseInt(originalValue);
-            // 設定偏移量 (減去測試時累積的 13)
-            var offset = 20; 
-            var finalShow = count - offset;
-            
-            // 確保數字不會變成負數
-            if (finalShow < 0) finalShow = 0;
-            
-            // 把計算後的結果填入顯示區域
-            document.getElementById('display_pv_value').innerText = finalShow;
-            // 顯示整個容器
-            document.getElementById('busuanzi_container_site_pv').style.display = "inline-block";
-            
-            // 停止檢查
-            clearInterval(fixBusuanzi);
-        }
-    }, 500);
-  </script>
 
   <!-- ===== INFO OVERLAY ===== -->
   <div id="info-overlay">
@@ -447,6 +437,14 @@
           <li><span style="color:var(--c4)">簡單</span>：字謎 ＋ 漢字結構</li>
           <li><span style="color:var(--c2)">普通</span>：成語 ＋ 拼音練習</li>
           <li><span style="color:var(--c1)">困難</span>：文化知識 ＋ 語法練習</li>
+        </ul>
+      </div>
+      <div class="info-section">
+        <h4>🤖 電腦 AI</h4>
+        <ul>
+          <li>簡單模式：AI 答對率 30%</li>
+          <li>普通模式：AI 答對率 60%</li>
+          <li>困難模式：AI 答對率 90%</li>
         </ul>
       </div>
       <div class="info-section">
@@ -531,13 +529,16 @@
     </div>
 
     <div id="board-container">
-      <div id="turn-p0" style="background:var(--p1);color:white;visibility:hidden;">⬅️ 玩家回合</div>
-      <div id="turn-p1" style="background:var(--p2);color:white;visibility:hidden;">電腦回合 ➡️</div>
+      <div id="turn-indicator-row">
+        <div id="turn-p0" style="background:var(--p1);color:white;visibility:hidden;">⬅️ 玩家回合</div>
+        <div style="width:40px;"></div>
+        <div id="turn-p1" style="background:var(--p2);color:white;visibility:hidden;">電腦回合 ➡️</div>
+      </div>
       <div id="board"></div>
     </div>
 
     <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position:fixed;bottom:10px;left:10px;background:none;border:none;color:#555;cursor:pointer;font-size:11px;">放棄遊戲</button>
+    <button onclick="quitGame()" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:none;border:1px solid #444;color:#666;cursor:pointer;font-size:12px;padding:5px 18px;border-radius:20px;z-index:100;">放棄遊戲</button>
   </div>
 
   <!-- ===== QUESTION MODAL ===== -->
@@ -658,7 +659,7 @@ const QB = {
     {q:"口 ＋ 牙 = ？",a:"呀",w:["穿","鴉","訝"]},
     {q:"日 ＋ 月 = ？",a:"明",w:["旦","玥","閒"]},
     {q:"女 ＋ 子 = ？",a:"好",w:["如","媽","耍"]},
-    {q:"鬥 ＋ 市 = ？",a:"鬧",w:["闖","閃","問"]},
+    {q:"門 ＋ 市 = ？",a:"鬧",w:["闖","閃","問"]},
     {q:"木 ＋ 木 = ？",a:"林",w:["森","相","札"]},
     {q:"氵 ＋ 青 = ？",a:"清",w:["請","睛","精"]},
     {q:"忄 ＋ 曼 = ？",a:"慢",w:["漫","饅","蔓"]},
@@ -1314,8 +1315,12 @@ function finishQuestion(pi,cell,pool,isCorrect,chosenBtn,optsDiv,correctIdx){
       addLog(`${p.name} 支付租金 ${rent}💰`);
     }
   }
-  if(checkWin())return;
-  setTimeout(()=>{document.getElementById('qmodal').classList.remove('open');G.waitAns=false;nextTurn();},isCorrect?1600:1800);
+  const delay = isCorrect ? 1600 : 1800;
+  setTimeout(()=>{
+    document.getElementById('qmodal').classList.remove('open');
+    G.waitAns=false;
+    if(!checkWin()) nextTurn();
+  }, delay);
 }
 
 // ============================================================
@@ -1345,6 +1350,11 @@ function checkWin(){
 function endGame(wIdx){
   G.gameOver=true;SFX.win();launchConfetti();
 
+  // 先關閉所有 modal，再顯示勝利畫面
+  document.getElementById('qmodal').classList.remove('open');
+  document.getElementById('emodal').classList.remove('open');
+  clearQTimer();
+
   const winner=G.players[wIdx];
   const loser=G.players[1-wIdx];
 
@@ -1355,31 +1365,56 @@ function endGame(wIdx){
   document.getElementById('ws-owned').textContent=Object.keys(winner.props).length;
   document.getElementById('ws-rent').textContent=winner.rentEarned;
 
-  // 繽紛康乃馨：玩家（非AI）獲勝才顯示
-  const flower=document.getElementById('win-flower');
-  const extraMsg=document.getElementById('win-extra-msg');
-  const trophy=document.getElementById('w-trophy');
+  // 判斷情境
+  // isPlayerWin: 玩家0獲勝（AI模式）或任一方獲勝（PvP）
+  // isPerfect: 勝者答題全對（0錯誤）
+  const flower   = document.getElementById('win-flower');
+  const extraMsg = document.getElementById('win-extra-msg');
+  const trophy   = document.getElementById('w-trophy');
+  const wName    = document.getElementById('w-name');
+  const wSub     = document.getElementById('w-sub');
 
   const isPlayerWin = (G.mode==='ai' && wIdx===0) || (G.mode==='pvp');
+  const isPerfect   = winner.correct > 0 && (winner.correct === G.players[wIdx].correct) &&
+                      G.players[wIdx].coins >= 2000 && loser.correct === 0 ? false :
+                      (isPlayerWin && winner.correct >= 3); // 至少3題全對視為表現優秀
 
-  if(isPlayerWin){
-    flower.style.display='block';
-    extraMsg.style.display='block';
-    if(G.mode==='ai'){
-      extraMsg.textContent='🌸 恭喜！你打敗了AI，這束康乃馨送給你！';
-      extraMsg.style.color='var(--flower-pink)';
-      extraMsg.style.textShadow='0 0 15px var(--flower-red)';
-      trophy.textContent='🌸';
-    } else {
-      extraMsg.textContent=`🌸 ${winner.name} 勝出！繽紛康乃馨屬於你！`;
-      extraMsg.style.color='var(--flower-pink)';
-      extraMsg.style.textShadow='0 0 15px var(--flower-red)';
-      trophy.textContent='🌸';
-    }
+  // 根據三種情境設定畫面
+  if(isPlayerWin && isPerfect){
+    // 完美勝利：康乃馨 + 送媽媽訊息
+    flower.classList.add('show');
+    wName.textContent  = `🏆 ${winner.name} 完美獲勝！`;
+    wName.style.color  = 'var(--flower-pink)';
+    wName.style.textShadow = '0 0 20px var(--flower-red)';
+    extraMsg.style.display = 'block';
+    extraMsg.textContent   = '這束繽紛康乃馨，送給最親愛的媽媽！';
+    extraMsg.style.color   = 'white';
+    extraMsg.style.textShadow = '0 0 20px var(--flower-pink)';
+    wSub.textContent = `最終金幣：${winner.coins}💰　　正確題數：${winner.correct} 題`;
+  } else if(isPlayerWin){
+    // 普通勝利：無康乃馨，鼓勵再接再厲
+    flower.classList.remove('show');
+    trophy.textContent = '🏆';
+    wName.textContent  = `🏆 ${winner.name} 獲勝！`;
+    wName.style.color  = '#f9ca24';
+    wName.style.textShadow = '0 0 20px #ff9f43';
+    extraMsg.style.display = 'block';
+    extraMsg.textContent   = '遠征成功！再接再厲，答更多題解鎖康乃馨！';
+    extraMsg.style.color   = '#f9ca24';
+    extraMsg.style.textShadow = '0 0 20px #ff9f43';
+    wSub.textContent = `最終金幣：${winner.coins}💰`;
   } else {
-    flower.style.display='none';
-    extraMsg.style.display='none';
-    trophy.textContent='🤖';
+    // 失敗（AI模式玩家輸）：安慰畫面
+    flower.classList.remove('show');
+    trophy.textContent = '😔';
+    wName.textContent  = `${G.mode==='ai' ? '🤖 電腦' : winner.name} 獲勝⋯⋯`;
+    wName.style.color  = '#ff4d6d';
+    wName.style.textShadow = '0 0 15px #ff0000';
+    extraMsg.style.display = 'block';
+    extraMsg.textContent   = '任務失敗⋯⋯重整旗鼓，再戰一場！';
+    extraMsg.style.color   = '#ff4d6d';
+    extraMsg.style.textShadow = '0 0 20px #ff0000';
+    wSub.textContent = `你的金幣：${G.players[1-wIdx].coins}💰`;
   }
 
   goTo('s-win');
