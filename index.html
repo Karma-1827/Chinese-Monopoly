@@ -281,7 +281,7 @@
       visibility: visible;
       opacity: 1;
       max-height: 200px;
-      margin-bottom: 120px;
+      margin-bottom: 180px;
     }
     @keyframes flower-glow {
       0%   { transform: scale(5) translateY(0);    filter: drop-shadow(0 0 12px #ff4d6d) hue-rotate(0deg); }
@@ -296,7 +296,7 @@
     }
     #win-stats div { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; }
     #win-extra-msg {
-      font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;
+      font-size: 1.1rem; font-weight: bold; margin-bottom: 30px;
       display: none;
     }
 
@@ -1371,6 +1371,7 @@ function endGame(wIdx) {
   if (isPlayerWinner) {
     // 玩家勝利：顯示康乃馨與祝福
     flower.classList.add('show');
+    flower.style.transform = 'scale(5) translateY(-20px)';
     wName.textContent = `${winner.name} 獲勝！`;
     wName.style.color = 'var(--flower-pink)';
     wName.style.textShadow = '0 0 20px var(--flower-red)';
