@@ -538,7 +538,7 @@
     </div>
 
     <div id="log-container"><ul id="glog"></ul></div>
-    <button onclick="quitGame()" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:none;border:1px solid #444;color:#666;cursor:pointer;font-size:12px;padding:5px 18px;border-radius:20px;z-index:100;">放棄遊戲</button>
+    <button onclick="quitGame()" style="position:fixed;bottom:12px;right:250px;background:none;border:1px solid #444;color:#666;cursor:pointer;font-size:12px;padding:5px 18px;border-radius:20px;z-index:100;">放棄遊戲</button>
   </div>
 
   <!-- ===== QUESTION MODAL ===== -->
@@ -1347,74 +1347,58 @@ function checkWin(){
   return false;
 }
 
-function endGame(wIdx){
-  G.gameOver=true;SFX.win();launchConfetti();
+function endGame(wIdx) {
+  G.gameOver = true;
+  SFX.win();
+  launchConfetti();
 
-  // 先關閉所有 modal，再顯示勝利畫面
+  // 先關閉所有 modal
   document.getElementById('qmodal').classList.remove('open');
   document.getElementById('emodal').classList.remove('open');
   clearQTimer();
 
-  const winner=G.players[wIdx];
-  const loser=G.players[1-wIdx];
-
-  document.getElementById('w-name').textContent=`🏆 ${winner.name} 獲勝！`;
-  document.getElementById('w-sub').textContent=`最終金幣：${winner.coins}💰`;
-  document.getElementById('ws-rounds').textContent=Math.floor(G.round/2);
-  document.getElementById('ws-correct').textContent=winner.correct;
-  document.getElementById('ws-owned').textContent=Object.keys(winner.props).length;
-  document.getElementById('ws-rent').textContent=winner.rentEarned;
-
-  // 判斷情境
-  // isPlayerWin: 玩家0獲勝（AI模式）或任一方獲勝（PvP）
-  // isPerfect: 勝者答題全對（0錯誤）
-  const flower   = document.getElementById('win-flower');
+  const winner = G.players[wIdx];
+  const flower = document.getElementById('win-flower');
   const extraMsg = document.getElementById('win-extra-msg');
-  const trophy   = document.getElementById('w-trophy');
-  const wName    = document.getElementById('w-name');
-  const wSub     = document.getElementById('w-sub');
+  const trophy = document.getElementById('w-trophy');
+  const wName = document.getElementById('w-name');
+  const wSub = document.getElementById('w-sub'); // 雖不再顯示文字，但保留引用以利控制
 
-  const isPlayerWin = (G.mode==='ai' && wIdx===0) || (G.mode==='pvp');
-  const isPerfect   = winner.correct > 0 && (winner.correct === G.players[wIdx].correct) &&
-                      G.players[wIdx].coins >= 2000 && loser.correct === 0 ? false :
-                      (isPlayerWin && winner.correct >= 3); // 至少3題全對視為表現優秀
+  // 隱藏原本的數據小方塊容器 (假設 ID 為 ws-container)
+  const statsContainer = document.querySelector('.win-stats-grid') || document.querySelector('[style*="grid-template-columns"]');
+  if (statsContainer) statsContainer.style.display = 'none';
 
-  // 根據三種情境設定畫面
-  if(isPlayerWin && isPerfect){
-    // 完美勝利：康乃馨 + 送媽媽訊息
+  // 隱藏最終金幣那一行
+  if (wSub) wSub.style.display = 'none';
+
+  const isPlayerWin = (G.mode === 'ai' && wIdx === 0) || (G.mode === 'pvp');
+  const isPerfect = isPlayerWin && winner.correct >= 3;
+
+  if (isPlayerWin && isPerfect) {
     flower.classList.add('show');
-    wName.textContent  = `🏆 ${winner.name} 完美獲勝！`;
-    wName.style.color  = 'var(--flower-pink)';
+    wName.textContent = `🏆 ${winner.name} 完美獲勝！`;
+    wName.style.color = 'var(--flower-pink)';
     wName.style.textShadow = '0 0 20px var(--flower-red)';
     extraMsg.style.display = 'block';
-    extraMsg.textContent   = '這束繽紛康乃馨，送給最親愛的媽媽！';
-    extraMsg.style.color   = 'white';
+    extraMsg.textContent = '這束繽紛康乃馨，送給最親愛的媽媽！';
+    extraMsg.style.color = 'white';
     extraMsg.style.textShadow = '0 0 20px var(--flower-pink)';
-    wSub.textContent = `最終金幣：${winner.coins}💰　　正確題數：${winner.correct} 題`;
-  } else if(isPlayerWin){
-    // 普通勝利：無康乃馨，鼓勵再接再厲
+  } else if (isPlayerWin) {
     flower.classList.remove('show');
     trophy.textContent = '🏆';
-    wName.textContent  = `🏆 ${winner.name} 獲勝！`;
-    wName.style.color  = '#f9ca24';
+    wName.textContent = `🏆 ${winner.name} 獲勝！`;
+    wName.style.color = '#f9ca24';
     wName.style.textShadow = '0 0 20px #ff9f43';
     extraMsg.style.display = 'block';
-    extraMsg.textContent   = '遠征成功！再接再厲，答更多題解鎖康乃馨！';
-    extraMsg.style.color   = '#f9ca24';
-    extraMsg.style.textShadow = '0 0 20px #ff9f43';
-    wSub.textContent = `最終金幣：${winner.coins}💰`;
+    extraMsg.textContent = '遠征成功！再接再厲，答更多題解鎖康乃馨！';
   } else {
-    // 失敗（AI模式玩家輸）：安慰畫面
     flower.classList.remove('show');
     trophy.textContent = '😔';
-    wName.textContent  = `${G.mode==='ai' ? '🤖 電腦' : winner.name} 獲勝⋯⋯`;
-    wName.style.color  = '#ff4d6d';
+    wName.textContent = `${G.mode === 'ai' ? '🤖 電腦' : winner.name} 獲勝⋯⋯`;
+    wName.style.color = '#ff4d6d';
     wName.style.textShadow = '0 0 15px #ff0000';
     extraMsg.style.display = 'block';
-    extraMsg.textContent   = '任務失敗⋯⋯重整旗鼓，再戰一場！';
-    extraMsg.style.color   = '#ff4d6d';
-    extraMsg.style.textShadow = '0 0 20px #ff0000';
-    wSub.textContent = `你的金幣：${G.players[1-wIdx].coins}💰`;
+    extraMsg.textContent = '任務失敗⋯⋯重整旗鼓，再戰一場！';
   }
 
   goTo('s-win');
